@@ -37,7 +37,7 @@ let loading: Promise<void> | null = null;
 export function loadVectors(onProgress?: (pct: number) => void): Promise<void> {
   if (store) return Promise.resolve();
   loading ??= (async () => {
-    const res = await fetch(`${import.meta.env.BASE_URL}quran-embeddings.bin`);
+    const res = await fetch(`${import.meta.env.BASE_URL}quran-embeddings.bin?v=${__DATA_VERSION__}`);
     if (!res.ok) throw new Error(`embeddings not found (HTTP ${res.status}) — run export-embeddings.mjs`);
     const total = Number(res.headers.get("content-length") ?? 0);
     let buf: ArrayBuffer;

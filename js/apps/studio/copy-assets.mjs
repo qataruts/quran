@@ -23,6 +23,9 @@ if (fs.existsSync(db)) {
   process.exit(1);
 }
 
+const nb = path.resolve(HERE, "../../../quran-neighbors.bin");
+if (fs.existsSync(nb)) fs.copyFileSync(nb, path.join(PUB, "quran-neighbors.bin"));
+
 const emb = path.resolve(HERE, "../../../quran-embeddings.bin");
 if (fs.existsSync(emb)) {
   fs.copyFileSync(emb, path.join(PUB, "quran-embeddings.bin"));

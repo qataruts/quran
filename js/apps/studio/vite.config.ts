@@ -1,7 +1,22 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "node:path";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
+
+/** Short content hash of the app database — busts the data cache on redeploy. */
+function dataVersion(): string {
+  for (const p of ["./public/quran-app.db", "../../../quran-app.db", "../../../quran-app.db.gz"]) {
+    const abs = resolve(__dirname, p);
+    if (fs.existsSync(abs)) {
+      const h = createHash("sha1");
+      h.update(fs.readFileSync(abs));
+      return h.digest("hex").slice(0, 10);
+    }
+  }
+  return "dev";
+}
 
 /**
  * Dev-only /api/embed — mirrors api/embed.js (the Vercel Edge function) so
@@ -69,7 +84,60 @@ function devEmbedApi(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), devEmbedApi()],
+  plugins: [
+    react(),
+    devEmbedApi(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["icon.svg"],
+      manifest: {
+        name: "مصحف المعرفة",
+        short_name: "مصحف المعرفة",
+        description:
+          "القرآن الكريم كشبكة معرفة: قراءة، صرف كلمة بكلمة، جذور ومعانٍ من المعاجم، بحث بالمعنى — يعمل كاملًا دون اتصال.",
+        dir: "rtl",
+        lang: "ar",
+        start_url: "/",
+        display: "standalone",
+        theme_color: "#0b6e56",
+        background_color: "#f7f4ee",
+        icons: [
+          { src: "pwa-192.png", sizes: "192x192", type: "image/png" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+      },
+      workbox: {
+        // the app shell precaches; the big data files cache on first use
+        globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm}"],
+        globIgnores: ["**/quran-app.db", "**/*.bin"],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // versioned data files (?v=<hash>) — cache-first, keep 2 versions
+            urlPattern: /\/(quran-app\.db|quran-embeddings\.bin|quran-neighbors\.bin)(\?.*)?$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "qkg-data",
+              expiration: { maxEntries: 6 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // recitation audio — cache what was listened to
+            urlPattern: /^https:\/\/cdn\.islamic\.network\/quran\/audio\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "qkg-audio",
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
+    }),
+  ],
+
   resolve: {
     alias: {
       // Polyfill Node built-ins so @monlite/core (built for Node) runs in the
@@ -83,6 +151,7 @@ export default defineConfig({
   },
   define: {
     global: "globalThis",
+    __DATA_VERSION__: JSON.stringify(dataVersion()),
   },
   optimizeDeps: {
     // fts5-sql-bundle is CJS — it MUST be pre-bundled (esbuild adds the

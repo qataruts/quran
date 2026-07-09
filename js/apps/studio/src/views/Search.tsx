@@ -14,7 +14,8 @@ import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
 import AyahRef from "../components/AyahRef";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
-import { getAyahByLocation, listSurahs, searchAyahs, searchRoots } from "../db";
+import SimilarAyahs from "../components/SimilarAyahs";
+import { getAyahByGlobalNo, searchAyahs, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc } from "../types";
 import { readPathOf } from "../types";
@@ -76,6 +77,7 @@ function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
         </span>
         <span style={{ flex: 1 }} />
         <AudioButton ayahId={ayahIdOf(ayah)} />
+        <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} />
         <CollectButton
           locations={[ayah.location]}
           criterion={{ kind: "search", value: criterion }}
@@ -196,7 +198,7 @@ export default function Search() {
       }
       const found = await meaningSearch(query, 20);
       const resolved = await Promise.all(
-        found.map(async (h) => ({ score: h.score, ayah: await ayahByGlobalNo(h.ayahId) })),
+        found.map(async (h) => ({ score: h.score, ayah: await getAyahByGlobalNo(h.ayahId) })),
       );
       if (seq.current !== id) return;
       setHits(
@@ -375,23 +377,6 @@ export default function Search() {
 
 /* ------------------------------------------------------------------ */
 
-/** Resolve an ayah by its global number (1..6236) via the surah list. */
-const ayahCache = new Map<number, AyahDoc>();
-async function ayahByGlobalNo(no: number): Promise<AyahDoc | null> {
-  const cached = ayahCache.get(no);
-  if (cached) return cached;
-  const surahs = await listSurahs();
-  let acc = 0;
-  for (const s of surahs) {
-    if (no <= acc + s.ayahCount) {
-      const doc = await getAyahByLocation(`${s.surahNo}:${no - acc}`);
-      if (doc) ayahCache.set(no, doc);
-      return doc;
-    }
-    acc += s.ayahCount;
-  }
-  return null;
-}
 
 function SetupCard({ onDone }: { onDone: () => void }) {
   useUILang();

@@ -19,6 +19,7 @@ import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
 import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
+import SimilarAyahs from "../components/SimilarAyahs";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -441,6 +442,7 @@ export default function Reader() {
                     </span>
                   )}
                   <AudioButton ayahId={ayahIdOf(ayah)} />
+                  <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} />
                   <CollectButton
                     locations={[ayah.location]}
                     criterion={{ kind: "manual", value: ayah.location }}

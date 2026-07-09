@@ -37,7 +37,7 @@ export function initDb(onProgress: (loaded: number, total: number) => void): Pro
 async function doInit(onProgress: (loaded: number, total: number) => void): Promise<void> {
   const [SQL, bytes] = await Promise.all([
     initSqlJs({ locateFile: () => sqlWasmUrl }),
-    fetchWithProgress(`${import.meta.env.BASE_URL}quran-app.db`, onProgress),
+    fetchWithProgress(`${import.meta.env.BASE_URL}quran-app.db?v=${__DATA_VERSION__}`, onProgress),
   ]);
   db = createDb(":memory:", {
     driver: wasmDriver(SQL, { data: bytes }),
@@ -203,6 +203,23 @@ export async function neighborsOfRoot(root: string, limit = 25): Promise<Neighbo
     .map(([r, w]) => ({ root: r, w }))
     .sort((x, y) => y.w - x.w)
     .slice(0, limit);
+}
+
+/** Resolve an ayah by its global number (1..6236) via the surah list. */
+const globalAyahCache = new Map<number, AyahDoc | null>();
+export async function getAyahByGlobalNo(no: number): Promise<AyahDoc | null> {
+  if (globalAyahCache.has(no)) return globalAyahCache.get(no)!;
+  const surahs = await listSurahs();
+  let acc = 0;
+  for (const s of surahs) {
+    if (no <= acc + s.ayahCount) {
+      const doc = await getAyah(s.surahNo, no - acc);
+      globalAyahCache.set(no, doc);
+      return doc;
+    }
+    acc += s.ayahCount;
+  }
+  return null;
 }
 
 /** Distinct ayah locations ("s:a") for a root, in mushaf order. */

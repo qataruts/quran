@@ -5,6 +5,12 @@ Produced by the 24-agent swarm (3 verified code reviews + 3 innovation lenses
 surface without serving "everything at a fingertip" were killed.
 
 ## Shipped already
+- ✅ **Offline PWA** (item 1) — installable (manifest + icons), service worker
+  with cache-first versioned data files (?v=<db-hash> busts on redeploy) and
+  recitation audio caching; boots from cache after first visit.
+- ✅ **آيات قريبة المعنى** (item 2) — top-8 Gemini neighbors per ayah precomputed
+  into a 146 KB sidecar; «مثلها ≈» chip on every ayah in Reader and Search,
+  expanding inline, wanderable, no API key at read time.
 - ✅ **رفقاء الكلمة** (item 3) — the Network force-graph is replaced: companions
   of a root as a ranked, readable list; every row expands into the real ayahs
   where the two roots meet (dual green/gold highlighting); pairs promoted to
@@ -17,13 +23,7 @@ surface without serving "everything at a fingertip" were killed.
 
 ## Next (ranked)
 
-1. **تثبيت واستخدام دون اتصال / Offline PWA** — cache db+vectors (Cache
-   Storage/OPFS keyed by build hash), manifest + service worker; installs to
-   home screen, boots ~1s, fully offline except audio/meaning-queries. *days*
-2. **آيات قريبة المعنى / Similar ayahs, precomputed** — converter pass: top-8
-   vector neighbors per ayah (<1 MB); a «مثلها» chip on every ayah expands
-   inline. Makes the vectors ambient and free — no API key at read time. *hours–days*
-3. **الاستماع المتواصل / Continuous listening** — chain ayah audio, follow-along
+1. **الاستماع المتواصل / Continuous listening** — chain ayah audio, follow-along
    highlight + autoscroll, mini-player, Media Session lock-screen controls. *days*
 4. **صندوق واحد لكل شيء / ⌘K omnibox** — one input resolving «البقرة ٢٥٥»,
    "2:255", juz/page, surah names, roots, text and meaning search; plus
