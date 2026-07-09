@@ -25,20 +25,20 @@ surface without serving "everything at a fingertip" were killed.
 
 1. **الاستماع المتواصل / Continuous listening** — chain ayah audio, follow-along
    highlight + autoscroll, mini-player, Media Session lock-screen controls. *days*
-4. **صندوق واحد لكل شيء / ⌘K omnibox** — one input resolving «البقرة ٢٥٥»,
+2. **صندوق واحد لكل شيء / ⌘K omnibox** — one input resolving «البقرة ٢٥٥»,
    "2:255", juz/page, surah names, roots, text and meaning search; plus
    prev/next page/surah navigation and an alias table (آية الكرسي…). *days*
-5. **واجهة الإبهام / One-thumb mobile shell** — bottom tab bar, long-press word
+3. **واجهة الإبهام / One-thumb mobile shell** — bottom tab bar, long-press word
    → bottom-sheet morphology, surah sheet. The phone is where the habit lives. *weeks*
-6. **صفحة اليوم / "Today" home** — date-seeded آية اليوم unfolding into its
+4. **صفحة اليوم / "Today" home** — date-seeded آية اليوم unfolding into its
    root, gloss, and semantic siblings; «واصل القراءة» resume chip. *days*
-7. **المتشابهات / Echoes** — computed mutashabihat: near-duplicate ayahs with
+5. **المتشابهات / Echoes** — computed mutashabihat: near-duplicate ayahs with
    word-aligned diffs (lemma sequences + vectors), drill mode for huffaz. *days*
-8. **شارك الآية / Share as image** — canvas-rendered ayah card + deep link;
+6. **شارك الآية / Share as image** — canvas-rendered ayah card + deep link;
    the WhatsApp growth loop. *days*
-9. **عدسات القراءة / Reader lenses** — revelation-order navigation toggle;
+7. **عدسات القراءة / Reader lenses** — revelation-order navigation toggle;
    hapax underline («هذه الكلمة لا ترد إلا هنا») with its Mufradat gloss. *hours*
-10. **Constellations (theme galaxies)** — deferred: needs PMI re-weighting of
+8. **Constellations (theme galaxies)** — deferred: needs PMI re-weighting of
     the co-occurrence graph + a curation pass; revisit after 2–3 prove appetite.
 
 ## Network verdict (recorded)
