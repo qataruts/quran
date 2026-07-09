@@ -18,7 +18,7 @@ import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
 import CollectButton from "../components/CollectButton";
-import AudioButton, { ayahIdOf } from "../components/AudioButton";
+import AudioButton, { ayahIdOf, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
 import Translations from "../components/Translations";
 
@@ -143,6 +143,7 @@ function Inspector({ word }: { word: WordDoc | null }) {
         <CollectButton
           locations={[ayahLoc]}
           criterion={{ kind: "manual", value: word.location }}
+          label={`⊕ ${t("collect")}`}
         />
         {word.root && (
           <Link to={`/roots/${encodeURIComponent(word.root)}`} className="chip link">
@@ -288,6 +289,48 @@ export default function Reader() {
 
   const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
+  /** cumulative ayahs before each surah — global id = base + ayahNo */
+  const surahBase = useMemo(() => {
+    const map = new Map<number, number>();
+    let acc = 0;
+    for (const s of surahs) {
+      map.set(s.surahNo, acc);
+      acc += s.ayahCount;
+    }
+    return map;
+  }, [surahs]);
+
+  // follow-along: highlight and scroll to the ayah being recited; if the
+  // recitation crosses into another surah, follow it.
+  const playingId = usePlayingId();
+  const playingAyahNo = useMemo(() => {
+    if (playingId === 0 || surahs.length === 0) return null;
+    const base = surahBase.get(surahNo) ?? 0;
+    const within = playingId - base;
+    return within >= 1 && within <= (surah?.ayahCount ?? 0) ? within : null;
+  }, [playingId, surahBase, surahNo, surah, surahs.length]);
+
+  useEffect(() => {
+    if (playingAyahNo != null) {
+      document
+        .getElementById(`ayah-${surahNo}-${playingAyahNo}`)
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    if (playingId > 0 && surahs.length > 0) {
+      // recitation moved outside this surah — follow it
+      let acc = 0;
+      for (const s of surahs) {
+        if (playingId <= acc + s.ayahCount) {
+          if (s.surahNo !== surahNo) navigate(`/read/${s.surahNo}/${playingId - acc}`, { replace: true });
+          break;
+        }
+        acc += s.ayahCount;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playingId, playingAyahNo]);
+
   const pages = useMemo(() => {
     const byPage = new Map<number, AyahDoc[]>();
     for (const a of ayahs) {
@@ -361,6 +404,13 @@ export default function Reader() {
               <span className="chip">
                 <b>{num(surah.wordCount)}</b> {t("reader.words")}
               </span>
+              <button
+                className="chip link"
+                style={{ border: "none" }}
+                onClick={() => playContinuous((surahBase.get(surahNo) ?? 0) + 1)}
+              >
+                ▶ {t("reader.listenSurah")}
+              </button>
               <span
                 className="chip"
                 style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
@@ -403,12 +453,12 @@ export default function Reader() {
                 switchMode("ayat");
                 navigate(`/read/${a.surahNo}/${a.ayahNo}`);
               }}
-              targetAyahNo={targetAyahNo}
+              targetAyahNo={playingAyahNo ?? targetAyahNo}
             />
           ))
         ) : (
           ayahs.map((ayah: AyahDoc) => {
-            const isTarget = targetAyahNo === ayah.ayahNo;
+            const isTarget = (playingAyahNo ?? targetAyahNo) === ayah.ayahNo;
             return (
               <article
                 key={ayah.location}

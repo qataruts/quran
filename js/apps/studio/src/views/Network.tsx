@@ -12,7 +12,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAyahByLocation, getRoot, neighborsOfRoot, searchRoots, topRoots } from "../db";
 import type { NeighborRoot } from "../db";
 import { num, t, useUILang } from "../i18n";
@@ -233,6 +233,89 @@ function CompanionRow({
   );
 }
 
+/**
+ * Mini-constellation — a deterministic SVG signpost (no physics): the root at
+ * the center, its strongest companions around it. Nodes re-center; edges open
+ * the pair page. The companions LIST remains the primary interface.
+ */
+function Constellation({ center, neighbors }: { center: string; neighbors: NeighborRoot[] }) {
+  useUILang();
+  const navigate = useNavigate();
+  const top = neighbors.slice(0, 10);
+  if (top.length === 0) return null;
+  const S = 340;
+  const c = S / 2;
+  const maxW = top[0].w;
+  const nodes = top.map((n, i) => {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / top.length;
+    const radius = 78 + 82 * (1 - n.w / maxW);
+    return {
+      ...n,
+      x: c + Math.cos(angle) * radius,
+      y: c + Math.sin(angle) * radius,
+      r: 17 + 11 * (n.w / maxW),
+    };
+  });
+  return (
+    <div className="card" style={{ flex: "0 1 380px", alignSelf: "flex-start" }}>
+      <svg viewBox={`0 0 ${S} ${S}`} style={{ width: "100%", display: "block" }}>
+        {nodes.map((n) => (
+          <line
+            key={`e-${n.root}`}
+            x1={c}
+            y1={c}
+            x2={n.x}
+            y2={n.y}
+            stroke="var(--accent)"
+            strokeOpacity={0.25 + 0.45 * (n.w / maxW)}
+            strokeWidth={1 + 3.5 * (n.w / maxW)}
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              navigate(`/network/${encodeURIComponent(center)}/${encodeURIComponent(n.root)}`)
+            }
+          >
+            <title>{`${center} × ${n.root} — ${num(n.w)}`}</title>
+          </line>
+        ))}
+        {nodes.map((n) => (
+          <g
+            key={`n-${n.root}`}
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate(`/network/${encodeURIComponent(n.root)}`)}
+          >
+            <circle cx={n.x} cy={n.y} r={n.r} fill="var(--accent-soft)" stroke="var(--accent)" strokeOpacity={0.5} />
+            <text
+              x={n.x}
+              y={n.y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="var(--ink)"
+              style={{ fontFamily: "var(--font-quran)", fontSize: Math.max(13, n.r * 0.78) }}
+            >
+              {n.root}
+            </text>
+            <title>{n.root}</title>
+          </g>
+        ))}
+        <circle cx={c} cy={c} r={30} fill="var(--accent)" />
+        <text
+          x={c}
+          y={c}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="var(--panel)"
+          style={{ fontFamily: "var(--font-quran)", fontSize: 20 }}
+        >
+          {center}
+        </text>
+      </svg>
+      <div className="muted" style={{ textAlign: "center", marginTop: 6 }}>
+        {t("network.mini")}
+      </div>
+    </div>
+  );
+}
+
 function Companions({ root }: { root: string }) {
   useUILang();
   const [centerDoc, setCenterDoc] = useState<RootDoc | null | undefined>(undefined);
@@ -274,7 +357,7 @@ function Companions({ root }: { root: string }) {
 
   return (
     <div className="page">
-      <div className="page-narrow">
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
           <span className="quran" style={{ fontSize: 34, lineHeight: 1.3 }}>{root}</span>
           <span className="chip">
@@ -293,16 +376,19 @@ function Companions({ root }: { root: string }) {
           </p>
         )}
         <p className="muted">{t("network.sub")}</p>
-        <div className="card">
-          {neighbors == null ? (
-            <div className="muted">{t("loading")}</div>
-          ) : neighbors.length === 0 ? (
-            <div className="muted">{t("notFound")}</div>
-          ) : (
-            neighbors.map((n) => (
-              <CompanionRow key={n.root} center={root} centerDoc={centerDoc} neighbor={n} maxW={maxW} />
-            ))
-          )}
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
+          <div className="card" style={{ flex: "1 1 460px", minWidth: 0 }}>
+            {neighbors == null ? (
+              <div className="muted">{t("loading")}</div>
+            ) : neighbors.length === 0 ? (
+              <div className="muted">{t("notFound")}</div>
+            ) : (
+              neighbors.map((n) => (
+                <CompanionRow key={n.root} center={root} centerDoc={centerDoc} neighbor={n} maxW={maxW} />
+              ))
+            )}
+          </div>
+          {neighbors != null && <Constellation center={root} neighbors={neighbors} />}
         </div>
       </div>
     </div>
