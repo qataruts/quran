@@ -47,7 +47,24 @@ but as *evidence readers can read* (companions list → shared ayahs), never as
 an abstract force graph. If a graph ever returns, it is a small deterministic
 SVG signpost whose edges open the pair pages — never the interface itself.
 
+## Within-method resource backlog (owner interest, 2026-07-10)
+- **القراءات (variant canonical readings)** — Warsh/Qālūn/Dūrī/Sūsī/Qunbul/Shuʿba
+  via Tanzil (verify access path). Potential world-first «فروق القراءات»; 100%
+  within method (the Quran itself). HIGH value.
+- **Word-level audio timing** (QUL/tarteel) → word-by-word follow-along highlight
+  synced to al-Ḥuṣarī. Immediate UX win.
+- **Madina Mushaf glyph rendering (KFGQPC/QCF)** — photoreal صفحات mode.
+- **Computed Tajwīd coloring + waqf marks** — rule-based on text + Arabic phonetics
+  (compute, not import). Pure Arabic-language.
+- **More translation languages** (Tanzil ~100+) — reach, not novelty.
+EXCLUDED by rule: tafsir, asbāb al-nuzūl, hadith, إعراب/معاني books (treebank covers).
+
 ## Standing reminders (owner, 2026-07-10)
+- **Ingest QAC syntactic treebank** (corpus.quran.com — dependency grammar /
+  الإعراب at sentence level; verify coverage ~50k/77k words + GPL license
+  before ingest). Upgrades the morphology inspector from word-features to full
+  sentence parse; fits the "Quran + Arabic language only" rule. New layer
+  word_syntax. (Ontology + word-gloss: skip — our computed layers surpass them.)
 - After the محكم→تفصيل work: return to WORLD-FIRSTS.md (فروق التنزيل diff
   engine is mid-build; الوجوه، نظم الدرر، خرائط النظم، ميزان المقاييس queued)
   and to **التفصيل الموضوعي** (composite engine shared with نظم الدرر; the
