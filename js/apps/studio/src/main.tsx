@@ -29,6 +29,17 @@ applySettings();
 // moment the reader opens الجذور/الجوامع (no first-query lag).
 loadForms().catch(() => {});
 
+// Keep the app fresh. vite-plugin-pwa (registerType:autoUpdate) already applies
+// and reloads on a new service worker — but only checks on load. Poll every 30s
+// so an already-open tab picks up a new deploy instead of serving stale code.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.ready
+    .then((reg) => {
+      setInterval(() => void reg.update().catch(() => {}), 30_000);
+    })
+    .catch(() => {});
+}
+
 function Boot({ children }: { children: React.ReactNode }) {
   useUILang();
   const [progress, setProgress] = useState<{ loaded: number; total: number } | null>(null);
