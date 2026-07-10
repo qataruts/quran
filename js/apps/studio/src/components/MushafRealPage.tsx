@@ -5,10 +5,11 @@
  * decorated openings. Every glyph stays real, interactive text keyed to our
  * word location so all layers attach.
  */
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { loadLayout, loadPageFont, pageFont, pageLines } from "../mushaf";
 import type { MushafLine } from "../mushaf";
 import { surahNameAr } from "../db";
+import type { MushafMark } from "../db";
 import { num } from "../i18n";
 
 const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
@@ -33,6 +34,7 @@ function SurahBand({ surah }: { surah: number }) {
 export default function MushafRealPage({
   page,
   juz,
+  marks,
   selectedWord,
   playingAyah,
   onWord,
@@ -40,6 +42,7 @@ export default function MushafRealPage({
 }: {
   page: number;
   juz?: number | null;
+  marks?: Map<string, MushafMark>;
   selectedWord?: string | null;
   playingAyah?: string | null;
   onWord?: (key: string) => void;
@@ -80,9 +83,30 @@ export default function MushafRealPage({
             const first = ln.words[0]?.key;
             const startSurah = first ? surahStartingAt(first) : null;
             const full = ln.words.length >= 4;
+            // furniture: ۞ hizb/rub and ۩ sajda for ayahs that START on this line
+            const lineMarks = marks
+              ? ln.words
+                  .filter((w) => w.key.split(":")[2] === "1")
+                  .map((w) => ({ loc: w.ayah, mark: marks.get(w.ayah) }))
+                  .filter((x): x is { loc: string; mark: MushafMark } => !!x.mark)
+              : [];
             return (
               <div key={ln.line}>
                 {startSurah != null && <SurahBand surah={startSurah} />}
+                {lineMarks.map(({ loc, mark }) => (
+                  <Fragment key={loc}>
+                    {mark.quarter && (
+                      <div className="qcf-markband qcf-rub">
+                        <span>۞ {num(mark.quarter)}</span>
+                      </div>
+                    )}
+                    {mark.sajda && (
+                      <div className="qcf-markband qcf-sajda">
+                        <span>۩ موضع سجدة</span>
+                      </div>
+                    )}
+                  </Fragment>
+                ))}
                 <div className="qcf-line" style={{ justifyContent: full ? "space-between" : "center" }}>
                   {ln.words.map((w) => {
                     const sel = selectedWord === w.key;

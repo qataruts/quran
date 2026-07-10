@@ -237,6 +237,15 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   padding: 4px 0 10px; font-family: var(--font-quran); margin: 0;
 }
 
+/* hizb/rub (۞) and sajda (۩) furniture bands */
+.qcf-markband { text-align: center; margin: 4px auto 2px; user-select: none; }
+.qcf-markband span {
+  display: inline-block; font-family: var(--font-quran); font-size: 14px;
+  padding: 1px 14px; border-radius: 999px;
+}
+.qcf-rub span { color: var(--gold); background: var(--gold-soft); }
+.qcf-sajda span { color: var(--accent); background: var(--accent-soft); letter-spacing: 0.02em; }
+
 /* surah header band + basmala */
 .qcf-surah-band { text-align: center; margin: 14px auto 6px; }
 .qcf-surah-name {

@@ -228,6 +228,37 @@ export async function ayahByLocationMap(): Promise<Map<string, AyahDoc>> {
   return m;
 }
 
+export interface MushafMark {
+  /** hizb-quarter label at this ayah's start (۞), e.g. «الحزب ٣» / «¼» / «النصف» */
+  quarter?: string;
+  /** this ayah is a sajda (۩) */
+  sajda?: boolean;
+}
+const QUARTER_AR = ["", "الربع", "النصف", "الثلاثة أرباع"];
+let _marks: Map<string, MushafMark> | null = null;
+/** location ("s:a") -> mushaf furniture marks (hizb/rub ۞, sajda ۩), computed
+ *  once from ayah metadata in mushaf order. */
+export async function mushafMarks(): Promise<Map<string, MushafMark>> {
+  if (_marks) return _marks;
+  const rows = (await coll("ayahs").findMany({})) as AyahDoc[];
+  rows.sort((a, b) => Number(a._id.slice(1)) - Number(b._id.slice(1)));
+  const m = new Map<string, MushafMark>();
+  let prevRub: number | null = null;
+  for (const a of rows) {
+    const mark: MushafMark = {};
+    if (a.rub !== prevRub) {
+      const qInHizb = (a.rub - 1) % 4; // 0=hizb start, 1=¼, 2=½, 3=¾
+      const hizbNo = Math.ceil(a.rub / 4);
+      mark.quarter = qInHizb === 0 ? `الحزب ${hizbNo}` : QUARTER_AR[qInHizb];
+      prevRub = a.rub;
+    }
+    if (a.sajdaType) mark.sajda = true;
+    if (mark.quarter || mark.sajda) m.set(a.location, mark);
+  }
+  _marks = m;
+  return m;
+}
+
 /** First ayah location ("s:a") of a juz or Madani page. */
 export async function firstAyahOf(kind: "juz" | "page", n: number): Promise<string | null> {
   const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];

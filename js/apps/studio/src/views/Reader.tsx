@@ -11,7 +11,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getWord, listAyahs, listSurahs, listWords, pageJuzMap } from "../db";
+import { getWord, listAyahs, listSurahs, listWords, mushafMarks, pageJuzMap } from "../db";
+import type { MushafMark } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
@@ -235,7 +236,8 @@ export default function Reader() {
   );
   const [mushafPage, setMushafPage] = useState<number>(1);
   const [pageJuz, setPageJuz] = useState<Map<number, number>>(new Map());
-  useEffect(() => { void pageJuzMap().then(setPageJuz); }, []);
+  const [marks, setMarks] = useState<Map<string, MushafMark>>(new Map());
+  useEffect(() => { void pageJuzMap().then(setPageJuz); void mushafMarks().then(setMarks); }, []);
   const switchMode = (m: Mode) => {
     setMode(m);
     localStorage.setItem(MODE_KEY, m);
@@ -501,6 +503,7 @@ export default function Reader() {
             <MushafRealPage
               page={mushafPage}
               juz={pageJuz.get(mushafPage) ?? null}
+              marks={marks}
               selectedWord={selected?.location ?? null}
               playingAyah={playingAyahNo != null ? `${surahNo}:${playingAyahNo}` : null}
               onWord={(key) => { void getWord(key).then((w) => w && setSelected(w)); }}
