@@ -130,7 +130,6 @@ function Nav() {
   useUILang();
   return (
     <nav>
-      <NavLink to="/" end>{t("nav.today")}</NavLink>
       <NavLink to="/read">{t("nav.reader")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
@@ -139,6 +138,15 @@ function Nav() {
       <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
     </nav>
   );
+}
+
+/** First load opens the Quran — at the last-read position, else al-Fātiḥa. */
+function Home() {
+  const last = localStorage.getItem("quran-studio:last-read");
+  const to = last && /^\d+:\d+$/.test(last)
+    ? `/read/${last.split(":")[0]}/${last.split(":")[1]}`
+    : "/read/1";
+  return <Navigate to={to} replace />;
 }
 
 function Brand() {
@@ -169,7 +177,7 @@ function App() {
           <ThemeToggle />
         </header>
         <Routes>
-          <Route path="/" element={<Today />} />
+          <Route path="/" element={<Home />} />
           <Route path="/read" element={<Navigate to="/read/1" replace />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
@@ -183,6 +191,7 @@ function App() {
           <Route path="/collections" element={<Collections />} />
           <Route path="/collections/:id" element={<Collections />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
         <Footer />
