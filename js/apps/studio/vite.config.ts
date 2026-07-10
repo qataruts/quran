@@ -108,8 +108,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // the app shell precaches; the big data files cache on first use
-        globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm}"],
+        // the app shell precaches; the big data files cache on first use.
+        // json is precached (jawami.json, the محكم→تفصيل network — small, core);
+        // layout.json stays runtime-cached via its globIgnore below.
+        globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm,json}"],
         globIgnores: ["**/quran-app.db", "**/*.bin", "**/mushaf/fonts/**", "**/mushaf/layout.json"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [

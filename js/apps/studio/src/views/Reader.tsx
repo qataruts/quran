@@ -23,6 +23,7 @@ import MorphologyCard from "../components/MorphologyCard";
 import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
+import TafsilChip from "../components/TafsilChip";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -573,6 +574,7 @@ export default function Reader() {
                     criterion={{ kind: "manual", value: ayah.location }}
                     label="⊕"
                   />
+                  <TafsilChip location={ayah.location} />
                 </div>
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}

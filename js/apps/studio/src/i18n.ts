@@ -41,6 +41,7 @@ export const num = (n: number | string): string =>
 const AR: Record<string, string> = {
   "nav.today": "اليوم",
   "nav.reader": "المصحف",
+  "nav.jawami": "الجوامع",
   "nav.roots": "الجذور",
   "nav.network": "رفقاء الكلمة",
   "nav.search": "البحث",
@@ -196,6 +197,7 @@ const AR: Record<string, string> = {
 const EN: Record<string, string> = {
   "nav.today": "Today",
   "nav.reader": "Reader",
+  "nav.jawami": "Principles",
   "nav.roots": "Roots",
   "nav.network": "Companions",
   "nav.search": "Search",

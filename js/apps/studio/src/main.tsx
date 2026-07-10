@@ -14,6 +14,7 @@ import { NowPlayingBar } from "./components/AudioButton";
 import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
+import Jawami from "./views/Jawami";
 
 applyUILang();
 
@@ -131,6 +132,7 @@ function Nav() {
   return (
     <nav>
       <NavLink to="/read">{t("nav.reader")}</NavLink>
+      <NavLink to="/jawami">{t("nav.jawami")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
@@ -181,6 +183,7 @@ function App() {
           <Route path="/read" element={<Home />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
+          <Route path="/jawami" element={<Jawami />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />
           <Route path="/network" element={<Network />} />

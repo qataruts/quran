@@ -216,6 +216,18 @@ export async function pageJuzMap(): Promise<Map<number, number>> {
   return m;
 }
 
+let _ayahByLoc: Map<string, AyahDoc> | null = null;
+/** location ("s:a") -> ayah doc, all 6236 loaded once. For layers (جوامع,
+ *  network) that resolve many locations to their text synchronously. */
+export async function ayahByLocationMap(): Promise<Map<string, AyahDoc>> {
+  if (_ayahByLoc) return _ayahByLoc;
+  const rows = (await coll("ayahs").findMany({})) as AyahDoc[];
+  const m = new Map<string, AyahDoc>();
+  for (const a of rows) m.set(a.location, a);
+  _ayahByLoc = m;
+  return m;
+}
+
 /** First ayah location ("s:a") of a juz or Madani page. */
 export async function firstAyahOf(kind: "juz" | "page", n: number): Promise<string | null> {
   const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];
