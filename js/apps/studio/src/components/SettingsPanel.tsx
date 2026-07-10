@@ -4,7 +4,7 @@
  * focus, and our knowledge-graph layer toggles.
  */
 import { useEffect, useRef, useState } from "react";
-import { setSettings, useSettings, type Numerals, type Script, type Theme } from "../settings";
+import { setSettings, useSettings, type Numerals, type QuranFont, type Script, type Theme } from "../settings";
 import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
 import { TAJWID_LEGEND } from "../tajwid";
 import { getUILang, num, useUILang } from "../i18n";
@@ -24,13 +24,13 @@ function Seg<T extends string>({
   onChange,
 }: {
   value: T;
-  options: { v: T; label: string }[];
+  options: { v: T; label: string; tip?: string }[];
   onChange: (v: T) => void;
 }) {
   return (
     <span className="set-seg">
       {options.map((o) => (
-        <button key={o.v} className={value === o.v ? "on" : ""} onClick={() => onChange(o.v)}>
+        <button key={o.v} className={value === o.v ? "on" : ""} onClick={() => onChange(o.v)} title={o.tip}>
           {o.label}
         </button>
       ))}
@@ -76,6 +76,17 @@ export default function SettingsPanel() {
               options={[
                 { v: "uthmani", label: ar ? "عثماني" : "Uthmani" },
                 { v: "imlaai", label: ar ? "إملائي" : "Simple" },
+              ]}
+            />
+          </Row>
+          <Row label={ar ? "خطّ المصحف" : "Quran font"}>
+            <Seg<QuranFont>
+              value={s.quranFont}
+              onChange={(v) => setSettings({ quranFont: v })}
+              options={[
+                { v: "amiri", label: ar ? "أميري" : "Amiri", tip: ar ? "خطّ أميري: نسخٌ أنيق واضح" : "Amiri: elegant naskh" },
+                { v: "kfgqpc", label: ar ? "المدينة" : "Madina", tip: ar ? "خطّ مجمع الملك فهد: رسم مصحف المدينة" : "KFGQPC: Madina mushaf style" },
+                { v: "scheherazade", label: ar ? "تقليدي" : "Classic", tip: ar ? "خطّ نسخيّ تقليديّ واضح ورصين" : "traditional, clear naskh" },
               ]}
             />
           </Row>

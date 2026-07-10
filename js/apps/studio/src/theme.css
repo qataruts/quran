@@ -1,6 +1,13 @@
 /* Quran Studio design system */
 @import "@fontsource/amiri-quran";
 
+/* selectable Quran typefaces (Tanzil-recommended, all render Uthmani correctly
+   with proper mark positioning). Lazily fetched only when chosen. */
+@font-face { font-family: "KFGQPC Hafs"; src: url("/fonts/kfgqpc-hafs.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Scheherazade Q"; src: url("/fonts/scheherazade.woff2") format("woff2"); font-display: swap; }
+:root[data-quran-font="kfgqpc"] { --font-quran: "KFGQPC Hafs", "Amiri Quran", serif; }
+:root[data-quran-font="scheherazade"] { --font-quran: "Scheherazade Q", "Amiri Quran", serif; }
+
 :root {
   --bg: #f7f4ee;
   --panel: #fffdf9;

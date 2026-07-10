@@ -7,11 +7,13 @@ import { useSyncExternalStore } from "react";
 import { setNumeralsMode } from "./i18n";
 
 export type Script = "uthmani" | "imlaai";
+export type QuranFont = "amiri" | "kfgqpc" | "scheherazade";
 export type Numerals = "auto" | "ar" | "west";
 export type Theme = "auto" | "light" | "dark" | "sepia";
 
 export interface Settings {
   script: Script;
+  quranFont: QuranFont; // the Quran text typeface
   numerals: Numerals;
   quranScale: number; // 0.8 – 1.6, multiplies the Quran font size
   theme: Theme;
@@ -29,6 +31,7 @@ export interface Settings {
 const KEY = "quran-studio:settings";
 const DEFAULTS: Settings = {
   script: "uthmani",
+  quranFont: "amiri",
   numerals: "auto",
   quranScale: 1,
   theme: "auto",
@@ -58,6 +61,7 @@ const prefersDark = () => window.matchMedia?.("(prefers-color-scheme: dark)").ma
 export function applySettings(): void {
   const root = document.documentElement;
   root.dataset.theme = state.theme === "auto" ? (prefersDark() ? "dark" : "light") : state.theme;
+  root.dataset.quranFont = state.quranFont;
   root.style.setProperty("--quran-scale", String(state.quranScale));
   document.body.classList.toggle("focus-mode", state.focus);
   setNumeralsMode(state.numerals);

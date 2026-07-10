@@ -11,8 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getWord, listAyahs, listSurahs, listWords, mushafMarks, pageJuzMap } from "../db";
-import type { MushafMark } from "../db";
+import { getWord, listAyahs, listSurahs, listWords } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
@@ -20,7 +19,6 @@ import { useSettings } from "../settings";
 import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
 import { TAJWID, tajwidSpans } from "../tajwid";
 import ReadingBar from "../components/ReadingBar";
-import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
@@ -33,7 +31,7 @@ import TafsilAside from "../components/TafsilAside";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
-type Mode = "mushaf" | "pages" | "ayat";
+type Mode = "pages" | "ayat";
 
 /** Tracks whether the viewport is narrower than 900px. */
 function useNarrow(): boolean {
@@ -237,12 +235,8 @@ export default function Reader() {
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
   const [mode, setMode] = useState<Mode>(
-    () => (localStorage.getItem(MODE_KEY) as Mode) || "pages",
+    () => (localStorage.getItem(MODE_KEY) === "ayat" ? "ayat" : "pages"),
   );
-  const [mushafPage, setMushafPage] = useState<number>(1);
-  const [pageJuz, setPageJuz] = useState<Map<number, number>>(new Map());
-  const [marks, setMarks] = useState<Map<string, MushafMark>>(new Map());
-  useEffect(() => { void pageJuzMap().then(setPageJuz); void mushafMarks().then(setMarks); }, []);
   const switchMode = (m: Mode) => {
     setMode(m);
     localStorage.setItem(MODE_KEY, m);
@@ -285,8 +279,6 @@ export default function Reader() {
         }
         setAyahs(ay);
         setWordsByAyah(byAyah);
-        const tgt = targetAyahNo ? ay.find((x) => x.ayahNo === targetAyahNo) : ay[0];
-        if (tgt) setMushafPage(tgt.page);
         setLoading(false);
       })
       .catch(() => {
@@ -326,13 +318,6 @@ export default function Reader() {
     const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
     el?.scrollIntoView({ block: "center" });
   }, [loading, surahNo, targetAyahNo, mode]);
-
-  // keep the QCF page on the navigated-to ayah (also when only the ayah changes)
-  useEffect(() => {
-    if (loading || targetAyahNo == null) return;
-    const tgt = ayahs.find((x) => x.ayahNo === targetAyahNo);
-    if (tgt) setMushafPage(tgt.page);
-  }, [targetAyahNo, loading, ayahs]);
 
   const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
@@ -488,14 +473,14 @@ export default function Reader() {
                 className="chip"
                 style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
               >
-                {(["pages", "ayat", "mushaf"] as Mode[]).map((m) => (
+                {(["pages", "ayat"] as Mode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
                     title={
                       getUILang() === "ar"
-                        ? m === "mushaf" ? "صفحة المدينة بخطّ المصحف (QCF)" : m === "pages" ? "تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "آيةً آية مع الأدوات والترجمة"
-                        : m === "mushaf" ? "Madina QCF page" : m === "pages" ? "continuous, grouped by mushaf page" : "ayah by ayah with tools"
+                        ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
+                        : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
                     }
                     style={{
                       border: "none",
@@ -506,7 +491,7 @@ export default function Reader() {
                       fontWeight: mode === m ? 600 : 400,
                     }}
                   >
-                    {m === "mushaf" ? t("reader.mushaf") : m === "pages" ? t("reader.pages") : t("reader.ayat")}
+                    {m === "pages" ? t("reader.pages") : t("reader.ayat")}
                   </button>
                 ))}
               </span>
@@ -518,24 +503,6 @@ export default function Reader() {
           <p className="muted">{t("loading")}</p>
         ) : ayahs.length === 0 ? (
           <p className="muted">{t("notFound")}</p>
-        ) : mode === "mushaf" ? (
-          <>
-            <MushafRealPage
-              page={mushafPage}
-              juz={pageJuz.get(mushafPage) ?? null}
-              marks={marks}
-              selectedWord={selected?.location ?? null}
-              playingAyah={playingAyahNo != null ? `${surahNo}:${playingAyahNo}` : null}
-              targetAyah={targetAyahNo != null ? `${surahNo}:${targetAyahNo}` : null}
-              onWord={(key) => { void getWord(key).then((w) => w && setSelected(w)); }}
-              onAyah={(loc) => setSelectedAyah(loc)}
-            />
-            <div className="mushaf-nav">
-              <button onClick={() => setMushafPage((p) => Math.min(604, p + 1))} disabled={mushafPage >= 604} title={t("read.nextPage")}>›</button>
-              <span className="pos">{t("reader.page")} {num(mushafPage)} / {num(604)}</span>
-              <button onClick={() => setMushafPage((p) => Math.max(1, p - 1))} disabled={mushafPage <= 1} title={t("read.prevPage")}>‹</button>
-            </div>
-          </>
         ) : mode === "pages" ? (
           pages.map(([page, pageAyahs]) => (
             <MushafPage
