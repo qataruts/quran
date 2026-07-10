@@ -18,7 +18,7 @@ export default function TajwidText({
 }) {
   const spans = useMemo(() => tajwidSpans(text), [text]);
   return (
-    <div className="quran">
+    <div className="quran qtj">
       {spans.map((s, i) =>
         s.rule ? (
           <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>
