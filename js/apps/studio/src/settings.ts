@@ -31,7 +31,7 @@ export interface Settings {
 const KEY = "quran-studio:settings";
 const DEFAULTS: Settings = {
   script: "uthmani",
-  quranFont: "scheherazade",
+  quranFont: "amiri",
   numerals: "auto",
   quranScale: 1,
   theme: "auto",

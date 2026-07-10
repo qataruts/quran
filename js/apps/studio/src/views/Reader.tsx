@@ -17,7 +17,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
 import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
-import { TAJWID, tajwidSpans } from "../tajwid";
+import { TAJWID, tajwidWords } from "../tajwid";
 import ReadingBar from "../components/ReadingBar";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
@@ -205,6 +205,8 @@ function MushafPage({
       <div className="quran">
         {ayahs.map((ayah) => {
           const rub = rubMarks.get(ayah.ayahNo);
+          const ws = wordsByAyah.get(ayah.ayahNo) ?? [];
+          const colored = tajwid ? tajwidWords(ws.map((w) => w.textUthmani)) : null;
           return (
             <Fragment key={ayah.location}>
               {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
@@ -213,24 +215,24 @@ function MushafPage({
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
                 className={targetAyahNo === ayah.ayahNo ? "mp-ayah target" : "mp-ayah"}
               >
-                {tajwid
-                  ? tajwidSpans((wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => w.textUthmani).join(" ")).map((s, i) =>
-                      s.rule ? (
-                        <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>{s.text}</span>
-                      ) : (
-                        <span key={i}>{s.text}</span>
-                      ),
-                    )
-                  : (wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => (
-                      <span key={w.location}>
-                        <span
-                          className={`w${selected === w.location ? " sel" : ""}`}
-                          onClick={() => onSelect(w)}
-                        >
-                          {script === "imlaai" ? w.textClean : w.textUthmani}
-                        </span>{" "}
-                      </span>
-                    ))}{" "}
+                {ws.map((w, wi) => (
+                  <span key={w.location}>
+                    <span
+                      className={`w${selected === w.location ? " sel" : ""}`}
+                      onClick={() => onSelect(w)}
+                    >
+                      {colored
+                        ? colored[wi].map((s, i) =>
+                            s.rule ? (
+                              <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>{s.text}</span>
+                            ) : (
+                              <span key={i}>{s.text}</span>
+                            ),
+                          )
+                        : script === "imlaai" ? w.textClean : w.textUthmani}
+                    </span>{" "}
+                  </span>
+                ))}{" "}
                 <span
                   className="ayah-marker"
                   role="button"
@@ -474,67 +476,38 @@ export default function Reader() {
         )}
 
         {surah && (
-          <header className="card" style={{ textAlign: "center", marginBottom: 18 }}>
-            <div className="quran" style={{ fontSize: 42, lineHeight: 1.6 }}>
-              {surah.nameAr}
-            </div>
-            {getUILang() !== "ar" && (
-              <div style={{ fontWeight: 600 }}>
-                {surah.nameTranslit} <span className="muted">· {surah.nameEn}</span>
-              </div>
-            )}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                gap: 6,
-                marginTop: 10,
-              }}
+          <header className="reader-bar">
+            <span className="reader-bar-name quran">{surah.nameAr}</span>
+            <span className="muted reader-bar-meta">
+              {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
+              {num(surah.ayahCount)} {t("reader.ayahs")}
+              {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
+            </span>
+            <span className="reader-bar-spacer" />
+            <button
+              className="chip link"
+              style={{ border: "none" }}
+              onClick={() => playContinuous((surahBase.get(surahNo) ?? 0) + 1)}
+              title={getUILang() === "ar" ? "استمع للسورة كاملة" : "listen to the whole surah"}
             >
-              <span className="chip">
-                <b>{surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")}</b>
-              </span>
-              <span className="chip">
-                <b>{num(surah.ayahCount)}</b> {t("reader.ayahs")}
-              </span>
-              <span className="chip">
-                <b>{num(surah.wordCount)}</b> {t("reader.words")}
-              </span>
-              <button
-                className="chip link"
-                style={{ border: "none" }}
-                onClick={() => playContinuous((surahBase.get(surahNo) ?? 0) + 1)}
-              >
-                ▶ {t("reader.listenSurah")}
-              </button>
-              <span
-                className="chip"
-                style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
-              >
-                {(["pages", "ayat"] as Mode[]).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => switchMode(m)}
-                    title={
-                      getUILang() === "ar"
-                        ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
-                        : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
-                    }
-                    style={{
-                      border: "none",
-                      borderRadius: 999,
-                      padding: "2px 12px",
-                      background: mode === m ? "var(--accent-soft)" : "transparent",
-                      color: mode === m ? "var(--accent)" : "var(--muted)",
-                      fontWeight: mode === m ? 600 : 400,
-                    }}
-                  >
-                    {m === "pages" ? t("reader.pages") : t("reader.ayat")}
-                  </button>
-                ))}
-              </span>
-            </div>
+              ▶ {t("reader.listenSurah")}
+            </button>
+            <span className="reader-modes">
+              {(["pages", "ayat"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => switchMode(m)}
+                  className={mode === m ? "on" : ""}
+                  title={
+                    getUILang() === "ar"
+                      ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
+                      : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
+                  }
+                >
+                  {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+                </button>
+              ))}
+            </span>
           </header>
         )}
 

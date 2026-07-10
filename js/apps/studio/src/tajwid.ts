@@ -118,6 +118,29 @@ export function tajwidSpans(text: string): TajwidSpan[] {
   return out;
 }
 
+/** Per-word tajwīd colouring: rules are computed on the whole ayah (so cross-word
+ *  rules stay correct) then split back to each word — every word remains a
+ *  clickable unit AND is coloured. Returns one span list per input word. */
+export function tajwidWords(words: string[]): TajwidSpan[][] {
+  const joined = words.join(" ");
+  const rules: (TajwidRule | null)[] = [];
+  for (const s of tajwidSpans(joined)) for (let i = 0; i < s.text.length; i++) rules.push(s.rule);
+  const out: TajwidSpan[][] = [];
+  let pos = 0;
+  for (const w of words) {
+    const wordSpans: TajwidSpan[] = [];
+    for (let i = 0; i < w.length; i++) {
+      const r = rules[pos++] ?? null;
+      const last = wordSpans[wordSpans.length - 1];
+      if (last && last.rule === r) last.text += w[i];
+      else wordSpans.push({ text: w[i], rule: r });
+    }
+    out.push(wordSpans);
+    pos++; // skip the space between words
+  }
+  return out;
+}
+
 /** Rule → Arabic name + colour class (standard colour-coded muṣḥaf scheme). */
 export const TAJWID: Record<TajwidRule, { ar: string; cls: string }> = {
   madd: { ar: "مدّ", cls: "tj-red" },

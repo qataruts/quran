@@ -206,6 +206,22 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-family: var(--font-quran);
 }
 
+/* slim surah bar (the big name now lives in the page's surah band) */
+.reader-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 7px 14px; margin-bottom: 14px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.reader-bar-name { font-family: var(--font-quran); font-size: 22px; font-weight: 700; color: var(--accent); line-height: 1.4; }
+.reader-bar-meta { font-size: 12.5px; }
+.reader-bar-spacer { flex: 1; min-width: 8px; }
+.reader-modes { display: inline-flex; gap: 0; padding: 2px; background: var(--panel-2); border-radius: 999px; }
+.reader-modes button {
+  border: none; border-radius: 999px; padding: 3px 14px; font-size: 13px;
+  background: transparent; color: var(--muted); font-weight: 500;
+}
+.reader-modes button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
 /* Madina-mushaf furniture for the صفحات page */
 .mp-margin {
   display: flex; justify-content: space-between; align-items: center;
