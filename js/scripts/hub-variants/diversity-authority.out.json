@@ -1,0 +1,357 @@
+{
+ "method": "diversity-weighted authority: in-strength × dispersion^2 × (effSurahs/n)^1 × (effRareRoots/T)^1; topK=15 cosine, generality-directed (v1); combo selected by structural top-30 redundancy",
+ "top30": [
+  {
+   "location": "53:54",
+   "score": 0.6794,
+   "textSnippet": "فغشاها ما غشى",
+   "inDegree": 38,
+   "dispersion": 0.203,
+   "effSurahs": 25.7,
+   "effRoots": 66.3
+  },
+  {
+   "location": "90:20",
+   "score": 0.6116,
+   "textSnippet": "عليهم نار مؤصدة",
+   "inDegree": 45,
+   "dispersion": 0.179,
+   "effSurahs": 35.2,
+   "effRoots": 74.3
+  },
+  {
+   "location": "51:13",
+   "score": 0.5878,
+   "textSnippet": "يوم هم على النار يفتنون",
+   "inDegree": 53,
+   "dispersion": 0.17,
+   "effSurahs": 37.7,
+   "effRoots": 91.2
+  },
+  {
+   "location": "80:41",
+   "score": 0.5852,
+   "textSnippet": "ترهقها قترة",
+   "inDegree": 16,
+   "dispersion": 0.23,
+   "effSurahs": 13.5,
+   "effRoots": 35
+  },
+  {
+   "location": "39:51",
+   "score": 0.5512,
+   "textSnippet": "فأصابهم سيئات ما كسبوا والذين ظلموا من هؤلاء سيصيبهم سيئات ما كسبوا وما هم بمعجز",
+   "inDegree": 57,
+   "dispersion": 0.179,
+   "effSurahs": 29.5,
+   "effRoots": 113.6
+  },
+  {
+   "location": "94:2",
+   "score": 0.5353,
+   "textSnippet": "ووضعنا عنك وزرك",
+   "inDegree": 26,
+   "dispersion": 0.208,
+   "effSurahs": 15.8,
+   "effRoots": 56.5
+  },
+  {
+   "location": "40:71",
+   "score": 0.5227,
+   "textSnippet": "إذ الأغلال في أعناقهم والسلاسل يسحبون",
+   "inDegree": 22,
+   "dispersion": 0.207,
+   "effSurahs": 17.1,
+   "effRoots": 48.6
+  },
+  {
+   "location": "53:33",
+   "score": 0.5202,
+   "textSnippet": "أفرأيت الذي تولى",
+   "inDegree": 19,
+   "dispersion": 0.219,
+   "effSurahs": 15.3,
+   "effRoots": 36.6
+  },
+  {
+   "location": "26:220",
+   "score": 0.5159,
+   "textSnippet": "إنه هو السميع العليم",
+   "inDegree": 45,
+   "dispersion": 0.176,
+   "effSurahs": 31.3,
+   "effRoots": 74.4
+  },
+  {
+   "location": "37:116",
+   "score": 0.5047,
+   "textSnippet": "ونصرناهم فكانوا هم الغالبين",
+   "inDegree": 30,
+   "dispersion": 0.191,
+   "effSurahs": 20.7,
+   "effRoots": 66.9
+  },
+  {
+   "location": "68:10",
+   "score": 0.4975,
+   "textSnippet": "ولا تطع كل حلاف مهين",
+   "inDegree": 15,
+   "dispersion": 0.212,
+   "effSurahs": 13.7,
+   "effRoots": 39.6
+  },
+  {
+   "location": "21:97",
+   "score": 0.4932,
+   "textSnippet": "واقترب الوعد الحق فإذا هي شاخصة أبصار الذين كفروا يا ويلنا قد كنا في غفلة من هذا",
+   "inDegree": 31,
+   "dispersion": 0.167,
+   "effSurahs": 23.3,
+   "effRoots": 80.4
+  },
+  {
+   "location": "37:98",
+   "score": 0.4928,
+   "textSnippet": "فأرادوا به كيدا فجعلناهم الأسفلين",
+   "inDegree": 28,
+   "dispersion": 0.211,
+   "effSurahs": 19.8,
+   "effRoots": 50.1
+  },
+  {
+   "location": "3:12",
+   "score": 0.4902,
+   "textSnippet": "قل للذين كفروا ستغلبون وتحشرون إلى جهنم وبئس المهاد",
+   "inDegree": 41,
+   "dispersion": 0.167,
+   "effSurahs": 27.6,
+   "effRoots": 88.8
+  },
+  {
+   "location": "26:55",
+   "score": 0.4862,
+   "textSnippet": "وإنهم لنا لغائظون",
+   "inDegree": 18,
+   "dispersion": 0.205,
+   "effSurahs": 14.3,
+   "effRoots": 38.6
+  },
+  {
+   "location": "16:85",
+   "score": 0.4829,
+   "textSnippet": "وإذا رأى الذين ظلموا العذاب فلا يخفف عنهم ولا هم ينظرون",
+   "inDegree": 61,
+   "dispersion": 0.164,
+   "effSurahs": 32.9,
+   "effRoots": 109.5
+  },
+  {
+   "location": "37:30",
+   "score": 0.4817,
+   "textSnippet": "وما كان لنا عليكم من سلطان بل كنتم قوما طاغين",
+   "inDegree": 23,
+   "dispersion": 0.19,
+   "effSurahs": 20.4,
+   "effRoots": 46.6
+  },
+  {
+   "location": "77:3",
+   "score": 0.4809,
+   "textSnippet": "والناشرات نشرا",
+   "inDegree": 30,
+   "dispersion": 0.193,
+   "effSurahs": 18.8,
+   "effRoots": 52.1
+  },
+  {
+   "location": "6:58",
+   "score": 0.4796,
+   "textSnippet": "قل لو أن عندي ما تستعجلون به لقضي الأمر بيني وبينكم والله أعلم بالظالمين",
+   "inDegree": 29,
+   "dispersion": 0.2,
+   "effSurahs": 17.3,
+   "effRoots": 70.6
+  },
+  {
+   "location": "5:109",
+   "score": 0.4716,
+   "textSnippet": "يوم يجمع الله الرسل فيقول ماذا أجبتم قالوا لا علم لنا إنك أنت علام الغيوب",
+   "inDegree": 21,
+   "dispersion": 0.185,
+   "effSurahs": 19.7,
+   "effRoots": 51.3
+  },
+  {
+   "location": "69:47",
+   "score": 0.4697,
+   "textSnippet": "فما منكم من أحد عنه حاجزين",
+   "inDegree": 18,
+   "dispersion": 0.198,
+   "effSurahs": 15.4,
+   "effRoots": 41
+  },
+  {
+   "location": "9:76",
+   "score": 0.4663,
+   "textSnippet": "فلما آتاهم من فضله بخلوا به وتولوا وهم معرضون",
+   "inDegree": 24,
+   "dispersion": 0.196,
+   "effSurahs": 19,
+   "effRoots": 49.2
+  },
+  {
+   "location": "43:42",
+   "score": 0.4651,
+   "textSnippet": "أو نرينك الذي وعدناهم فإنا عليهم مقتدرون",
+   "inDegree": 25,
+   "dispersion": 0.181,
+   "effSurahs": 21.2,
+   "effRoots": 54.4
+  },
+  {
+   "location": "58:15",
+   "score": 0.4646,
+   "textSnippet": "أعد الله لهم عذابا شديدا إنهم ساء ما كانوا يعملون",
+   "inDegree": 66,
+   "dispersion": 0.165,
+   "effSurahs": 31.4,
+   "effRoots": 120.1
+  },
+  {
+   "location": "46:31",
+   "score": 0.4642,
+   "textSnippet": "يا قومنا أجيبوا داعي الله وآمنوا به يغفر لكم من ذنوبكم ويجركم من عذاب أليم",
+   "inDegree": 29,
+   "dispersion": 0.182,
+   "effSurahs": 21.4,
+   "effRoots": 65.8
+  },
+  {
+   "location": "69:18",
+   "score": 0.4622,
+   "textSnippet": "يومئذ تعرضون لا تخفى منكم خافية",
+   "inDegree": 53,
+   "dispersion": 0.165,
+   "effSurahs": 32.7,
+   "effRoots": 93.1
+  },
+  {
+   "location": "37:175",
+   "score": 0.4589,
+   "textSnippet": "وأبصرهم فسوف يبصرون",
+   "inDegree": 70,
+   "dispersion": 0.187,
+   "effSurahs": 37.4,
+   "effRoots": 64.5
+  },
+  {
+   "location": "41:27",
+   "score": 0.4584,
+   "textSnippet": "فلنذيقن الذين كفروا عذابا شديدا ولنجزينهم أسوأ الذي كانوا يعملون",
+   "inDegree": 81,
+   "dispersion": 0.156,
+   "effSurahs": 40.5,
+   "effRoots": 124.8
+  },
+  {
+   "location": "70:13",
+   "score": 0.4575,
+   "textSnippet": "وفصيلته التي تؤويه",
+   "inDegree": 14,
+   "dispersion": 0.217,
+   "effSurahs": 12.7,
+   "effRoots": 31.3
+  },
+  {
+   "location": "73:12",
+   "score": 0.4571,
+   "textSnippet": "إن لدينا أنكالا وجحيما",
+   "inDegree": 34,
+   "dispersion": 0.166,
+   "effSurahs": 28.9,
+   "effRoots": 57.6
+  }
+ ],
+ "samples": [
+  {
+   "hub": "53:54",
+   "hubText": "فغشاها ما غشى",
+   "tafsil": [
+    "91:4",
+    "36:9",
+    "20:78",
+    "56:36",
+    "53:16",
+    "44:11",
+    "82:16",
+    "90:20",
+    "80:41",
+    "26:172"
+   ]
+  },
+  {
+   "hub": "6:58",
+   "hubText": "قل لو أن عندي ما تستعجلون به لقضي الأمر بيني وبينكم والله أعلم بالظالمين",
+   "tafsil": [
+    "6:57",
+    "17:100",
+    "27:72",
+    "49:5",
+    "18:39",
+    "10:54",
+    "7:188",
+    "9:52",
+    "11:79",
+    "39:57"
+   ]
+  },
+  {
+   "hub": "68:10",
+   "hubText": "ولا تطع كل حلاف مهين",
+   "tafsil": [
+    "73:10",
+    "72:4",
+    "26:223",
+    "9:95",
+    "26:101",
+    "24:8",
+    "14:26",
+    "108:3",
+    "93:10",
+    "7:199"
+   ]
+  },
+  {
+   "hub": "53:33",
+   "hubText": "أفرأيت الذي تولى",
+   "tafsil": [
+    "75:32",
+    "26:218",
+    "53:12",
+    "26:225",
+    "20:93",
+    "25:43",
+    "90:7",
+    "107:2",
+    "80:1",
+    "56:41"
+   ]
+  },
+  {
+   "hub": "46:31",
+   "hubText": "يا قومنا أجيبوا داعي الله وآمنوا به يغفر لكم من ذنوبكم ويجركم من عذاب أليم",
+   "tafsil": [
+    "39:54",
+    "3:193",
+    "10:57",
+    "57:8",
+    "33:71",
+    "11:52",
+    "8:24",
+    "61:10",
+    "2:104",
+    "14:44"
+   ]
+  }
+ ]
+}
