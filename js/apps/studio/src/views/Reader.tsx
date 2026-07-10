@@ -183,7 +183,7 @@ function MushafPage({
   const { script, tajwid } = useSettings();
   return (
     <section className="mushaf-page">
-      <div className={`quran${tajwid ? " qtj" : ""}`}>
+      <div className="quran">
         {ayahs.map((ayah) => (
           <span
             key={ayah.location}

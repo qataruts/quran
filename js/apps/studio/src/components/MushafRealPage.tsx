@@ -99,7 +99,7 @@ export default function MushafRealPage({
           !tajwidReady ? (
             <div className="muted" style={{ textAlign: "center", padding: 40 }}>…</div>
           ) : (
-            <div className="quran qtj" style={{ textAlign: "justify", textAlignLast: "center" }}>
+            <div className="quran" style={{ textAlign: "justify", textAlignLast: "center" }}>
               {pageAyahs.map((loc) => {
                 const [s, a] = loc.split(":");
                 const startSurah = a === "1" ? Number(s) : null;

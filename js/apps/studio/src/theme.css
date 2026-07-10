@@ -373,16 +373,6 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-family: var(--font-quran);
 }
 
-/* KFGQPC Uthmanic Hafs — a real Madina-style font (colourable, unlike the QCF
-   ligature glyphs). Used for the tajwīd rendering so it keeps the mushaf look.
-   Lazily fetched by the browser only when .qtj text is actually rendered. */
-@font-face {
-  font-family: "UthmanicHafs";
-  src: url("/mushaf/UthmanicHafs.woff2") format("woff2");
-  font-display: swap;
-}
-.qtj { font-family: "UthmanicHafs", var(--font-quran) !important; }
-
 /* tajwīd colouring — standard colour-coded muṣḥaf scheme */
 .tj-red { color: #d90429; }
 .tj-green { color: #2b8a3e; }
