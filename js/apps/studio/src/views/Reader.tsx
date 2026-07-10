@@ -17,6 +17,7 @@ import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
+import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
 import ReadingBar from "../components/ReadingBar";
 import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
@@ -249,6 +250,7 @@ export default function Reader() {
   const [wordsByAyah, setWordsByAyah] = useState<Map<number, WordDoc[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WordDoc | null>(null);
+  const bookmarks = useBookmarks();
 
   useEffect(() => {
     let cancelled = false;
@@ -295,22 +297,6 @@ export default function Reader() {
     };
   }, [surahNo]);
 
-  // remember the last reading position for the Today page
-  useEffect(() => {
-    if (Number.isInteger(surahNo) && surahNo >= 1 && surahNo <= 114) {
-      localStorage.setItem("quran-studio:last-read", `${surahNo}:${targetAyahNo ?? 1}`);
-    }
-  }, [surahNo, targetAyahNo]);
-
-  // Scroll the :ayahNo target into view once the surah has rendered.
-  useEffect(() => {
-    if (loading || targetAyahNo == null) return;
-    const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
-    el?.scrollIntoView({ block: "center" });
-  }, [loading, surahNo, targetAyahNo, mode]);
-
-  const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
-
   /** cumulative ayahs before each surah — global id = base + ayahNo */
   const surahBase = useMemo(() => {
     const map = new Map<number, number>();
@@ -321,6 +307,24 @@ export default function Reader() {
     }
     return map;
   }, [surahs]);
+
+  // remember the last reading position (for resume) and advance khatma progress
+  useEffect(() => {
+    if (Number.isInteger(surahNo) && surahNo >= 1 && surahNo <= 114) {
+      localStorage.setItem("quran-studio:last-read", `${surahNo}:${targetAyahNo ?? 1}`);
+      const base = surahBase.get(surahNo);
+      if (base != null) recordProgress(base + (targetAyahNo ?? 1));
+    }
+  }, [surahNo, targetAyahNo, surahBase]);
+
+  // Scroll the :ayahNo target into view once the surah has rendered.
+  useEffect(() => {
+    if (loading || targetAyahNo == null) return;
+    const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
+    el?.scrollIntoView({ block: "center" });
+  }, [loading, surahNo, targetAyahNo, mode]);
+
+  const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
   // follow-along: highlight and scroll to the ayah being recited; if the
   // recitation crosses into another surah, follow it.
@@ -581,6 +585,20 @@ export default function Reader() {
                     criterion={{ kind: "manual", value: ayah.location }}
                     label="⊕"
                   />
+                  <button
+                    className="chip"
+                    onClick={() => toggleBookmark(ayah.location)}
+                    title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
+                    style={{
+                      border: "none",
+                      cursor: "pointer",
+                      ...(bookmarks.includes(ayah.location)
+                        ? { background: "var(--gold-soft)", color: "var(--gold)" }
+                        : {}),
+                    }}
+                  >
+                    {bookmarks.includes(ayah.location) ? "★" : "☆"}
+                  </button>
                   <TafsilChip location={ayah.location} />
                 </div>
                 <AyahText

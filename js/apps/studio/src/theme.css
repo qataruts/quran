@@ -337,6 +337,15 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .tafsil-aside-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
 .tafsil-aside .jw-verse-text { -webkit-line-clamp: 3; line-clamp: 3; }
 
+/* bookmarks ★ popover — progress bar + jump list */
+.bm-progress { margin: 4px 0 2px; }
+.bm-bar { height: 8px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.bm-bar > div { height: 100%; background: var(--gold); transition: width 0.3s; }
+.bm-list { display: flex; flex-direction: column; gap: 2px; max-height: 40vh; overflow-y: auto; }
+.bm-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 8px; }
+.bm-item:hover { background: var(--panel-2); }
+.bm-item a { color: var(--accent); font-weight: 600; }
+
 /* settings ⚙ popover */
 .set-wrap { position: relative; }
 .set-panel {

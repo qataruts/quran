@@ -16,6 +16,7 @@ import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
 import SettingsPanel from "./components/SettingsPanel";
+import BookmarksPanel from "./components/BookmarksPanel";
 import { applySettings, setSettings, useSettings } from "./settings";
 
 applyUILang();
@@ -181,6 +182,7 @@ function App() {
           <Nav />
           <span className="spacer" />
           <Omnibox />
+          <BookmarksPanel />
           <LangToggle />
           <ThemeToggle />
           <SettingsPanel />
