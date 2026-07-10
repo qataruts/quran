@@ -1,39 +1,59 @@
 /**
- * MushafRealPage — a single Madani page rendered with its QCF font, pixel-close
- * to the printed mushaf, while every word stays real interactive text. All
- * layers (word tap → morphology, ayah select, recitation highlight) attach via
- * the word `key` ("s:a:w"). This is the base other features render on top of.
+ * MushafRealPage — one Madani page in its QCF font, laid out like the printed
+ * mushaf: ornamental frame, surah-name bands + basmala where a surah begins,
+ * juz/hizb margin markers, page number. Pages 1–2 are the special half-page
+ * decorated openings. Every glyph stays real, interactive text keyed to our
+ * word location so all layers attach.
  */
 import { useEffect, useRef, useState } from "react";
 import { loadLayout, loadPageFont, pageFont, pageLines } from "../mushaf";
-import type { MushafLine, MushafWord } from "../mushaf";
+import type { MushafLine } from "../mushaf";
+import { surahNameAr } from "../db";
 import { num } from "../i18n";
+
+const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+/** first ayah of a surah → surah number (for the header band). */
+function surahStartingAt(key: string): number | null {
+  const m = key.match(/^(\d+):1:1$/);
+  return m ? Number(m[1]) : null;
+}
+
+function SurahBand({ surah }: { surah: number }) {
+  return (
+    <div className="qcf-surah-band">
+      <span className="qcf-surah-name quran">سورة {surahNameAr(surah)}</span>
+      {surah !== 9 && surah !== 1 && (
+        <div className="qcf-basmala quran">{BASMALA}</div>
+      )}
+    </div>
+  );
+}
 
 export default function MushafRealPage({
   page,
+  juz,
   selectedWord,
   playingAyah,
   onWord,
   onAyah,
 }: {
   page: number;
-  selectedWord?: string | null; // "s:a:w"
-  playingAyah?: string | null; // "s:a"
+  juz?: number | null;
+  selectedWord?: string | null;
+  playingAyah?: string | null;
   onWord?: (key: string) => void;
   onAyah?: (loc: string) => void;
 }) {
   const [ready, setReady] = useState(false);
-  const [err, setErr] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
     setReady(false);
-    setErr(false);
     Promise.all([loadLayout(), loadPageFont(page)])
       .then(() => mounted.current && setReady(true))
-      .catch(() => mounted.current && setErr(true));
-    // warm the neighbouring pages' fonts for instant turns
+      .catch(() => mounted.current && setReady(true));
     if (page > 1) void loadPageFont(page - 1).catch(() => {});
     if (page < 604) void loadPageFont(page + 1).catch(() => {});
     return () => {
@@ -41,48 +61,53 @@ export default function MushafRealPage({
     };
   }, [page]);
 
-  if (err) return <div className="muted" style={{ textAlign: "center", padding: 24 }}>—</div>;
-  if (!ready)
-    return (
-      <section className="mushaf-page" style={{ minHeight: 300, display: "grid", placeItems: "center" }}>
-        <span className="muted">…</span>
-      </section>
-    );
-
-  const lines: MushafLine[] = pageLines(page);
+  const lines: MushafLine[] = ready ? pageLines(page) : [];
   const fam = pageFont(page);
+  const opening = page <= 2; // the decorated Fātiḥa / Baqara opening pages
 
   return (
-    <section className="mushaf-page qcf">
-      {lines.map((ln) => {
-        // surah header / basmala lines can be short → center; full lines justify
-        const full = ln.words.length >= 4;
-        return (
-          <div
-            key={ln.line}
-            className="qcf-line"
-            style={{ justifyContent: full ? "space-between" : "center" }}
-          >
-            {ln.words.map((w: MushafWord) => {
-              const sel = selectedWord === w.key;
-              const playing = playingAyah === w.ayah;
-              return (
-                <span
-                  key={w.key}
-                  className={`qcf-w${sel ? " sel" : ""}${playing ? " play" : ""}`}
-                  style={{ fontFamily: `"${fam}"` }}
-                  role="button"
-                  title={w.ayah}
-                  onClick={() => (w.end ? onAyah?.(w.ayah) : onWord?.(w.key))}
-                >
-                  {w.code}
-                </span>
-              );
-            })}
-          </div>
-        );
-      })}
-      <div className="page-no">﴾ {num(page)} ﴿</div>
+    <section className={`mushaf-page qcf${opening ? " opening" : ""}`}>
+      {/* top margin: juz label */}
+      <div className="qcf-margin-top">
+        {juz != null && <span>الجزء {num(juz)}</span>}
+      </div>
+
+      <div className="qcf-body">
+        {!ready ? (
+          <div className="muted" style={{ textAlign: "center", padding: 40 }}>…</div>
+        ) : (
+          lines.map((ln) => {
+            const first = ln.words[0]?.key;
+            const startSurah = first ? surahStartingAt(first) : null;
+            const full = ln.words.length >= 4;
+            return (
+              <div key={ln.line}>
+                {startSurah != null && <SurahBand surah={startSurah} />}
+                <div className="qcf-line" style={{ justifyContent: full ? "space-between" : "center" }}>
+                  {ln.words.map((w) => {
+                    const sel = selectedWord === w.key;
+                    const playing = playingAyah === w.ayah;
+                    return (
+                      <span
+                        key={w.key}
+                        className={`qcf-w${sel ? " sel" : ""}${playing ? " play" : ""}`}
+                        style={{ fontFamily: `"${fam}"` }}
+                        role="button"
+                        title={w.ayah}
+                        onClick={() => (w.end ? onAyah?.(w.ayah) : onWord?.(w.key))}
+                      >
+                        {w.code}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="page-no">{num(page)}</div>
     </section>
   );
 }

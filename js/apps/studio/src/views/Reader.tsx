@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getWord, listAyahs, listSurahs, listWords } from "../db";
+import { getWord, listAyahs, listSurahs, listWords, pageJuzMap } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
@@ -227,8 +227,11 @@ export default function Reader() {
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
   const [mode, setMode] = useState<Mode>(
-    () => (localStorage.getItem(MODE_KEY) as Mode) || "pages",
+    () => (localStorage.getItem(MODE_KEY) as Mode) || "mushaf",
   );
+  const [mushafPage, setMushafPage] = useState<number>(1);
+  const [pageJuz, setPageJuz] = useState<Map<number, number>>(new Map());
+  useEffect(() => { void pageJuzMap().then(setPageJuz); }, []);
   const switchMode = (m: Mode) => {
     setMode(m);
     localStorage.setItem(MODE_KEY, m);
@@ -270,6 +273,8 @@ export default function Reader() {
         }
         setAyahs(ay);
         setWordsByAyah(byAyah);
+        const tgt = targetAyahNo ? ay.find((x) => x.ayahNo === targetAyahNo) : ay[0];
+        if (tgt) setMushafPage(tgt.page);
         setLoading(false);
       })
       .catch(() => {
@@ -488,16 +493,21 @@ export default function Reader() {
         ) : ayahs.length === 0 ? (
           <p className="muted">{t("notFound")}</p>
         ) : mode === "mushaf" ? (
-          pages.map(([page]) => (
+          <>
             <MushafRealPage
-              key={page}
-              page={page}
+              page={mushafPage}
+              juz={pageJuz.get(mushafPage) ?? null}
               selectedWord={selected?.location ?? null}
               playingAyah={playingAyahNo != null ? `${surahNo}:${playingAyahNo}` : null}
               onWord={(key) => { void getWord(key).then((w) => w && setSelected(w)); }}
               onAyah={(loc) => setSelectedAyah(loc)}
             />
-          ))
+            <div className="mushaf-nav">
+              <button onClick={() => setMushafPage((p) => Math.min(604, p + 1))} disabled={mushafPage >= 604} title={t("read.nextPage")}>›</button>
+              <span className="pos">{t("reader.page")} {num(mushafPage)} / {num(604)}</span>
+              <button onClick={() => setMushafPage((p) => Math.max(1, p - 1))} disabled={mushafPage <= 1} title={t("read.prevPage")}>‹</button>
+            </div>
+          </>
         ) : mode === "pages" ? (
           pages.map(([page, pageAyahs]) => (
             <MushafPage

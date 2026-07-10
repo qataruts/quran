@@ -205,6 +205,17 @@ export async function neighborsOfRoot(root: string, limit = 25): Promise<Neighbo
     .slice(0, limit);
 }
 
+let _pageJuz: Map<number, number> | null = null;
+/** page (1..604) -> juz. Cached; one query. */
+export async function pageJuzMap(): Promise<Map<number, number>> {
+  if (_pageJuz) return _pageJuz;
+  const rows = (await coll("ayahs").findMany({})) as AyahDoc[];
+  const m = new Map<number, number>();
+  for (const a of rows) if (!m.has(a.page)) m.set(a.page, a.juz);
+  _pageJuz = m;
+  return m;
+}
+
 /** First ayah location ("s:a") of a juz or Madani page. */
 export async function firstAyahOf(kind: "juz" | "page", n: number): Promise<string | null> {
   const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];
