@@ -118,3 +118,34 @@ REVISED BUILD ORDER (approved candidates integrated):
   3. الآيات الجوامع (ships on existing neighbors data; careful naming)
   4. الوجوه والنظائر محسوبة (prestige release)
   5. خرائط النظم → ميزان المقاييس (gated)
+
+====================================================================
+BEYOND المحكم→تفصيل — novel ideas & data assets we already hold (2026-07-10)
+Owner: "we need all of that." Do not lose these.
+====================================================================
+
+ALREADY-COMPUTED, un-shipped (nearly free to surface):
+  N1. Pass A principle-map — every ayah classified حكم/عقيدة/أخلاق/سنة/وعد by
+      one consistent standard. First of its kind. Powers a filterable
+      «موضوعات المبادئ» + the Shahrour-convergence categorization.
+  N2. توكيد self-restatement graph — from the typed تفصيل relations, the map
+      of which principles the Quran RESTATES most across itself: القرآن
+      يُثنّي / الْمَثَانِي made visible. Ships almost free once Pass B done.
+      *Owner's top-interest candidate.*
+  N3. فروق التنزيل twin catalog — 14,313 tiered pairs computed (quran-twins.json);
+      awaits the word-diff + Arabic-explanation engine.
+
+NOVEL IDEAS our data uniquely enables (within method: Quran + morphology +
+vectors + معاجم + Arabic language):
+  N4. الجينوم الصرفي / grammar genome — map which of Arabic's feature-
+      combinations the Quran uses & WHERE, and especially which it NEVER uses
+      (the negative space is data). Unprecedented; pure morphology.
+      *Owner's top-interest candidate.*
+  N5. ديوان الالتفات / iltifāt register — computed catalogue of EVERY person/
+      number shift (غيبة↔خطاب…) from PGN sequences. First complete list.
+  N6. أطلس الفواصل / rhyme-ending atlas — cluster ayah-ending sound-families
+      (سجع/فاصلة); test rhyme-shift ↔ topic-shift. Pure data, strong visual.
+  N7. الوجوه والنظائر محسوبة — every polysemous word's senses induced from
+      usage, aligned to classical معاجم (also WORLD-FIRSTS #2).
+
+Priority hints (owner): N2 + N4 flagged most-novel-and-most-ours. All wanted.
