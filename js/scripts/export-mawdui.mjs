@@ -41,7 +41,7 @@ if (!sections) { console.error("no taxonomy found in journal"); process.exit(1);
   const dst = sections.find((s) => s.title === "قصص الأنبياء");
   if (src && dst) {
     dst.topics = [...(dst.topics ?? []), ...(src.topics ?? [])];
-    dst.title = "قصص الأنبياء وبني إسرائيل";
+    dst.title = "قصص الأنبياء";
     dst.theme = "سِيَر الأنبياء مع أقوامهم — من آدم ونوح وإبراهيم ولوط وداود وسليمان ويوسف وزكريا وعيسى، إلى موسى وفرعون وبني إسرائيل — عبرةً في الاصطفاء والابتلاء والنجاة.";
     sections = sections.filter((s) => s !== src);
   }
