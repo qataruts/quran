@@ -97,14 +97,20 @@ for (let iter = 0; iter < 40; iter++) {
 
 // degree (surviving تفصيل out-degree) per جامعة, for the «أمّ»
 const outDeg = (l) => (jw.tafsil[l] ?? []).length;
+const vecOf = new Map(items.map((it) => [it.loc, it.vec]));
 const clusters = [];
 for (let c = 0; c < K; c++) {
   const mem = items.map((it, i) => (assign[i] === c ? it.loc : null)).filter(Boolean);
   if (!mem.length) continue;
   mem.sort((a, b) => outDeg(b) - outDeg(a)); // most-elaborated first
-  clusters.push({ id: c, size: mem.length, umm: mem[0], members: mem });
+  // cohesion = mean cosine of members to the cluster centroid (1 = tight)
+  const coh = mem.reduce((s, l) => s + dot(vecOf.get(l), centroids[c]), 0) / mem.length;
+  clusters.push({ id: c, size: mem.length, umm: mem[0], cohesion: +coh.toFixed(3), members: mem });
 }
 clusters.sort((a, b) => b.size - a.size);
+console.log(`\nتماسك العناقيد (avg cosine to centroid): ` +
+  `أضعف ${clusters.map((c) => c.cohesion).sort((a, b) => a - b).slice(0, 5).join(", ")} · ` +
+  `أقوى ${clusters.map((c) => c.cohesion).sort((a, b) => b - a).slice(0, 3).join(", ")}`);
 console.log(`\nمحكمات (clusters): ${clusters.length}`);
 for (const cl of clusters.slice(0, 12)) {
   const t = (textOf.get(cl.umm) ?? "").slice(0, 42);
@@ -146,7 +152,7 @@ const payload = {
     network: { nodes: N, components: sizes.length, giant, giantPct: +((giant / N) * 100).toFixed(2), avgHops: +avgHops.toFixed(2), maxHops: maxD },
   },
   muhkamat: clusters.map((cl) => ({
-    size: cl.size, umm: cl.umm, ummText: textOf.get(cl.umm) ?? "",
+    size: cl.size, umm: cl.umm, ummText: textOf.get(cl.umm) ?? "", cohesion: cl.cohesion,
     members: cl.members.map((l) => ({ loc: l, text: (textOf.get(l) ?? "").slice(0, 72) })),
   })),
 };
