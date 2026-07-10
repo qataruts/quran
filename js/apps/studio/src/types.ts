@@ -166,8 +166,8 @@ export const i3rab = (g: SegmentDoc): string => {
   if (g.pos === "V") {
     parts.push(pos || (ar ? "فعل" : "verb"));
     if (g.aspect) parts.push(label(g.aspect)); // ماضٍ / مضارع / أمر
-    if (g.voice) parts.push(label(g.voice)); // مبني للمعلوم / للمجهول
     if (g.aspect === "IMPF" && g.mood) parts.push(label(g.mood)); // مرفوع / منصوب / مجزوم
+    if (g.voice === "PASS") parts.push(label(g.voice)); // mark passive only (active is default)
   } else if (g.caseMark) {
     parts.push(pos || (ar ? "اسم" : "noun")); // اسم / صفة / ضمير / اسم إشارة …
     parts.push(label(g.caseMark)); // مرفوع / منصوب / مجرور
