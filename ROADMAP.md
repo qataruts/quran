@@ -46,3 +46,16 @@ REPLACE, not redesign — done. Co-occurrence data stays novel and valuable,
 but as *evidence readers can read* (companions list → shared ayahs), never as
 an abstract force graph. If a graph ever returns, it is a small deterministic
 SVG signpost whose edges open the pair pages — never the interface itself.
+
+## Standing reminders (owner, 2026-07-10)
+- After the محكم→تفصيل work: return to WORLD-FIRSTS.md (فروق التنزيل diff
+  engine is mid-build; الوجوه، نظم الدرر، خرائط النظم، ميزان المقاييس queued)
+  and to **التفصيل الموضوعي** (composite engine shared with نظم الدرر; the
+  printed مصحف التفصيل الموضوعي PDF in archive/research is the private
+  validation gold-standard — its labels must not ship, copyright).
+
+11. **تطبيق سطح المكتب / Electron desktop app** — one installable app that
+    carries the whole Quran (our data files are already local-first, so the
+    PWA build wraps naturally). Build via **GitHub Actions** on the
+    qataruts/quran repo (mac/win/linux artifacts on release tags); natural
+    dogfooding for @monlite/electron. *days*
