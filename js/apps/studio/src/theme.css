@@ -339,6 +339,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .tafsil-aside-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
 .tafsil-aside .jw-verse-text { -webkit-line-clamp: 3; line-clamp: 3; }
 
+/* الإعراب — composed syntactic parse per segment (corpus-style) */
+.i3rab {
+  margin: 4px 0 2px; font-size: 15px; font-weight: 600; color: var(--accent);
+  font-family: var(--font-quran);
+}
+
 /* root meaning card in the word sheet */
 .rootmeaning { padding: 12px 14px; margin-top: 12px; background: var(--panel-2); }
 .rootmeaning-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }

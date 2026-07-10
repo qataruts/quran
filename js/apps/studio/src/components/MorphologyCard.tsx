@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { getUILang, t, useUILang } from "../i18n";
 import type { SegmentDoc, WordDoc } from "../types";
-import { label, labelVerbForm } from "../types";
+import { i3rab, label, labelVerbForm } from "../types";
 
 function Chip({ k, v }: { k?: string; v: string | number | null | undefined }) {
   if (v == null || v === "") return null;
@@ -27,6 +27,7 @@ function SegmentCard({ g }: { g: SegmentDoc }) {
           <span className="muted" style={{ fontFamily: "var(--font-ui)" }}> {g.posAr}</span>
         )}
       </div>
+      {i3rab(g) && <div className="i3rab" dir={ar ? "rtl" : "ltr"}>{i3rab(g)}</div>}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
         {g.root && (
           <Link to={`/roots/${encodeURIComponent(g.root)}`} className="chip link">

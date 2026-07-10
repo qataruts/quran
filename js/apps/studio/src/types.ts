@@ -154,6 +154,32 @@ export const label = (v: string | number | null | undefined): string => {
   return getUILang() === "ar" ? parts[0] : parts[1];
 };
 
+/**
+ * الإعراب — the corpus-style syntactic parse of one segment, composed in the UI
+ * language from the features we already carry (POS + case/aspect/mood/voice),
+ * mirroring corpus.quran.com's «اسم مرفوع / فعل ماضٍ / حرف جر …».
+ */
+export const i3rab = (g: SegmentDoc): string => {
+  const ar = getUILang() === "ar";
+  const pos = (ar ? g.posAr : g.posEn) || "";
+  const parts: string[] = [];
+  if (g.pos === "V") {
+    parts.push(pos || (ar ? "فعل" : "verb"));
+    if (g.aspect) parts.push(label(g.aspect)); // ماضٍ / مضارع / أمر
+    if (g.voice) parts.push(label(g.voice)); // مبني للمعلوم / للمجهول
+    if (g.aspect === "IMPF" && g.mood) parts.push(label(g.mood)); // مرفوع / منصوب / مجزوم
+  } else if (g.caseMark) {
+    parts.push(pos || (ar ? "اسم" : "noun")); // اسم / صفة / ضمير / اسم إشارة …
+    parts.push(label(g.caseMark)); // مرفوع / منصوب / مجرور
+    if (g.state === "INDEF") parts.push(ar ? "نكرة" : "indefinite");
+  } else if (g.pos === "PRON" && g.role === "suffix") {
+    parts.push(ar ? "ضمير متصل" : "attached pronoun");
+  } else {
+    parts.push(pos); // حرف جر / حرف نفي / أداة التعريف … ("" for rare particles)
+  }
+  return parts.filter(Boolean).join(" ");
+};
+
 /** Route to the Reader for an ayah ("s:a") or word ("s:a:w") location. */
 export const readPathOf = (location: string): string => {
   const [s, a] = location.split(":");
