@@ -17,6 +17,7 @@ import Today from "./views/Today";
 import Jawami from "./views/Jawami";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
+import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
 
 applyUILang();
@@ -208,6 +209,7 @@ function App() {
         </Routes>
         <Footer />
         <NowPlayingBar />
+        <FocusExit />
       </div>
     </HashRouter>
   );
