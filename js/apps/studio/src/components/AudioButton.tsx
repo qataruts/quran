@@ -122,6 +122,7 @@ function start(id: number) {
       navigator.mediaSession.setActionHandler("stop", stopAudio);
       navigator.mediaSession.setActionHandler("nexttrack", () => next());
       navigator.mediaSession.setActionHandler("previoustrack", () => {
+        preview = false; // transport controls leave preview mode
         if (currentId > 1) start(currentId - 1);
       });
     }
@@ -213,6 +214,7 @@ export function playFrom(
 }
 
 export function next() {
+  preview = false; // advancing via the transport control leaves preview mode
   if (currentId > 0 && currentId < LAST_AYAH) start(currentId + 1);
 }
 

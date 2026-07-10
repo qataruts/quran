@@ -84,6 +84,12 @@ export default function ReadingBar({
     };
   }, [popupOpen]);
 
+  // disabling the «مثلها» layer must also drop any open popup (don't let it
+  // silently reappear when the layer is re-enabled)
+  useEffect(() => {
+    if (!layers.similar) setPopupOpen(false);
+  }, [layers.similar]);
+
   if (!selected) return null;
 
   const [s, a] = selected.split(":").map(Number);
@@ -111,7 +117,7 @@ export default function ReadingBar({
   const nextArrow = rtl ? "←" : "→";
 
   return (
-    <>
+    <div className="reading-dock">
       {popupOpen && layers.similar && (
         <div ref={simPopRef} className="card similar-popup">
           <div className="similar-popup-head">
@@ -136,19 +142,13 @@ export default function ReadingBar({
       <div
         className="card"
         style={{
-          position: "fixed",
-          bottom: 44,
-          insetInline: 12,
-        maxWidth: 640,
-        margin: "0 auto",
-        zIndex: 45,
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        flexWrap: "wrap",
-        padding: "8px 12px",
-      }}
-    >
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          padding: "8px 12px",
+        }}
+      >
       <span className="quran" style={{ fontSize: 16 }}>
         {surahNameAr(s)} {num(a)}
       </span>
@@ -215,7 +215,7 @@ export default function ReadingBar({
         ✕
       </button>
       </div>
-    </>
+    </div>
   );
 }
 

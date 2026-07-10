@@ -278,7 +278,7 @@ export default function Reader() {
   const [selected, setSelected] = useState<WordDoc | null>(null);
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
   const [pageIdx, setPageIdx] = useState(0);
-  const wantLastPage = useRef(false); // set true when arriving from a «back» flip
+  const wantLastPage = useRef<number | null>(null); // surah we back-flipped INTO → show its last page
   const bookmarks = useBookmarks();
 
   useEffect(() => {
@@ -418,13 +418,16 @@ export default function Reader() {
     if (targetAyahNo != null) {
       const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === targetAyahNo));
       setPageIdx(i >= 0 ? i : 0);
-    } else if (wantLastPage.current) {
+    } else if (wantLastPage.current === surahNo) {
+      // only honour a back-flip that resolved to the surah it was meant for —
+      // guards against an intervening navigation superseding the fetch
       setPageIdx(pages.length - 1);
-      wantLastPage.current = false;
+      wantLastPage.current = null;
     } else {
+      wantLastPage.current = null;
       setPageIdx(0);
     }
-  }, [pages, targetAyahNo]);
+  }, [pages, targetAyahNo, surahNo]);
 
   // keep the shown page in step with continuous recitation (but not previews)
   useEffect(() => {
@@ -441,7 +444,7 @@ export default function Reader() {
     } else if (dir === 1 && surahNo < 114) {
       navigate(`/read/${surahNo + 1}`);
     } else if (dir === -1 && surahNo > 1) {
-      wantLastPage.current = true;
+      wantLastPage.current = surahNo - 1;
       navigate(`/read/${surahNo - 1}`);
     }
   };
@@ -507,6 +510,9 @@ export default function Reader() {
   }
 
   const ar = getUILang() === "ar";
+  // which ayah to visually mark as "playing/target" — a «مثلها» preview must
+  // NOT move the highlight (same rule the scroll/page-sync effects follow).
+  const displayTargetAyahNo = isPreviewPlaying() ? targetAyahNo : (playingAyahNo ?? targetAyahNo);
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
@@ -583,7 +589,7 @@ export default function Reader() {
                   // staying inside صفحات (a separate «الآيات» button jumps to the
                   // ayah view). Selecting also lets ← → walk ayah-by-ayah.
                   onAyahMarker={(a: AyahDoc) => setSelectedAyah(a.location)}
-                  targetAyahNo={playingAyahNo ?? targetAyahNo}
+                  targetAyahNo={displayTargetAyahNo}
                   rubMarks={rubMarks}
                   opening={pageNo === 1 || pageNo === 2}
                 />
@@ -613,7 +619,7 @@ export default function Reader() {
           })()
         ) : (
           ayahs.map((ayah: AyahDoc) => {
-            const isTarget = (playingAyahNo ?? targetAyahNo) === ayah.ayahNo;
+            const isTarget = displayTargetAyahNo === ayah.ayahNo;
             return (
               <article
                 key={ayah.location}
