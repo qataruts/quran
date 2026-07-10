@@ -4,6 +4,20 @@ A serious, free Quran reader should let people tune the experience. Grouped by
 category; ✓ = quick (hours), ○ = medium (day), ◆ = needs new data/compute.
 All within method (Quran text + our data + Arabic; nothing external).
 
+## ✅ SHIPPED (2026-07-10) — the ⚙ settings gear + ★ bookmarks
+A reactive `settings.ts` store + a ⚙ top-bar popover now ship these live:
+- **Script** Uthmani ⇄ إملائي (per-word render in list & pages modes)
+- **Numerals** auto / ٠١٢ / 012 (num() honours an override, not just UI lang)
+- **Font size** 80–160% via a `--quran-scale` multiplier on all Quran text
+- **Theme** auto / light / **sepia** (new mushaf-cream) / dark — topbar ☾ shares it
+- **Focus mode** — hides chrome for distraction-free reading
+- **Knowledge-layer toggles** — المحكم→التفصيل chip · «مثلها» · word-root chip
+Plus a ★ bookmarks popover: **khatma progress** bar (furthest ayah / 6236, with
+reset) and a **bookmark jump list** (`bookmarks.ts`); ☆/★ on every ayah.
+And QCF furniture: ۞ hizb/rub-quarter markers + ۩ sajda bands on the Madina page.
+The محكم→تفصيل network also ships as the «الجوامع» view + inline reader panels.
+Remaining ○/◆ items below are the next wave.
+
 ## 1. Text & script (شكل النص)
 - ✓ Script: Uthmani ⇄ Imlaa'i (simple) — we already store both
 - ✓ Font family: Amiri Quran · KFGQPC Hafs · Scheherazade New · Uthmanic — picker
