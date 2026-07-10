@@ -26,6 +26,7 @@ import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip from "../components/TafsilChip";
+import TafsilAside from "../components/TafsilAside";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -607,13 +608,14 @@ export default function Reader() {
             minHeight: 0,
           }}
         >
+          <TafsilAside location={selectedLoc} />
           <Inspector word={selected} />
         </aside>
       )}
 
       <ReadingBar surahBase={surahBase} onNavigate={navigateAyah} />
 
-      {narrow && selected && (
+      {narrow && (selected || selectedLoc) && (
         <div
           className="card"
           style={{
@@ -626,11 +628,18 @@ export default function Reader() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button onClick={() => setSelected(null)} aria-label="close">
+            <button
+              onClick={() => {
+                setSelected(null);
+                setSelectedAyah(null);
+              }}
+              aria-label="close"
+            >
               ✕
             </button>
           </div>
-          <Inspector word={selected} />
+          <TafsilAside location={selectedLoc} />
+          {selected && <Inspector word={selected} />}
         </div>
       )}
     </div>

@@ -329,6 +329,14 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   .jw-cardtext { font-size: 20px; }
 }
 
+/* tafsil side panel (selected ayah's محكم→تفصيل, in the reader column) */
+.tafsil-aside {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 14px;
+}
+.tafsil-aside-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.tafsil-aside .jw-verse-text { -webkit-line-clamp: 3; line-clamp: 3; }
+
 /* settings ⚙ popover */
 .set-wrap { position: relative; }
 .set-panel {
