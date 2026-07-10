@@ -313,6 +313,10 @@ export default function Jawami() {
     return () => { live = false; };
   }, [q, formsReady]);
 
+  // the Quranic root the typed word maps to (شقي→شقو, الزنى→زني) — shown as a
+  // chip so the reader SEES that we matched their word by its root.
+  const resolvedRoot = q.trim() && formsReady ? resolveRoot(q.trim()) : null;
+
   const rows = useMemo(() => {
     if (!jw) return [];
     const all = Object.entries(jw.principles) as [string, Principle][];
@@ -408,6 +412,16 @@ export default function Jawami() {
 
         <div className="muted jw-resultcount">
           {num(rows.length)} {ar ? "آية" : "verses"}
+          {resolvedRoot && resolvedRoot !== q.trim() && (
+            <span
+              className="chip gold"
+              style={{ marginInlineStart: 8 }}
+              title={ar ? "طابقنا كلمتك بجذرها القرآني فبحثنا في كل مشتقّاته" : "matched your word to its Quranic root"}
+            >
+              {ar ? "الجذر" : "root"}: <span className="quran">{resolvedRoot}</span>
+              {rootAyahs.size > 0 && <> · {num(rootAyahs.size)} {ar ? "آية بالجذر" : "by root"}</>}
+            </span>
+          )}
         </div>
 
         <div className="jw-list">

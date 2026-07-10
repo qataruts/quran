@@ -21,7 +21,7 @@ import {
 } from "../db";
 import type { NeighborRoot } from "../db";
 import { resolveRoot, useSearchForms } from "../searchForms";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc, SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label, readPathOf } from "../types";
 import AyahRef from "../components/AyahRef";
@@ -170,6 +170,11 @@ function RootIndex() {
     return () => { alive = false; };
   }, [query, formsReady]);
 
+  // the root the typed word derives from (شقي→شقو) — shown as a hint so a
+  // reader who doesn't know the bare root still sees it resolved.
+  const resolvedRoot = query.trim() && formsReady ? resolveRoot(query.trim()) : null;
+  const ar = getUILang() === "ar";
+
   return (
     <div className="page">
       <div className="page-narrow">
@@ -185,6 +190,21 @@ function RootIndex() {
           placeholder={t("roots.search")}
           style={{ width: "100%", marginBottom: 16, fontFamily: "var(--font-quran)" }}
         />
+        {resolvedRoot && resolvedRoot !== query.trim() && (
+          <div className="muted" style={{ marginTop: -8, marginBottom: 14, fontSize: 13.5 }}>
+            {ar ? (
+              <>
+                كلمة «<span className="quran" style={{ fontSize: 17 }}>{query.trim()}</span>» جذرها{" "}
+                «<span className="quran" style={{ fontSize: 17, color: "var(--gold)" }}>{resolvedRoot}</span>»
+              </>
+            ) : (
+              <>
+                «{query.trim()}» derives from root «
+                <span className="quran" style={{ fontSize: 17, color: "var(--gold)" }}>{resolvedRoot}</span>»
+              </>
+            )}
+          </div>
+        )}
         <div className="card">
           {roots == null ? (
             <p className="muted">{t("loading")}</p>

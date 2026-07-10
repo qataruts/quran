@@ -21,9 +21,13 @@ import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
+import { loadForms } from "./searchForms";
 
 applyUILang();
 applySettings();
+// warm the word→root search index early so root-aware search is ready the
+// moment the reader opens الجذور/الجوامع (no first-query lag).
+loadForms().catch(() => {});
 
 function Boot({ children }: { children: React.ReactNode }) {
   useUILang();

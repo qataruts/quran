@@ -8,7 +8,7 @@
  * Three columns: surah sidebar (250px) · text · word inspector (360px).
  * Under 900px the sidebars collapse and a surah <select> takes over.
  */
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
@@ -175,6 +175,7 @@ function MushafPage({
   onAyahMarker,
   targetAyahNo,
   rubMarks,
+  opening = false,
 }: {
   page: number;
   ayahs: AyahDoc[];
@@ -184,6 +185,7 @@ function MushafPage({
   onAyahMarker: (a: AyahDoc) => void;
   targetAyahNo: number | null;
   rubMarks: Map<number, string>;
+  opening?: boolean;
 }) {
   const { script, tajwid } = useSettings();
   const ar = getUILang() === "ar";
@@ -191,7 +193,7 @@ function MushafPage({
   const surahNo = first?.surahNo ?? 0;
   const surahStartsHere = ayahs.some((a) => a.ayahNo === 1);
   return (
-    <section className="mushaf-page">
+    <section className={`mushaf-page${opening ? " opening" : ""}`}>
       <div className="mp-margin">
         <span>{ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)}</span>
         <span>{surahNameAr(surahNo)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}</span>
@@ -272,6 +274,9 @@ export default function Reader() {
   const [wordsByAyah, setWordsByAyah] = useState<Map<number, WordDoc[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WordDoc | null>(null);
+  // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
+  const [pageIdx, setPageIdx] = useState(0);
+  const wantLastPage = useRef(false); // set true when arriving from a «back» flip
   const bookmarks = useBookmarks();
 
   useEffect(() => {
@@ -403,6 +408,41 @@ export default function Reader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ayahs]);
 
+  // Pick which single page to show when the surah / target ayah changes:
+  // the target's page, or the last page when we arrived by flipping backwards.
+  useEffect(() => {
+    if (pages.length === 0) return;
+    if (targetAyahNo != null) {
+      const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === targetAyahNo));
+      setPageIdx(i >= 0 ? i : 0);
+    } else if (wantLastPage.current) {
+      setPageIdx(pages.length - 1);
+      wantLastPage.current = false;
+    } else {
+      setPageIdx(0);
+    }
+  }, [pages, targetAyahNo]);
+
+  // keep the shown page in step with continuous recitation
+  useEffect(() => {
+    if (mode !== "pages" || playingAyahNo == null || pages.length === 0) return;
+    const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === playingAyahNo));
+    if (i >= 0) setPageIdx(i);
+  }, [playingAyahNo, mode, pages]);
+
+  // Turn the page. dir +1 = forward (next page, then next surah); -1 = back.
+  const flipPage = (dir: -1 | 1) => {
+    const next = pageIdx + dir;
+    if (next >= 0 && next < pages.length) {
+      setPageIdx(next);
+    } else if (dir === 1 && surahNo < 114) {
+      navigate(`/read/${surahNo + 1}`);
+    } else if (dir === -1 && surahNo > 1) {
+      wantLastPage.current = true;
+      navigate(`/read/${surahNo - 1}`);
+    }
+  };
+
   const goTo = (n: number) => navigate(`/read/${n}`);
 
   // Ayah selection + navigation (reading controller). Selecting an ayah opens
@@ -433,7 +473,15 @@ export default function Reader() {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
       if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") return;
-      if (!selectedLoc) return;
+      if (!selectedLoc) {
+        // no ayah selected → arrows turn the mushaf page (RTL: ← forward)
+        if (mode === "pages") {
+          const rtl = getUILang() === "ar";
+          if (e.key === "ArrowLeft") { e.preventDefault(); flipPage(rtl ? 1 : -1); }
+          else if (e.key === "ArrowRight") { e.preventDefault(); flipPage(rtl ? -1 : 1); }
+        }
+        return;
+      }
       if (e.key === "ArrowRight") { e.preventDefault(); navigateAyah(getUILang() === "ar" ? -1 : 1); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); navigateAyah(getUILang() === "ar" ? 1 : -1); }
       else if (e.key === "Escape") setSelectedAyah(null);
@@ -455,6 +503,7 @@ export default function Reader() {
     );
   }
 
+  const ar = getUILang() === "ar";
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
@@ -516,22 +565,49 @@ export default function Reader() {
         ) : ayahs.length === 0 ? (
           <p className="muted">{t("notFound")}</p>
         ) : mode === "pages" ? (
-          pages.map(([page, pageAyahs]) => (
-            <MushafPage
-              key={page}
-              page={page}
-              ayahs={pageAyahs}
-              wordsByAyah={wordsByAyah}
-              selected={selected?.location ?? null}
-              onSelect={(w: WordDoc) => setSelected(w)}
-              onAyahMarker={(a: AyahDoc) => {
-                switchMode("ayat");
-                navigate(`/read/${a.surahNo}/${a.ayahNo}`);
-              }}
-              targetAyahNo={playingAyahNo ?? targetAyahNo}
-              rubMarks={rubMarks}
-            />
-          ))
+          (() => {
+            const idx = Math.min(Math.max(pageIdx, 0), pages.length - 1);
+            const [pageNo, pageAyahs] = pages[idx];
+            return (
+              <div className="mushaf-stage">
+                <MushafPage
+                  page={pageNo}
+                  ayahs={pageAyahs}
+                  wordsByAyah={wordsByAyah}
+                  selected={selected?.location ?? null}
+                  onSelect={(w: WordDoc) => setSelected(w)}
+                  // tap the ﴿n﴾ marker → open the reading bar for this ayah,
+                  // staying inside صفحات (a separate «الآيات» button jumps to the
+                  // ayah view). Selecting also lets ← → walk ayah-by-ayah.
+                  onAyahMarker={(a: AyahDoc) => setSelectedAyah(a.location)}
+                  targetAyahNo={playingAyahNo ?? targetAyahNo}
+                  rubMarks={rubMarks}
+                  opening={pageNo === 1 || pageNo === 2}
+                />
+                <nav className="mushaf-pager" aria-label={ar ? "تصفّح الصفحات" : "page navigation"}>
+                  <button
+                    className="mp-nav"
+                    onClick={() => flipPage(-1)}
+                    disabled={surahNo === 1 && idx === 0}
+                    title={ar ? "الصفحة السابقة (سهم →)" : "previous page (→)"}
+                  >
+                    {ar ? "السابقة ›" : "‹ Prev"}
+                  </button>
+                  <span className="mp-pageinfo" title={ar ? "رقم صفحة المصحف" : "mushaf page number"}>
+                    {ar ? "صفحة" : "page"} {num(pageNo)}
+                  </span>
+                  <button
+                    className="mp-nav"
+                    onClick={() => flipPage(1)}
+                    disabled={surahNo === 114 && idx === pages.length - 1}
+                    title={ar ? "الصفحة التالية (سهم ←)" : "next page (←)"}
+                  >
+                    {ar ? "‹ التالية" : "Next ›"}
+                  </button>
+                </nav>
+              </div>
+            );
+          })()
         ) : (
           ayahs.map((ayah: AyahDoc) => {
             const isTarget = (playingAyahNo ?? targetAyahNo) === ayah.ayahNo;
@@ -627,7 +703,16 @@ export default function Reader() {
         </aside>
       )}
 
-      <ReadingBar surahBase={surahBase} onNavigate={navigateAyah} />
+      <ReadingBar
+        surahBase={surahBase}
+        onNavigate={navigateAyah}
+        onOpenAyat={() => {
+          if (!selectedLoc) return;
+          const [s, a] = selectedLoc.split(":").map(Number);
+          switchMode("ayat");
+          navigate(`/read/${s}/${a}`);
+        }}
+      />
 
       {narrow && (selected || selectedLoc) && (
         <div

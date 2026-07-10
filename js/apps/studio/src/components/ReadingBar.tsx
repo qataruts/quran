@@ -22,10 +22,13 @@ function globalIdOf(loc: string, surahBase: Map<number, number>): number {
 export default function ReadingBar({
   surahBase,
   onNavigate,
+  onOpenAyat,
 }: {
   surahBase: Map<number, number>;
   /** move selection by ±1 ayah (Reader owns the ordered ayah list) */
   onNavigate: (dir: -1 | 1) => void;
+  /** open the selected ayah in the آيات view (tools + translation) */
+  onOpenAyat?: () => void;
 }) {
   useUILang();
   const { selected, repeat, continueAfter } = useReading();
@@ -76,6 +79,12 @@ export default function ReadingBar({
       <span className="quran" style={{ fontSize: 16 }}>
         {surahNameAr(s)} {num(a)}
       </span>
+      {onOpenAyat &&
+        btn(
+          rtl ? "الآيات" : "ayah view",
+          onOpenAyat,
+          rtl ? "افتح هذه الآية في عرض الآيات: الأدوات والترجمة والتفصيل" : "open in the ayah view (tools + translation)",
+        )}
       <span style={{ flex: 1 }} />
       {btn(prevArrow, () => onNavigate(-1), t("read.prevAyah"))}
       {btn(isPlaying ? `◼ ${t("stop")}` : `▶ ${t("read.playHere")}`, playHere, t("read.playHere"), true)}
