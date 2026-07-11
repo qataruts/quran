@@ -11,6 +11,8 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
 import { jawamiCount, useMuhkamat, type Kubra, type Muhkama } from "../muhkamat";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 

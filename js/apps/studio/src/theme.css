@@ -125,7 +125,7 @@ input, select {
 input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 
 /* layout */
-.app-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+.app-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; height: 100dvh; overflow-x: clip; }
 .topbar {
   display: flex; align-items: center; gap: 18px;
   padding: 10px 20px;
@@ -141,6 +141,27 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .topbar nav a:hover { background: var(--panel-2); text-decoration: none; }
 .topbar nav a.active { background: var(--accent-soft); color: var(--accent); }
 .topbar .spacer { flex: 1; }
+
+/* mobile drawer navigation */
+.menu-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px; font-size: 19px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; flex: none;
+}
+.drawer-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / .45); z-index: 80; animation: fadein .15s ease-out; }
+.drawer {
+  position: fixed; inset-block: 0; inset-inline-start: 0; width: min(82vw, 320px);
+  background: var(--panel); z-index: 81; display: flex; flex-direction: column;
+  box-shadow: 0 0 40px rgb(0 0 0 / .3); overflow-y: auto; animation: fadein .2s ease-out;
+}
+@keyframes fadein { from { opacity: 0; } }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.drawer-head button { border: none; background: none; font-size: 17px; color: var(--muted); cursor: pointer; padding: 6px 8px; }
+.drawer-nav { display: flex; flex-direction: column; padding: 8px; gap: 2px; flex: 1; }
+.drawer-nav a { padding: 13px 15px; border-radius: 10px; color: var(--ink); font-size: 16px; font-weight: 500; text-decoration: none; }
+.drawer-nav a:hover { background: var(--panel-2); text-decoration: none; }
+.drawer-nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.drawer-controls { display: flex; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
 
 /* docs-style search box in the header — opens the omnibox dropdown */
 .omni-trigger {
@@ -174,7 +195,22 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 
 .page { overflow-y: auto; padding: 24px; }
 .page-narrow { max-width: 900px; margin: 0 auto; }
-@media (max-width: 600px) { .page { padding: 16px 12px; } }
+@media (max-width: 600px) {
+  .page { padding: 16px 12px; }
+  .card { padding: 14px; }
+  .jw-title, .mw-title { font-size: clamp(21px, 6.4vw, 26px); }
+  .jw-header, .mw-head { margin-bottom: 14px; }
+  .jw-lead, .mw-lead { font-size: 14px; line-height: 1.75; }
+  /* wide tables scroll instead of overflowing the page */
+  table.data { display: block; overflow-x: auto; white-space: nowrap; font-size: 13px; -webkit-overflow-scrolling: touch; }
+  /* tighter mushaf on a phone */
+  .mushaf-page { padding: 16px 16px 12px; }
+  .mushaf-page .quran { font-size: calc(21px * var(--quran-scale, 1)); line-height: 1.95; }
+  .mp-surah-name { font-size: 18px; padding: 3px 20px; }
+  .reader-bar-name { font-size: 19px; }
+  /* comfortable touch targets */
+  .chip, .jw-chipset button, .reader-modes button { min-height: 34px; }
+}
 
 /* the one on-page search bar (PageSearch) — identical on every page */
 .page-search { position: relative; display: flex; align-items: center; margin-bottom: 16px; }

@@ -27,6 +27,8 @@ import {
   surahNameAr,
 } from "../db";
 import { resolveRootReady } from "../searchForms";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 import type { AyahDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -435,12 +437,9 @@ export default function Jawami() {
     const filtered = all.filter(([loc, p]) => {
       if (kind && p.kind !== kind) return false;
       if (grade && p.grade !== grade) return false;
-      if (q) {
-        const d = texts.get(loc);
-        const hay = `${arName(loc)} ${d?.textClean ?? ""}`;
-        // match by text OR by the typed word's root (زنى → آيات الزاني/الزانية)
-        if (!hay.includes(q) && !rootAyahs.has(loc)) return false;
-      }
+      // fuzzy over the verse ref + text, OR by the typed word's root (زنى →
+      // آيات الزاني/الزانية) — the shared page-search behaviour
+      if (q && !fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean) && !rootAyahs.has(loc)) return false;
       return true;
     });
     // widest-branching first — the أصول جوامع surface at the top
@@ -557,21 +556,12 @@ export default function Jawami() {
 
         {tab === "list" && (
           <>
+            <PageSearch
+              value={q}
+              onChange={setQ}
+              placeholder={ar ? "ابحث بكلمةٍ أو معنى (مثل: الزنى)…" : "search by any word…"}
+            />
             <div className="jw-filters">
-              <input
-                placeholder={
-                  ar
-                    ? "ابحث بكلمة أو معنى (مثل: الزنى)…"
-                    : "Search by any word…"
-                }
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                title={
-                  ar
-                    ? "ابحث بالنصّ أو باسم السورة أو بأيّ كلمة (تُطابَق بجذرها)"
-                    : "text, surah, or any word (matched by root)"
-                }
-              />
               <div className="jw-chipset">
                 <button
                   className={kind === "" ? "on" : ""}

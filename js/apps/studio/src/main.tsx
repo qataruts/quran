@@ -167,21 +167,92 @@ function Brand() {
   );
 }
 
-function App() {
+/** Tracks whether the viewport is phone-width. */
+function useIsMobile(): boolean {
+  const [m, setM] = useState<boolean>(() => window.matchMedia("(max-width: 760px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 760px)");
+    const on = (e: MediaQueryListEvent) => setM(e.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return m;
+}
+
+// every primary destination, for the mobile drawer (vertical list has room)
+const DRAWER_LINKS: [string, string, string][] = [
+  ["/read", "المصحف", "Reader"],
+  ["/mawdui", "المواضيع", "Topics"],
+  ["/jawami", "الجوامع", "Principles"],
+  ["/muhkamat", "المحكمات", "Muhkamāt"],
+  ["/furuq", "الفروق", "Furūq"],
+  ["/amthal", "أمثال القرآن", "Parables"],
+  ["/fawasil", "أطلس الفواصل", "Rhyme"],
+  ["/roots", "الجذور", "Roots"],
+  ["/search", "البحث", "Search"],
+  ["/collections", "المجموعات", "Collections"],
+  ["/dashboard", "إحصاءات", "Stats"],
+];
+
+function MobileDrawer({ onClose }: { onClose: () => void }) {
+  useUILang();
+  const ar = getUILang() === "ar";
   return (
-    <HashRouter>
-      <div className="app-shell">
-        <header className="topbar">
-          <Brand />
-          <Nav />
-          <span className="spacer" />
-          <Omnibox />
+    <>
+      <div className="drawer-backdrop" onClick={onClose} />
+      <aside className="drawer" role="dialog" aria-label={ar ? "القائمة" : "menu"}>
+        <div className="drawer-head">
+          <span className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700 }}>مشكاة</span>
+          <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
+        </div>
+        <nav className="drawer-nav" onClick={onClose}>
+          {DRAWER_LINKS.map(([to, arL, enL]) => (
+            <NavLink key={to} to={to}>{ar ? arL : enL}</NavLink>
+          ))}
+        </nav>
+        <div className="drawer-controls">
           <BookmarksPanel />
           <SourcesPanel />
           <LangToggle />
           <ThemeToggle />
-          <SettingsPanel />
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function App() {
+  const mobile = useIsMobile();
+  const [drawer, setDrawer] = useState(false);
+  useEffect(() => {
+    if (!mobile) setDrawer(false);
+  }, [mobile]);
+  return (
+    <HashRouter>
+      <div className="app-shell">
+        <header className="topbar">
+          {mobile && (
+            <button className="menu-btn" onClick={() => setDrawer(true)} aria-label={getUILang() === "ar" ? "القائمة" : "menu"}>
+              ☰
+            </button>
+          )}
+          <Brand />
+          {!mobile && <Nav />}
+          <span className="spacer" />
+          <Omnibox />
+          {mobile ? (
+            <SettingsPanel />
+          ) : (
+            <>
+              <BookmarksPanel />
+              <SourcesPanel />
+              <LangToggle />
+              <ThemeToggle />
+              <SettingsPanel />
+            </>
+          )}
         </header>
+        {mobile && drawer && <MobileDrawer onClose={() => setDrawer(false)} />}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/read" element={<Home />} />
