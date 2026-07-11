@@ -529,6 +529,13 @@ a.vc-row:hover .vc-val { color: var(--accent); }
 .lx-roots { display: flex; flex-wrap: wrap; gap: 6px; }
 a.lx-root { text-decoration: none; }
 a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
+
+/* الوجوه والنظائر — polysemy candidate cards */
+.wj-word { font-size: 22px; font-weight: 700; color: var(--gold); }
+.wj-faces { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 4px 6px 8px; }
+@media (max-width: 640px) { .wj-faces { grid-template-columns: 1fr; } }
+.wj-face { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.wj-face-h { font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 6px; }
 .jw-header { text-align: center; margin-bottom: 18px; }
 .jw-title { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 4px 0 6px; }
 .jw-lead { color: var(--ink-2); max-width: 680px; margin: 0 auto 12px; line-height: 1.7; font-size: 14px; }

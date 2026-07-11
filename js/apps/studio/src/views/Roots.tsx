@@ -185,9 +185,12 @@ function RootIndex() {
         <p className="muted" style={{ fontSize: 13.5, maxWidth: 640 }}>
           {t("roots.what")}
         </p>
-        <p style={{ margin: "-4px 0 14px", fontSize: 13.5 }}>
+        <p style={{ margin: "-4px 0 14px", fontSize: 13.5, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Link to="/network" className="chip link" style={{ textDecoration: "none" }}>
-            {ar ? "توارد الجذور — الجذور التي ترد معًا في نفس الآيات ←" : "Root co-occurrence — roots that recur together in the same ayahs ←"}
+            {ar ? "توارد الجذور — الجذور التي ترد معًا ←" : "Root co-occurrence →"}
+          </Link>
+          <Link to="/wujuh" className="chip link" style={{ textDecoration: "none" }}>
+            {ar ? "الوجوه والنظائر — الكلمات متعدّدة المعنى ←" : "Polysemy →"}
           </Link>
         </p>
         <input

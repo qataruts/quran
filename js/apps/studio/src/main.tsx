@@ -17,6 +17,7 @@ import Today from "./views/Today";
 import Jawami from "./views/Jawami";
 import Gaps from "./views/Gaps";
 import Lexicon from "./views/Lexicon";
+import Wujuh from "./views/Wujuh";
 import Furuq from "./views/Furuq";
 import Amthal from "./views/Amthal";
 import Fawasil from "./views/Fawasil";
@@ -133,7 +134,6 @@ function Nav() {
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
       <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
-      <NavLink to="/fawasil" title={getUILang() === "ar" ? "أطلس الفواصل: قوافي أواخر الآيات" : "atlas of the verse-ending rhyme"}>{t("nav.fawasil")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
@@ -189,6 +189,7 @@ function App() {
           <Route path="/jawami" element={<Jawami />} />
           <Route path="/gaps" element={<Gaps />} />
           <Route path="/lexicon" element={<Lexicon />} />
+          <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
           <Route path="/amthal" element={<Amthal />} />
           <Route path="/fawasil" element={<Fawasil />} />
