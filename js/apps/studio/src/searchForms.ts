@@ -5,6 +5,7 @@
  * MUST match scripts/export-search-forms.mjs exactly.
  */
 import { useEffect, useState } from "react";
+import { fuzzyRoots } from "./db";
 
 const stripDiac = (s: string) => s.replace(/[ؐ-ًؚ-ْٰـۖ-ۭ]/g, "");
 export const norm = (s: string) =>
@@ -46,13 +47,10 @@ export function resolveRoot(query: string): string | null {
   return forms[norm(q)] ?? forms[norm(stripAl(q))] ?? null;
 }
 
-/** Like resolveRoot but guarantees the index is loaded first — so a search can
- *  never miss because the fetch hadn't finished when the query fired. */
+/** Resolve a typed word to a root by FUZZY letter-closeness over the roots in
+ *  the (always-loaded) DB — broad, not exact: any word/partial/misspelling maps
+ *  to the nearest root by its letters (شقي→شقو, الزنى→زني). No separate fetch. */
 export async function resolveRootReady(query: string): Promise<string | null> {
-  try {
-    await loadForms();
-  } catch {
-    return null;
-  }
-  return resolveRoot(query);
+  const hits = await fuzzyRoots(query, 1).catch(() => []);
+  return hits[0]?.doc.root ?? null;
 }

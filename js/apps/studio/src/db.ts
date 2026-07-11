@@ -25,7 +25,9 @@ function coll(name: string) {
 }
 
 /** Fetch the database with byte-level progress, then boot monlite over it. */
-export function initDb(onProgress: (loaded: number, total: number) => void): Promise<void> {
+export function initDb(
+  onProgress: (loaded: number, total: number) => void,
+): Promise<void> {
   if (db) return Promise.resolve();
   initPromise ??= doInit(onProgress).catch((e) => {
     initPromise = null;
@@ -34,10 +36,15 @@ export function initDb(onProgress: (loaded: number, total: number) => void): Pro
   return initPromise;
 }
 
-async function doInit(onProgress: (loaded: number, total: number) => void): Promise<void> {
+async function doInit(
+  onProgress: (loaded: number, total: number) => void,
+): Promise<void> {
   const [SQL, bytes] = await Promise.all([
     initSqlJs({ locateFile: () => sqlWasmUrl }),
-    fetchWithProgress(`${import.meta.env.BASE_URL}quran-app.db?v=${__DATA_VERSION__}`, onProgress),
+    fetchWithProgress(
+      `${import.meta.env.BASE_URL}quran-app.db?v=${__DATA_VERSION__}`,
+      onProgress,
+    ),
   ]);
   db = createDb(":memory:", {
     driver: wasmDriver(SQL, { data: bytes }),
@@ -81,14 +88,17 @@ const surahNames = new Map<number, string>();
 
 export async function listSurahs(): Promise<SurahDoc[]> {
   if (!surahCache) {
-    surahCache = (await coll("surahs").findMany({ orderBy: { surahNo: "asc" } })) as SurahDoc[];
+    surahCache = (await coll("surahs").findMany({
+      orderBy: { surahNo: "asc" },
+    })) as SurahDoc[];
     for (const s of surahCache) surahNames.set(s.surahNo, s.nameAr);
   }
   return surahCache;
 }
 
 /** Synchronous Arabic surah name (primed by the boot sequence). */
-export const surahNameAr = (no: number): string => surahNames.get(no) ?? String(no);
+export const surahNameAr = (no: number): string =>
+  surahNames.get(no) ?? String(no);
 
 export async function getSurah(surahNo: number): Promise<SurahDoc | undefined> {
   return (await listSurahs()).find((s) => s.surahNo === surahNo);
@@ -101,11 +111,18 @@ export async function listAyahs(surahNo: number): Promise<AyahDoc[]> {
   })) as AyahDoc[];
 }
 
-export async function getAyah(surahNo: number, ayahNo: number): Promise<AyahDoc | null> {
-  return (await coll("ayahs").findFirst({ where: { surahNo, ayahNo } })) as AyahDoc | null;
+export async function getAyah(
+  surahNo: number,
+  ayahNo: number,
+): Promise<AyahDoc | null> {
+  return (await coll("ayahs").findFirst({
+    where: { surahNo, ayahNo },
+  })) as AyahDoc | null;
 }
 
-export async function getAyahByLocation(location: string): Promise<AyahDoc | null> {
+export async function getAyahByLocation(
+  location: string,
+): Promise<AyahDoc | null> {
   const [s, a] = location.split(":").map(Number);
   return getAyah(s, a);
 }
@@ -118,7 +135,10 @@ export async function listWords(surahNo: number): Promise<WordDoc[]> {
   })) as WordDoc[];
 }
 
-export async function wordsOfAyah(surahNo: number, ayahNo: number): Promise<WordDoc[]> {
+export async function wordsOfAyah(
+  surahNo: number,
+  ayahNo: number,
+): Promise<WordDoc[]> {
   const ws = (await coll("words").findMany({
     where: { surahNo, ayahNo },
   })) as WordDoc[];
@@ -126,19 +146,96 @@ export async function wordsOfAyah(surahNo: number, ayahNo: number): Promise<Word
 }
 
 export async function getWord(location: string): Promise<WordDoc | null> {
-  return (await coll("words").findFirst({ where: { location } })) as WordDoc | null;
+  return (await coll("words").findFirst({
+    where: { location },
+  })) as WordDoc | null;
 }
 
-export async function wordsByRoot(root: string, limit = 2000): Promise<WordDoc[]> {
-  return (await coll("words").findMany({ where: { root }, take: limit })) as WordDoc[];
+export async function wordsByRoot(
+  root: string,
+  limit = 2000,
+): Promise<WordDoc[]> {
+  return (await coll("words").findMany({
+    where: { root },
+    take: limit,
+  })) as WordDoc[];
 }
 
-export async function wordsByLemma(lemma: string, limit = 2000): Promise<WordDoc[]> {
-  return (await coll("words").findMany({ where: { lemma }, take: limit })) as WordDoc[];
+export async function wordsByLemma(
+  lemma: string,
+  limit = 2000,
+): Promise<WordDoc[]> {
+  return (await coll("words").findMany({
+    where: { lemma },
+    take: limit,
+  })) as WordDoc[];
 }
 
 export async function getRoot(root: string): Promise<RootDoc | null> {
   return (await coll("roots").findFirst({ where: { root } })) as RootDoc | null;
+}
+
+/* ---- fuzzy root search: find the roots CLOSEST IN LETTERS to any query ---- */
+let _allRoots: RootDoc[] | null = null;
+async function allRoots(): Promise<RootDoc[]> {
+  if (_allRoots) return _allRoots;
+  _allRoots = (await coll("roots").findMany({ take: 5000 })) as RootDoc[];
+  return _allRoots;
+}
+const WEAK = new Set(["ا", "و", "ي"]); // roots' weak letters interchange across forms
+/** strip diacritics/tatweel + unify letter shapes (ة→ه, ى→ي, alef forms→ا). */
+function normLetters(s: string): string {
+  return s
+    .replace(/[ً-ٰٟۖ-ۭـ]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه");
+}
+/** edit distance where weak letters are cheap to swap/insert/drop — so a derived
+ *  word matches its root even when its weak letter changed (شقي↔شقو). */
+function weakDist(a: string, b: string): number {
+  const n = a.length,
+    m = b.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () =>
+    new Array(m + 1).fill(0),
+  );
+  for (let i = 0; i <= n; i++) dp[i][0] = i;
+  for (let j = 0; j <= m; j++) dp[0][j] = j;
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++) {
+      const ca = a[i - 1],
+        cb = b[j - 1];
+      const sub = ca === cb ? 0 : WEAK.has(ca) && WEAK.has(cb) ? 0.3 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j - 1] + sub,
+        dp[i - 1][j] + (WEAK.has(ca) ? 0.5 : 1),
+        dp[i][j - 1] + (WEAK.has(cb) ? 0.5 : 1),
+      );
+    }
+  return dp[n][m];
+}
+/** Roots ranked by letter-closeness to `query` (any word/partial/misspelling).
+ *  Returns {root, dist}; dist 0 = exact. Common word affixes (ال) are stripped. */
+export async function fuzzyRoots(
+  query: string,
+  limit = 30,
+): Promise<{ doc: RootDoc; dist: number }[]> {
+  const q = normLetters(query.trim().replace(/^(?:[وفبكل])?ال/, ""));
+  if (q.length < 2) return [];
+  const all = await allRoots();
+  const scored = all
+    .map((doc) => ({ doc, dist: weakDist(q, normLetters(doc.root)) }))
+    .sort(
+      (x, y) =>
+        x.dist - y.dist || (y.doc.occurrences ?? 0) - (x.doc.occurrences ?? 0),
+    );
+  const best = scored[0]?.dist ?? 99;
+  // TIGHT: keep only the best match + its weak-letter variants (within ~0.3 of
+  // the best). One full letter apart (dist ≥ best+1) is a different word — drop
+  // it, so we never surface distant roots.
+  return scored.filter((s) => s.dist <= best + 0.3).slice(0, limit);
 }
 
 export async function topRoots(limit = 100): Promise<RootDoc[]> {
@@ -148,7 +245,10 @@ export async function topRoots(limit = 100): Promise<RootDoc[]> {
   })) as RootDoc[];
 }
 
-export async function searchRoots(prefix: string, limit = 50): Promise<RootDoc[]> {
+export async function searchRoots(
+  prefix: string,
+  limit = 50,
+): Promise<RootDoc[]> {
   return (await coll("roots").findMany({
     where: { root: { startsWith: prefix } },
     orderBy: { occurrences: "desc" },
@@ -162,10 +262,21 @@ export async function searchAyahs(query: string): Promise<AyahDoc[]> {
 }
 
 /** Precomputed root co-occurrence edges touching `root` (strongest first). */
-export async function rootEdges(root: string, limit = 60): Promise<RootEdgeDoc[]> {
+export async function rootEdges(
+  root: string,
+  limit = 60,
+): Promise<RootEdgeDoc[]> {
   const [asA, asB] = await Promise.all([
-    coll("rootEdges").findMany({ where: { a: root }, orderBy: { w: "desc" }, take: limit }),
-    coll("rootEdges").findMany({ where: { b: root }, orderBy: { w: "desc" }, take: limit }),
+    coll("rootEdges").findMany({
+      where: { a: root },
+      orderBy: { w: "desc" },
+      take: limit,
+    }),
+    coll("rootEdges").findMany({
+      where: { b: root },
+      orderBy: { w: "desc" },
+      take: limit,
+    }),
   ]);
   return [...(asA as RootEdgeDoc[]), ...(asB as RootEdgeDoc[])]
     .sort((x, y) => y.w - x.w)
@@ -191,7 +302,10 @@ export interface NeighborRoot {
 }
 
 /** Strongest co-occurring roots of `root`, deduped, strongest first. */
-export async function neighborsOfRoot(root: string, limit = 25): Promise<NeighborRoot[]> {
+export async function neighborsOfRoot(
+  root: string,
+  limit = 25,
+): Promise<NeighborRoot[]> {
   const edges = await rootEdges(root, limit * 2);
   const best = new Map<string, number>();
   for (const e of edges) {
@@ -260,8 +374,13 @@ export async function mushafMarks(): Promise<Map<string, MushafMark>> {
 }
 
 /** First ayah location ("s:a") of a juz or Madani page. */
-export async function firstAyahOf(kind: "juz" | "page", n: number): Promise<string | null> {
-  const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];
+export async function firstAyahOf(
+  kind: "juz" | "page",
+  n: number,
+): Promise<string | null> {
+  const docs = (await coll("ayahs").findMany({
+    where: { [kind]: n },
+  })) as AyahDoc[];
   if (docs.length === 0) return null;
   let best = docs[0];
   for (const d of docs) {

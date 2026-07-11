@@ -21,13 +21,9 @@ import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
-import { loadForms } from "./searchForms";
 
 applyUILang();
 applySettings();
-// warm the word→root search index early so root-aware search is ready the
-// moment the reader opens الجذور/الجوامع (no first-query lag).
-loadForms().catch(() => {});
 
 // Keep the app fresh. vite-plugin-pwa (registerType:autoUpdate) already applies
 // and reloads on a new service worker — but only checks on load. Poll every 30s
@@ -132,7 +128,7 @@ function Nav() {
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
-      <NavLink to="/network">{t("nav.network")}</NavLink>
+      <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
     </nav>

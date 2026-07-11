@@ -118,6 +118,9 @@ function Picker() {
   return (
     <div className="page">
       <div className="page-narrow">
+        <Link to="/roots" className="chip link" style={{ textDecoration: "none", marginBottom: 12, display: "inline-block" }}>
+          ← {t("nav.roots")}
+        </Link>
         <h2 style={{ marginTop: 0 }}>{t("network.title")}</h2>
         <p className="muted" style={{ fontSize: 14 }}>{t("network.sub")}</p>
         <div className="card">
@@ -358,6 +361,9 @@ function Companions({ root }: { root: string }) {
   return (
     <div className="page">
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <Link to="/roots" className="chip link" style={{ textDecoration: "none", marginBottom: 10, display: "inline-block" }}>
+          ← {t("nav.roots")}
+        </Link>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
           <span className="quran" style={{ fontSize: 34, lineHeight: 1.3 }}>{root}</span>
           <span className="chip">

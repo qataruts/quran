@@ -11,6 +11,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ayahLocationsOfRoot,
+  fuzzyRoots,
   getAyahByLocation,
   getRoot,
   neighborsOfRoot,
@@ -20,7 +21,6 @@ import {
   wordsByRoot,
 } from "../db";
 import type { NeighborRoot } from "../db";
-import { resolveRoot, resolveRootReady, useSearchForms } from "../searchForms";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc, SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label, readPathOf } from "../types";
@@ -145,41 +145,37 @@ function RootIndex() {
   useUILang();
   const [query, setQuery] = useState("");
   const [roots, setRoots] = useState<RootDoc[] | null>(null);
-  const formsReady = useSearchForms();
+  const [fuzzy, setFuzzy] = useState(false);
 
   useEffect(() => {
     let alive = true;
     const q = query.trim();
+    setFuzzy(false);
     if (!q) {
       topRoots(100).then((rs) => alive && setRoots(rs)).catch(() => alive && setRoots([]));
       return () => { alive = false; };
     }
-    // resolve the typed WORD to its root first (e.g. شقي → شقو, الزنى → زني),
-    // then add the prefix matches — so laypeople needn't know the bare root.
-    // Await the index so timing can't miss; catch each query independently so a
-    // failing prefix search never hides the resolved-root hit (and vice-versa).
-    resolveRootReady(q)
-      .then((resolved) =>
-        Promise.all([
-          searchRoots(q, 50).catch(() => [] as RootDoc[]),
-          resolved ? getRoot(resolved).catch(() => null) : Promise.resolve(null),
-        ]),
-      )
-      .then(([byPrefix, byWord]) => {
+    // BROAD (fuzzy) search: rank ALL roots by letter-closeness, so typing any
+    // word / partial / misspelling surfaces the nearest roots — no need to know
+    // the exact root form (شقي→شقو, الزنى→زني). Exact prefix hits lead.
+    Promise.all([
+      searchRoots(q, 50).catch(() => [] as RootDoc[]),
+      fuzzyRoots(q, 30).catch(() => [] as { doc: RootDoc; dist: number }[]),
+    ])
+      .then(([byPrefix, fuzzyHits]) => {
         if (!alive) return;
         const seen = new Set<string>();
         const out: RootDoc[] = [];
-        if (byWord) { out.push(byWord); seen.add(byWord.root); }
         for (const r of byPrefix) if (!seen.has(r.root)) { seen.add(r.root); out.push(r); }
+        for (const f of fuzzyHits) if (!seen.has(f.doc.root)) { seen.add(f.doc.root); out.push(f.doc); }
         setRoots(out);
+        const exact = byPrefix.some((r) => r.root === q) || fuzzyHits.some((f) => f.dist === 0);
+        setFuzzy(!exact && out.length > 0);
       })
       .catch(() => alive && setRoots([]));
     return () => { alive = false; };
-  }, [query, formsReady]);
+  }, [query]);
 
-  // the root the typed word derives from (شقي→شقو) — shown as a hint so a
-  // reader who doesn't know the bare root still sees it resolved.
-  const resolvedRoot = query.trim() && formsReady ? resolveRoot(query.trim()) : null;
   const ar = getUILang() === "ar";
 
   return (
@@ -189,6 +185,11 @@ function RootIndex() {
         <p className="muted" style={{ fontSize: 13.5, maxWidth: 640 }}>
           {t("roots.what")}
         </p>
+        <p style={{ margin: "-4px 0 14px", fontSize: 13.5 }}>
+          <Link to="/network" className="chip link" style={{ textDecoration: "none" }}>
+            {ar ? "توارد الجذور — الجذور التي ترد معًا في نفس الآيات ←" : "Root co-occurrence — roots that recur together in the same ayahs ←"}
+          </Link>
+        </p>
         <input
           type="text"
           dir="rtl"
@@ -197,18 +198,12 @@ function RootIndex() {
           placeholder={t("roots.search")}
           style={{ width: "100%", marginBottom: 16, fontFamily: "var(--font-quran)" }}
         />
-        {resolvedRoot && resolvedRoot !== query.trim() && (
+        {fuzzy && (
           <div className="muted" style={{ marginTop: -8, marginBottom: 14, fontSize: 13.5 }}>
             {ar ? (
-              <>
-                كلمة «<span className="quran" style={{ fontSize: 17 }}>{query.trim()}</span>» جذرها{" "}
-                «<span className="quran" style={{ fontSize: 17, color: "var(--gold)" }}>{resolvedRoot}</span>»
-              </>
+              <>أقرب الجذور إلى «<span className="quran" style={{ fontSize: 17 }}>{query.trim()}</span>» <span style={{ color: "var(--gold)" }}>· بحث تقريبيّ بالحروف</span></>
             ) : (
-              <>
-                «{query.trim()}» derives from root «
-                <span className="quran" style={{ fontSize: 17, color: "var(--gold)" }}>{resolvedRoot}</span>»
-              </>
+              <>Closest roots to «{query.trim()}» <span style={{ color: "var(--gold)" }}>· fuzzy letter search</span></>
             )}
           </div>
         )}
