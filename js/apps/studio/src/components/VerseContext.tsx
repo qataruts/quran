@@ -31,10 +31,10 @@ export default function VerseContext({ location }: { location: string | null }) 
       )}
 
       {info.muhkama && (
-        <div className="vc-row">
+        <Link to="/muhkamat" className="vc-row">
           <span className="vc-lbl">{ar ? "المحكمة" : "muhkama"}</span>
           <span className="vc-body"><span className="vc-val">{info.muhkama}</span></span>
-        </div>
+        </Link>
       )}
 
       {(info.jamiaKind || info.grade) && (

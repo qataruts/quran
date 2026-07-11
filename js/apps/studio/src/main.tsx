@@ -16,6 +16,7 @@ import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
 import Gaps from "./views/Gaps";
+import Muhkamat from "./views/Muhkamat";
 import Lexicon from "./views/Lexicon";
 import Wujuh from "./views/Wujuh";
 import Furuq from "./views/Furuq";
@@ -188,6 +189,8 @@ function App() {
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           <Route path="/jawami" element={<Jawami />} />
           <Route path="/gaps" element={<Gaps />} />
+          <Route path="/muhkamat" element={<Muhkamat />} />
+          <Route path="/muhkamat/:k" element={<Muhkamat />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

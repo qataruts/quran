@@ -484,6 +484,9 @@ export default function Jawami() {
               <b>{num(jw.meta.links)}</b>{" "}
               {ar ? "رابط مُراجَع" : "reviewed links"}
             </span>
+            <Link to="/muhkamat" className="chip link gold" style={{ textDecoration: "none" }}>
+              {ar ? "↑ المحكمات الجامعة" : "↑ governing principles"}
+            </Link>
             <Link to="/gaps" className="chip link" style={{ textDecoration: "none" }}>
               {ar ? "قد يُكمله ←" : "possibly completes it →"}
             </Link>

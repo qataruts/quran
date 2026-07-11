@@ -406,10 +406,10 @@ export default function Dashboard() {
                     <div className="lyr-t">{ar ? "رابط تفصيل" : "tafsil links"}</div>
                     <div className="lyr-s">{ar ? "٤ علاقات مُراجَعة" : "4 reviewed relations"}</div>
                   </Link>
-                  <Link to="/jawami" className="lyr">
+                  <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.muhkamat.count)}</div>
                     <div className="lyr-t">{ar ? "محكمة جامعة" : "muhkamat"}</div>
-                    <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} عنقودًا` : `from ${layers.muhkamat.kubra}`}</div>
+                    <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} أصلًا` : `from ${layers.muhkamat.kubra}`}</div>
                   </Link>
                   <Link to="/mawdui" className="lyr">
                     <div className="lyr-n">{num(layers.mawdui.topics)}</div>
