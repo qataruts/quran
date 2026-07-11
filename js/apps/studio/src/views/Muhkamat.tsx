@@ -111,16 +111,23 @@ function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) 
   return (
     <>
       <header className="jw-header">
-        <h1 className="jw-title">{ar ? "المحكمات الجامعة" : "The Governing Principles"}</h1>
+        <h1 className="jw-title">{ar ? "المحكمات والجوامع" : "Muḥkamāt & Principles"}</h1>
         <p className="jw-lead">
           {ar
-            ? "الطبقة الثالثة فوق الجوامع: عنقدنا الآياتِ الجامعة في أصولٍ كبرى، ثم فحصنا تماسكَ كلِّ عنقودٍ بالتفنيد حتى لا يجمعه إلا معنًى واحد. اصعد من الأصل الكبير إلى المحكمة إلى جوامعها إلى تفصيلها."
-            : "The third layer above the principle-verses: the جوامع clustered into major roots, each cluster then split by refutation until a single meaning binds it. Climb from the great root to the muhkama to its verses to their detail."}
+            ? "سلسلةٌ واحدة نظيفة: كبرى ← محكمة ← جامعة (أصل) ← تفصيل. المحكمةُ تجمع جوامعَ متجانسة، والجامعةُ أصلٌ لها تفصيلُها من نصّ القرآن وصرفه وحدهما. ابدأ من الأعلى ثم انزل، أو تصفّح الجوامع (الأصول) مباشرةً."
+            : "One clean chain: كبرى → محكمة → جامعة (root) → تفصيل. A muḥkama gathers coherent principles; a جامعة is a root with its تفصيل — from the Qur'anic text alone. Start at the top and descend, or browse the روot principles directly."}
         </p>
         <div className="jw-stats">
-          <span className="chip"><b>{num(data.meta.muhkamat)}</b> {ar ? "محكمة" : "muhkamāt"}</span>
-          <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "أصلًا كبرى" : "major roots"}</span>
-          <span className="chip"><b>{num(data.meta.principles)}</b> {ar ? "آية جامعة" : "principles"}</span>
+          <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "كبرى" : "major roots"}</span>
+          <span className="chip"><b>{num(data.meta.muhkamat)}</b> {ar ? "محكمة" : "muḥkamāt"}</span>
+          <Link
+            to="/jawami"
+            className="chip link gold"
+            style={{ textDecoration: "none" }}
+            title={ar ? "تصفّح الأصول الجامعة (١٠٨) وتفصيلها مباشرةً" : "browse the ~108 root principles & their tafsīl"}
+          >
+            {ar ? "الجوامع (الأصول) ←" : "root principles →"}
+          </Link>
           <span className="chip"><b>{num(net.giantPct)}٪</b> {ar ? "نسيجٌ واحد" : "one fabric"}</span>
         </div>
       </header>

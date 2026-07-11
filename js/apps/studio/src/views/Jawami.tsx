@@ -6,16 +6,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  GRADE_INFO,
   REL_INFO,
   convergenceRanked,
   elaborates,
-  indegreeOf,
+  isRootPrinciple,
   mirrorPairs,
   relationHubs,
   tafsilOf,
   useJawami,
-  type Grade,
   type Link as JLink,
   type Rel,
 } from "../jawami";
@@ -35,7 +33,6 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 
 const KINDS = ["حكم", "أخلاق", "عقيدة", "سنة", "وعد"] as const;
-const GRADES: Grade[] = ["أصل جامع", "متفرّع", "موجز", "مجرّد"];
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 
 const arName = (loc: string) =>
@@ -135,11 +132,6 @@ function Card({
         <button className="jw-cardhead" onClick={onToggle} aria-expanded={open}>
           <span className="jw-ref">{arName(hub)}</span>
           {p.kind && <span className="chip">{p.kind}</span>}
-          {p.grade && (
-            <span className="chip gold" title={GRADE_INFO[p.grade]?.note}>
-              {p.grade}
-            </span>
-          )}
           {p.tahrim ? <span className="chip">تحريم</span> : null}
           <span className="spacer" />
           {deg > 0 && (
@@ -418,7 +410,9 @@ export default function Jawami() {
   const [lens, setLens] = useState<Lens | null>(null);
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   const [kind, setKind] = useState<string>("");
-  const [grade, setGrade] = useState<string>("");
+  // «الأصول» = the ≈108 genuine جوامع (roots); «الكل» = every linked node. Roots
+  // is the default so the page is honest: a تفصيل is not shown as a جامعة.
+  const [view, setView] = useState<"roots" | "all">("roots");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [limit, setLimit] = useState(60);
@@ -457,30 +451,38 @@ export default function Jawami() {
     };
   }, [q]);
 
+  // roots = genuine جوامع (108); the rest are تفصيل shown nested under them
+  const rootCount = useMemo(
+    () => (jw ? Object.keys(jw.principles).filter((l) => isRootPrinciple(l)).length : 0),
+    [jw],
+  );
+
   const rows = useMemo(() => {
     if (!jw) return [];
     const all = Object.entries(jw.principles) as [string, Principle][];
     const filtered = all.filter(([loc, p]) => {
+      // default: show only the genuine جوامع (أصول) — a تفصيل is not a جامعة
+      if (view === "roots" && !isRootPrinciple(loc)) return false;
       if (kind && p.kind !== kind) return false;
-      if (grade && p.grade !== grade) return false;
       // fuzzy over the verse ref + text, OR by the typed word's root (زنى →
       // آيات الزاني/الزانية) — the shared page-search behaviour
       if (q && !fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean) && !rootAyahs.has(loc)) return false;
       return true;
     });
-    // widest-branching first — the أصول جوامع surface at the top
+    // widest-branching first — the أوسع تفصيلًا surface at the top
     filtered.sort((a, b) => tafsilOf(b[0]).length - tafsilOf(a[0]).length);
     return filtered;
-  }, [jw, kind, grade, q, texts, rootAyahs]);
+  }, [jw, view, kind, q, texts, rootAyahs]);
 
-  useEffect(() => setLimit(60), [kind, grade, q]);
+  useEffect(() => setLimit(60), [kind, view, q]);
 
-  // the single widest-branching جامعة — a concrete worked example for the intro
+  // the single widest-branching ROOT جامعة — a concrete worked example
   const example = useMemo(() => {
     if (!jw) return null;
     let best: string | null = null;
     let bestN = 0;
     for (const loc of Object.keys(jw.principles)) {
+      if (!isRootPrinciple(loc)) continue;
       const n = tafsilOf(loc).length;
       if (n > bestN) {
         bestN = n;
@@ -505,64 +507,40 @@ export default function Jawami() {
     <div className="page">
       <div className="jw-wrap">
         <header className="jw-header">
-          <h1 className="jw-title">
-            {ar ? "الآيات الجوامع" : "The Principle Verses"}
-          </h1>
+          <h1 className="jw-title">{ar ? "الجوامع وتفصيلها" : "Principles & their Tafsīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "نُفصِّل القرآنَ بالقرآن — لكل آية جامعة، الآياتُ التي تُبيِّنها أو تُمثِّل لها أو تُفصِّل جزاءها أو تؤكِّدها. من نصّ القرآن وصرفه وحدهما."
-              : "Explaining the Qur'an by the Qur'an — for each principle verse, the verses that clarify, exemplify, requite, or restate it. From the Qur'anic text and its morphology alone."}
+              ? "الجامعة أصلٌ يجمع معنًى في القرآن. تفصيلُها: الآياتُ التي تُبيِّنه أو تُمثِّل له أو تذكر جزاءه أو تؤكِّده. والآيةُ التي تُفصِّل غيرَها هي تفصيلٌ لا جامعة — لذلك نعرض هنا الأصولَ الجامعة، وتفصيلُها تابعٌ لها بالنقر."
+              : "A جامعة is a root that gathers a meaning; its تفصيل are the verses that clarify, exemplify, requite or restate it. A verse that elaborates another is تفصيل — not a جامعة — so here we show the roots, their تفصيل nested by tap."}
           </p>
           <div className="jw-stats">
-            <span className="chip">
-              <b>{num(jw.meta.principles)}</b> {ar ? "آية جامعة" : "principles"}
-            </span>
-            <span className="chip">
-              <b>{num(jw.meta.hubs)}</b> {ar ? "لها تفصيل" : "with tafsil"}
-            </span>
-            <span className="chip">
-              <b>{num(jw.meta.links)}</b>{" "}
-              {ar ? "رابط مُراجَع" : "reviewed links"}
-            </span>
+            <span className="chip"><b>{num(rootCount)}</b> {ar ? "جامعة (أصل)" : "root principles"}</span>
+            <span className="chip"><b>{num(jw.meta.principles - rootCount)}</b> {ar ? "تفصيلٌ تابع" : "nested tafsīl"}</span>
             <Link
               to="/muhkamat"
               className="chip link gold"
               style={{ textDecoration: "none" }}
-              title={ar ? "الطبقة الأعلى: الأصول الكبرى التي تتفرّع منها الجوامع" : "the layer above: the major roots the principles branch from"}
+              title={ar ? "التنظيم الأعلى: كبرى ← محكمة ← جامعة ← تفصيل" : "the higher organization: كبرى → محكمة → جامعة → تفصيل"}
             >
-              {ar ? "↑ المحكمات الجامعة" : "↑ governing principles"}
+              {ar ? "↑ المحكمات" : "↑ Muḥkamāt"}
             </Link>
-            <Link
-              to="/gaps"
-              className="chip link"
-              style={{ textDecoration: "none" }}
-              title={ar ? "تفصيلٌ اقترحته المراجعة ولم يُؤكَّد بعد" : "review-suggested, unconfirmed tafsil"}
-            >
+            <Link to="/gaps" className="chip link" style={{ textDecoration: "none" }} title={ar ? "تفصيلٌ محتملٌ لم يُؤكَّد" : "possible-but-unconfirmed tafsil"}>
               {ar ? "قد يُكمله ←" : "possibly completes it →"}
             </Link>
-            <Link
-              to="/lexicon"
-              className="chip link"
-              style={{ textDecoration: "none" }}
-              title={ar ? "بصمة كل نوع من الجوامع: جذوره وأنماطه" : "each kind's fingerprint: roots & patterns"}
-            >
+            <Link to="/lexicon" className="chip link" style={{ textDecoration: "none" }} title={ar ? "بصمة كل نوع من الجوامع" : "each kind's fingerprint"}>
               {ar ? "معجم الجوامع ←" : "lexicon →"}
             </Link>
           </div>
           {example && (
-            <Link
-              to={readPathOf(example.loc)}
-              className="jw-example"
-              title={ar ? "افتح هذه الجامعة في المصحف" : "open this principle in the reader"}
-            >
+            <div className="jw-example" aria-hidden={false}>
               <span className="jw-example-lbl">{ar ? "مثال" : "e.g."}</span>
               <span className="quran jw-example-text">
                 {texts.get(example.loc)?.textClean ?? arName(example.loc)}
               </span>
               <span className="jw-example-meta">
-                {ar ? `← تُبيِّنها ${num(example.n)} آية` : `← ${num(example.n)} verses clarify it`}
+                {arName(example.loc)} · {ar ? `جامعة ← تفصيلها ${num(example.n)} آية` : `a root → ${num(example.n)} verses`}
               </span>
-            </Link>
+            </div>
           )}
         </header>
 
@@ -573,42 +551,30 @@ export default function Jawami() {
         />
         <div className="jw-filters">
           <div className="jw-chipset">
-            <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
+            <span className="jw-filter-lbl">{ar ? "العرض" : "show"}</span>
             <button
-              className={kind === "" ? "on" : ""}
-              onClick={() => setKind("")}
-              title={ar ? "أظهر كل الأنواع" : "show all kinds"}
+              className={view === "roots" ? "on" : ""}
+              onClick={() => setView("roots")}
+              title={ar ? "الأصول الجامعة فقط (لا التفصيل)" : "root principles only"}
             >
+              {ar ? `الأصول (${num(rootCount)})` : `roots (${num(rootCount)})`}
+            </button>
+            <button
+              className={view === "all" ? "on" : ""}
+              onClick={() => setView("all")}
+              title={ar ? "كل الآيات المترابطة، أصولًا وتفصيلًا" : "every linked verse"}
+            >
+              {ar ? `الكل (${num(jw.meta.principles)})` : `all (${num(jw.meta.principles)})`}
+            </button>
+          </div>
+          <div className="jw-chipset">
+            <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
+            <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "أظهر كل الأنواع" : "show all kinds"}>
               {ar ? "الكل" : "all"}
             </button>
             {KINDS.map((k) => (
-              <button
-                key={k}
-                className={kind === k ? "on" : ""}
-                onClick={() => setKind(kind === k ? "" : k)}
-                title={ar ? `أظهر جوامع «${k}» فقط` : `only «${k}»`}
-              >
+              <button key={k} className={kind === k ? "on" : ""} onClick={() => setKind(kind === k ? "" : k)} title={ar ? `أظهر جوامع «${k}» فقط` : `only «${k}»`}>
                 {k}
-              </button>
-            ))}
-          </div>
-          <div className="jw-chipset">
-            <span className="jw-filter-lbl">{ar ? "الدرجة" : "grade"}</span>
-            <button
-              className={grade === "" ? "on" : ""}
-              onClick={() => setGrade("")}
-              title={ar ? "أظهر كل الدرجات" : "show all grades"}
-            >
-              {ar ? "الكل" : "all"}
-            </button>
-            {GRADES.map((g) => (
-              <button
-                key={g}
-                className={grade === g ? "on gold" : "gold"}
-                onClick={() => setGrade(grade === g ? "" : g)}
-                title={ar ? `أظهر «${g}» فقط` : `only grade «${g}»`}
-              >
-                {g}
               </button>
             ))}
           </div>

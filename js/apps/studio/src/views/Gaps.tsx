@@ -35,7 +35,6 @@ function GapCard({
         <button className="jw-cardhead" onClick={() => setOpen(!open)} aria-expanded={open}>
           <span className="jw-ref">{arName(hub)}</span>
           {p?.kind && <span className="chip">{p.kind}</span>}
-          {p?.grade && <span className="chip gold">{p.grade}</span>}
           <span className="spacer" />
           <span className="jw-deg">{num(cands.length)} {ar ? "اقتراح" : "suggested"}</span>
           <span className="jw-caret">{open ? "▾" : "◂"}</span>
