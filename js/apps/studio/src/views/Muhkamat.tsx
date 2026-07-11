@@ -8,10 +8,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
-import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
 import { jawamiCount, useMuhkamat, type Kubra, type Muhkama } from "../muhkamat";
 import PageSearch from "../components/PageSearch";
+import MushafLink from "../components/MushafLink";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -31,10 +31,11 @@ function Members({ m, texts }: { m: Muhkama; texts: Map<string, AyahDoc> }) {
       {open && (
         <div className="mk-members-list">
           {others.map((loc) => (
-            <Link key={loc} to={readPathOf(loc)} className="mk-verse">
+            <div key={loc} className="mk-verse">
               <span className="mk-verse-ref">{arName(loc)}</span>
               <span className="mk-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
-            </Link>
+              <MushafLink loc={loc} compact />
+            </div>
           ))}
         </div>
       )}
@@ -50,10 +51,13 @@ function MuhkamaCard({ m, texts }: { m: Muhkama; texts: Map<string, AyahDoc> }) 
     <div className="mk-card">
       <h3 className="mk-title">{m.title}</h3>
       {m.theme && <p className="mk-theme">{m.theme}</p>}
-      <Link to={readPathOf(m.umm)} className="mk-umm">
-        <span className="mk-umm-lbl">{ar ? "الأمّ" : "root verse"} · {arName(m.umm)}</span>
+      <div className="mk-umm">
+        <div className="mk-umm-head">
+          <span className="mk-umm-lbl">{ar ? "الأمّ" : "root verse"} · {arName(m.umm)}</span>
+          <MushafLink loc={m.umm} compact />
+        </div>
         <span className="mk-umm-text quran">{umm?.textUthmani ?? m.umm}</span>
-      </Link>
+      </div>
       <Members m={m} texts={texts} />
     </div>
   );

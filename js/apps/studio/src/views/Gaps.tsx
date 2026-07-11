@@ -1,17 +1,16 @@
 /**
- * «قد يُكمله» — the open layer. During the adversarial review (Pass C) the
- * swarm was asked not only to refute weak links but to SUGGEST missing tafsil:
- * verses that might complete a جامعة but were never confirmed. We surface those
- * 866 suggestions honestly, unverified — the reader judges. From jawami.json.
+ * «قد يُكمله» — the open layer. During the refutational review (Pass C), besides
+ * refuting weak links the review also SUGGESTED missing tafsil: verses that
+ * might complete a جامعة but were never confirmed. We surface those 866
+ * suggestions honestly, unverified — the reader judges. From jawami.json.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useJawami, type Principle } from "../jawami";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
-import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
+import MushafLink from "../components/MushafLink";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -32,28 +31,39 @@ function GapCard({
   const ar = getUILang() === "ar";
   return (
     <div className={`jw-card${open ? " open" : ""}`}>
-      <button className="jw-cardhead" onClick={() => setOpen(!open)}>
-        <span className="jw-ref">{arName(hub)}</span>
-        {p?.kind && <span className="chip">{p.kind}</span>}
-        {p?.grade && <span className="chip gold">{p.grade}</span>}
-        <span className="spacer" />
-        <span className="jw-deg">{num(cands.length)} {ar ? "اقتراح" : "suggested"}</span>
-        <span className="jw-caret">{open ? "▾" : "◂"}</span>
-      </button>
-      <Link to={readPathOf(hub)} className="jw-cardtext quran">
+      <div className="jw-cardhead-row">
+        <button className="jw-cardhead" onClick={() => setOpen(!open)} aria-expanded={open}>
+          <span className="jw-ref">{arName(hub)}</span>
+          {p?.kind && <span className="chip">{p.kind}</span>}
+          {p?.grade && <span className="chip gold">{p.grade}</span>}
+          <span className="spacer" />
+          <span className="jw-deg">{num(cands.length)} {ar ? "اقتراح" : "suggested"}</span>
+          <span className="jw-caret">{open ? "▾" : "◂"}</span>
+        </button>
+        <MushafLink loc={hub} compact />
+      </div>
+      <div
+        className="jw-cardtext quran"
+        onClick={() => setOpen(!open)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setOpen(!open))}
+        style={{ cursor: "pointer" }}
+      >
         {d?.textUthmani ?? hub}
         <span className="ayah-marker"> ﴿{num(hub.split(":")[1])}﴾</span>
-      </Link>
+      </div>
       {open && (
         <div className="jw-panel">
           <div className="muted" style={{ marginBottom: 6, fontSize: 13 }}>
             {ar ? "اقتراحاتٌ لم تُؤكَّد — قد تُكمِّل هذه الجامعة:" : "unconfirmed suggestions — may complete this principle:"}
           </div>
           {cands.map((loc) => (
-            <Link key={loc} to={readPathOf(loc)} className="jw-verse">
+            <div key={loc} className="jw-verse">
               <span className="jw-verse-ref">{arName(loc)}</span>
               <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
-            </Link>
+              <MushafLink loc={loc} compact />
+            </div>
           ))}
         </div>
       )}

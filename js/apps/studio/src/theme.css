@@ -681,8 +681,8 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
   border-inline-start: 4px solid var(--gold); background: linear-gradient(var(--gold-soft), transparent 85%);
   border-radius: 8px; padding: 12px 16px;
 }
-.mk-umm:hover { text-decoration: none; } .mk-umm:hover .mk-umm-text { color: var(--accent); }
-.mk-umm-lbl { display: block; color: var(--gold); font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.mk-umm-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.mk-umm-lbl { color: var(--gold); font-size: 12px; font-weight: 700; }
 .mk-umm-text { display: block; font-size: calc(23px * var(--quran-scale, 1)); line-height: 2; }
 .mk-members { margin-top: 12px; }
 .mk-members-btn { border: none; background: none; color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px 0; }
@@ -691,7 +691,7 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mk-verse:first-child { border-top: none; }
 .mk-verse:hover { background: var(--accent-soft); text-decoration: none; }
 .mk-verse-ref { flex: none; color: var(--accent); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
-.mk-verse-text { color: var(--ink-2); font-size: 17px; line-height: 1.8; min-width: 0; }
+.mk-verse-text { flex: 1; color: var(--ink-2); font-size: 17px; line-height: 1.8; min-width: 0; }
 .jw-header { text-align: center; margin-bottom: 18px; }
 .jw-title { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 4px 0 6px; }
 .jw-lead { color: var(--ink-2); max-width: 680px; margin: 0 auto 12px; line-height: 1.7; font-size: 14px; }
