@@ -11,6 +11,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ayahLocationsOfRoot,
+  countRoots,
   fuzzyRoots,
   getAyahByLocation,
   getRoot,
@@ -146,6 +147,11 @@ function RootIndex() {
   const [query, setQuery] = useState("");
   const [roots, setRoots] = useState<RootDoc[] | null>(null);
   const [fuzzy, setFuzzy] = useState(false);
+  const [totalRoots, setTotalRoots] = useState<number | null>(null);
+
+  useEffect(() => {
+    countRoots().then(setTotalRoots).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -231,6 +237,9 @@ function RootIndex() {
             <>
               <div className="muted" style={{ marginBottom: 8 }}>
                 {t("roots.top")} ({num(roots.length)})
+                {totalRoots != null && (
+                  <span> · {getUILang() === "ar" ? `من أصل ${num(totalRoots)} جذرًا` : `of ${num(totalRoots)} roots`}</span>
+                )}
               </div>
               {/* mobile-first: a responsive grid of tappable root cards — the
                   whole card navigates (no redundant «استكشف»). */}

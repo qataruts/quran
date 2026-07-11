@@ -245,6 +245,13 @@ export async function topRoots(limit = 100): Promise<RootDoc[]> {
   })) as RootDoc[];
 }
 
+/** total number of distinct roots in the corpus. */
+export async function countRoots(): Promise<number> {
+  const c = coll("roots") as { count?: () => Promise<number>; findMany: (a: unknown) => Promise<unknown[]> };
+  if (typeof c.count === "function") return c.count();
+  return (await c.findMany({})).length;
+}
+
 export async function searchRoots(
   prefix: string,
   limit = 50,
