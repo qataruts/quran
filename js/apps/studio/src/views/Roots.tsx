@@ -186,10 +186,20 @@ function RootIndex() {
           {t("roots.what")}
         </p>
         <p style={{ margin: "-4px 0 14px", fontSize: 13.5, display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Link to="/network" className="chip link" style={{ textDecoration: "none" }}>
+          <Link
+            to="/network"
+            className="chip link"
+            style={{ textDecoration: "none" }}
+            title={ar ? "شبكة الجذور التي تلتقي في الآيات نفسها" : "network of roots that meet in the same ayahs"}
+          >
             {ar ? "توارد الجذور — الجذور التي ترد معًا ←" : "Root co-occurrence →"}
           </Link>
-          <Link to="/wujuh" className="chip link" style={{ textDecoration: "none" }}>
+          <Link
+            to="/wujuh"
+            className="chip link"
+            style={{ textDecoration: "none" }}
+            title={ar ? "كلماتٌ ترد سياقاتها في مجموعتين متمايزتين (محسوبة)" : "words whose contexts split into two senses (computed)"}
+          >
             {ar ? "الوجوه والنظائر — الكلمات متعدّدة المعنى ←" : "Polysemy →"}
           </Link>
         </p>

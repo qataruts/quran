@@ -484,13 +484,28 @@ export default function Jawami() {
               <b>{num(jw.meta.links)}</b>{" "}
               {ar ? "رابط مُراجَع" : "reviewed links"}
             </span>
-            <Link to="/muhkamat" className="chip link gold" style={{ textDecoration: "none" }}>
+            <Link
+              to="/muhkamat"
+              className="chip link gold"
+              style={{ textDecoration: "none" }}
+              title={ar ? "الطبقة الأعلى: الأصول الكبرى التي تتفرّع منها الجوامع" : "the layer above: the major roots the principles branch from"}
+            >
               {ar ? "↑ المحكمات الجامعة" : "↑ governing principles"}
             </Link>
-            <Link to="/gaps" className="chip link" style={{ textDecoration: "none" }}>
+            <Link
+              to="/gaps"
+              className="chip link"
+              style={{ textDecoration: "none" }}
+              title={ar ? "تفصيلٌ اقترحته المراجعة ولم يُؤكَّد بعد" : "review-suggested, unconfirmed tafsil"}
+            >
               {ar ? "قد يُكمله ←" : "possibly completes it →"}
             </Link>
-            <Link to="/lexicon" className="chip link" style={{ textDecoration: "none" }}>
+            <Link
+              to="/lexicon"
+              className="chip link"
+              style={{ textDecoration: "none" }}
+              title={ar ? "بصمة كل نوع من الجوامع: جذوره وأنماطه" : "each kind's fingerprint: roots & patterns"}
+            >
               {ar ? "معجم الجوامع ←" : "lexicon →"}
             </Link>
           </div>

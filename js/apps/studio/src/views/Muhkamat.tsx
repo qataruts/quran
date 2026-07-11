@@ -68,9 +68,9 @@ function KubraView({ kb, texts }: { kb: Kubra; texts: Map<string, AyahDoc> }) {
         <span className="mw-sep">›</span>
         <span className="mw-here">{kb.title}</span>
       </nav>
-      <header className="mw-head">
-        <h1 className="mw-title">{kb.title}</h1>
-        <p className="mw-lead">
+      <header className="jw-header">
+        <h1 className="jw-title">{kb.title}</h1>
+        <p className="jw-lead">
           {ar
             ? `أصلٌ كبرى يضمّ ${num(kb.muhkamat.length)} محكمةً متجانسة، و${num(jawamiCount(kb))} آيةً جامعة.`
             : `A major principle holding ${num(kb.muhkamat.length)} coherent muhkamāt and ${num(jawamiCount(kb))} principle-verses.`}
@@ -96,9 +96,9 @@ function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) 
   const net = data.meta.network;
   return (
     <>
-      <header className="mw-head">
-        <h1 className="mw-title">{ar ? "المحكمات الجامعة" : "The Governing Principles"}</h1>
-        <p className="mw-lead">
+      <header className="jw-header">
+        <h1 className="jw-title">{ar ? "المحكمات الجامعة" : "The Governing Principles"}</h1>
+        <p className="jw-lead">
           {ar
             ? "الطبقة الثالثة فوق الجوامع: عنقدنا الآياتِ الجامعة في أصولٍ كبرى، ثم دقّقنا كلَّ عنقودٍ عدائيًّا حتى لا يجمعه إلا معنًى واحد. اصعد من الأصل الكبير إلى المحكمة إلى جوامعها إلى تفصيلها."
             : "The third layer above the principle-verses: the جوامع clustered into major roots, each cluster then adversarially split until one meaning binds it. Climb from the great root to the muhkama to its verses to their detail."}
