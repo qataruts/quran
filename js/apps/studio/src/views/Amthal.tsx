@@ -25,6 +25,7 @@ export default function Amthal() {
   const [data, setData] = useState<AmthalData | null>(null);
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   const [q, setQ] = useState("");
+  const [kind, setKind] = useState<"all" | "parables" | "similes">("all");
   const ar = getUILang() === "ar";
 
   useEffect(() => {
@@ -82,22 +83,38 @@ export default function Amthal() {
           </div>
         </header>
         <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في الأمثال…" : "search parables…"} />
-        {group(
+        <div className="jw-filters">
+          <div className="jw-chipset">
+            <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
+            <button className={kind === "all" ? "on" : ""} onClick={() => setKind("all")}>
+              {ar ? `الكل (${num(data.meta.total)})` : `all (${num(data.meta.total)})`}
+            </button>
+            <button className={kind === "parables" ? "on" : ""} onClick={() => setKind("parables")}>
+              {ar ? `مضروبة (${num(data.meta.parables)})` : `struck (${num(data.meta.parables)})`}
+            </button>
+            <button className={kind === "similes" ? "on" : ""} onClick={() => setKind("similes")}>
+              {ar ? `تشبيهات (${num(data.meta.similes)})` : `similitudes (${num(data.meta.similes)})`}
+            </button>
+          </div>
+        </div>
+        {kind !== "similes" && group(
           ar ? "أمثالٌ مضروبة" : "Struck parables",
           ar ? "﴿ضَرَبَ اللَّهُ مَثَلًا﴾ — تصويرُ معنًى غائبٍ بمشهدٍ محسوس." : "«God strikes a parable» — an abstract meaning cast as a vivid scene.",
           data.parables,
         )}
-        {group(
+        {kind !== "parables" && group(
           ar ? "تشبيهاتٌ قرآنية" : "Similitudes",
           ar ? "﴿كَمَثَلِ …﴾ — تشبيهٌ يُقرِّب المعنى بنظيرٍ محسوس." : "«like the likeness of …» — a comparison that brings the meaning near.",
           data.similes,
         )}
-        {q &&
-          [...data.parables, ...data.similes].every(
-            (loc) => !fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean),
-          ) && (
+        {(() => {
+          const pool =
+            kind === "parables" ? data.parables : kind === "similes" ? data.similes : [...data.parables, ...data.similes];
+          const none = pool.every((loc) => !fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean));
+          return none ? (
             <div className="muted" style={{ padding: "24px 4px" }}>{ar ? "لا نتائج." : "No matches."}</div>
-          )}
+          ) : null;
+        })()}
       </div>
     </div>
   );

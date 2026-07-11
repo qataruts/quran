@@ -4,7 +4,7 @@
  * our own three-pass, adversarially-reviewed network — no tafsīr, no ḥadīth.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   REL_INFO,
   convergenceRanked,
@@ -420,6 +420,13 @@ export default function Jawami() {
   // matches آيات زاني/زانية — broad letter search, no exact form needed.
   const [rootAyahs, setRootAyahs] = useState<Set<string>>(new Set());
   const [resolvedRoot, setResolvedRoot] = useState<string | null>(null);
+  // /jawami/lenses → the advanced network analytics live on their own focused
+  // view (moved out of the main browse, where they only confused).
+  const location = useLocation();
+  const lensesMode = location.pathname.endsWith("/lenses");
+  useEffect(() => {
+    if (lensesMode && !lens) setLens("relations");
+  }, [lensesMode, lens]);
 
   useEffect(() => {
     ayahByLocationMap().then(setTexts);
@@ -503,6 +510,47 @@ export default function Jawami() {
   }
 
   const ar = getUILang() === "ar";
+
+  // Advanced network analytics — a focused, clearly-labelled destination of its
+  // own (reached from إحصاءات), NOT mixed into the جوامع/محكمات browse.
+  if (lensesMode) {
+    const L: Lens = lens ?? "relations";
+    const TABS: [Lens, string][] = [
+      ["relations", ar ? "العلاقات" : "Relations"],
+      ["convergence", ar ? "نقاط الالتقاء" : "Convergence"],
+      ["mathani", ar ? "المثاني" : "Mathānī"],
+    ];
+    return (
+      <div className="page">
+        <div className="jw-wrap">
+          <nav className="mw-crumb" aria-label={ar ? "مسار" : "path"}>
+            <Link to="/muhkamat">{ar ? "المحكمات" : "Muḥkamāt"}</Link>
+            <span className="mw-sep">›</span>
+            <span className="mw-here">{ar ? "تحليلات الشبكة" : "Network analytics"}</span>
+          </nav>
+          <header className="jw-header">
+            <h1 className="jw-title">{ar ? "تحليلات شبكة الجوامع" : "Principle-network analytics"}</h1>
+            <p className="jw-lead">
+              {ar
+                ? "عدساتٌ للباحثين على بنية الروابط بين الجوامع وتفصيلها — ليست طبقةَ بياناتٍ جديدة، بل زوايا نظرٍ إلى الشبكة نفسها. اختر عدسة:"
+                : "Research lenses over the link structure between principles and their تفصيل — not a new data layer, just angles on the same network."}
+            </p>
+          </header>
+          <div className="jw-lens-tabs">
+            {TABS.map(([key, title]) => (
+              <button key={key} className={L === key ? "on" : ""} onClick={() => setLens(key)}>
+                {title}
+              </button>
+            ))}
+          </div>
+          {L === "relations" && <RelationLens texts={texts} />}
+          {L === "convergence" && <Convergence texts={texts} />}
+          {L === "mathani" && <Mathani texts={texts} />}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page">
       <div className="jw-wrap">
@@ -622,56 +670,13 @@ export default function Jawami() {
           </div>
         )}
 
-        {/* progressive disclosure: the three analytical lenses, explained in
-            plain Arabic and collapsed by default so the first screen stays the
-            browsable list. One open at a time. */}
-        <section className="jw-lenses">
-          <h2 className="jw-lenses-title">{ar ? "طرقٌ أخرى للاستكشاف" : "Other ways to explore"}</h2>
-          {(
-            [
-              [
-                "relations",
-                ar ? "العلاقات" : "Relations",
-                ar
-                  ? "الشبكة مقسّمةً حسب نوع الصلة: بيانٌ يوضّح، مثالٌ يُجسّد، جزاءٌ يذكر العاقبة، توكيدٌ يُعيد التقرير."
-                  : "the network split by relation type: clarify · exemplify · requite · restate.",
-              ],
-              [
-                "convergence",
-                ar ? "نقاط الالتقاء" : "Convergence",
-                ar
-                  ? "آياتٌ تلتقي عندها عدّةُ جوامع تُفصِّلها معًا — أكثر المواضع تردُّدًا في الشبكة."
-                  : "verses where several principles converge — the network's busiest nodes.",
-              ],
-              [
-                "mathani",
-                ar ? "المثاني" : "Mathānī",
-                ar
-                  ? "آيتان يُفصِّل كلٌّ منهما الأخرى — أعمدةٌ متقابلة يشدّ بعضها بعضًا."
-                  : "verse pairs that each elaborate the other — mutually reinforcing pillars.",
-              ],
-            ] as [Lens, string, string][]
-          ).map(([key, title, desc]) => (
-            <div key={key} className={`jw-lens-card${lens === key ? " open" : ""}`}>
-              <button
-                className="jw-lens-head"
-                onClick={() => setLens(lens === key ? null : key)}
-                aria-expanded={lens === key}
-              >
-                <span className="jw-lens-caret">{lens === key ? "▾" : "◂"}</span>
-                <span className="jw-lens-title">{title}</span>
-                {lens !== key && <span className="jw-lens-desc">{desc}</span>}
-              </button>
-              {lens === key && (
-                <div className="jw-lens-body">
-                  {key === "relations" && <RelationLens texts={texts} />}
-                  {key === "convergence" && <Convergence texts={texts} />}
-                  {key === "mathani" && <Mathani texts={texts} />}
-                </div>
-              )}
-            </div>
-          ))}
-        </section>
+        {/* the advanced network lenses live on their own page (إحصاءات →
+            تحليلات الشبكة), not cluttering the browse — one quiet link. */}
+        <div style={{ textAlign: "center", margin: "26px 0 4px" }}>
+          <Link to="/jawami/lenses" className="chip link" style={{ textDecoration: "none" }}>
+            {ar ? "تحليلاتٌ متقدّمة للشبكة (للباحثين) ←" : "advanced network analytics →"}
+          </Link>
+        </div>
       </div>
     </div>
   );

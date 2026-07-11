@@ -134,6 +134,7 @@ function Nav() {
       <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/muhkamat" title={getUILang() === "ar" ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
+      <NavLink to="/amthal" title={getUILang() === "ar" ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{getUILang() === "ar" ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
@@ -257,7 +258,9 @@ function App() {
           <Route path="/read" element={<Home />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
-          <Route path="/jawami" element={<Jawami />} />
+          {/* الجوامع merged into المحكمات (one page). /jawami/lenses stays as the analytics view. */}
+          <Route path="/jawami" element={<Navigate to="/muhkamat" replace />} />
+          <Route path="/jawami/lenses" element={<Jawami />} />
           <Route path="/gaps" element={<Gaps />} />
           <Route path="/muhkamat" element={<Muhkamat />} />
           <Route path="/muhkamat/:k" element={<Muhkamat />} />

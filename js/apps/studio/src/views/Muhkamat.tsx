@@ -12,6 +12,8 @@ import type { AyahDoc } from "../types";
 import { jawamiCount, useMuhkamat, type Kubra, type Muhkama } from "../muhkamat";
 import PageSearch from "../components/PageSearch";
 import MushafLink from "../components/MushafLink";
+import { TafsilPanel } from "../components/TafsilChip";
+import { tafsilOf, isRootPrinciple, useJawami } from "../jawami";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -96,11 +98,75 @@ function KubraView({ kb, texts }: { kb: Kubra; texts: Map<string, AyahDoc> }) {
   );
 }
 
-/* --------------------------------- level 1 --------------------------------- */
-function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) {
+/** one آية محكمة (root) in the flat «آيات» view: its عنوان tag · the verse ·
+ *  its تفصيل on tap. Tapping the verse opens تفصيل; ↗ opens the mushaf. */
+function RootAyah({ loc, kubraTitle, texts }: { loc: string; kubraTitle: string | null; texts: Map<string, AyahDoc> }) {
+  const [open, setOpen] = useState(false);
   const ar = getUILang() === "ar";
-  const net = data.meta.network;
+  const deg = tafsilOf(loc).length;
+  const d = texts.get(loc);
+  const toggle = () => deg > 0 && setOpen((v) => !v);
+  return (
+    <div className={`jw-card${open ? " open" : ""}`}>
+      {kubraTitle && <div className="mk-ayah-tag" title={ar ? "العنوان (القسم) التابع له" : "its section"}>{kubraTitle}</div>}
+      <div className="jw-cardhead-row">
+        <button className="jw-cardhead" onClick={toggle} aria-expanded={open}>
+          <span className="jw-ref">{arName(loc)}</span>
+          <span className="spacer" />
+          {deg > 0 && <span className="jw-deg">{num(deg)} {ar ? "تفصيل" : "tafsil"}</span>}
+          <span className="jw-caret">{open ? "▾" : "◂"}</span>
+        </button>
+        <MushafLink loc={loc} compact />
+      </div>
+      <div
+        className="jw-cardtext quran"
+        onClick={toggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle())}
+        style={{ cursor: deg > 0 ? "pointer" : "default" }}
+      >
+        {d?.textUthmani ?? loc}
+        <span className="ayah-marker"> ﴿{num(loc.split(":")[1])}﴾</span>
+      </div>
+      <TafsilPanel location={loc} open={open} />
+    </div>
+  );
+}
+
+/* --------- the one unified home: عناوين (40 sections) OR آيات (108 roots) ------ */
+function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkamat>>; texts: Map<string, AyahDoc> }) {
+  const ar = getUILang() === "ar";
+  const jw = useJawami();
   const [q, setQ] = useState("");
+  const [view, setView] = useState<"titles" | "ayat">("titles");
+  const [limit, setLimit] = useState(60);
+  useEffect(() => setLimit(60), [q, view]);
+
+  // loc → its عنوان (كبرى) title, so each آية shows the section it belongs to
+  const locToKubra = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const kb of data.kubra)
+      for (const m of kb.muhkamat) {
+        map.set(m.umm, kb.title);
+        for (const loc of m.members) if (!map.has(loc)) map.set(loc, kb.title);
+      }
+    return map;
+  }, [data]);
+
+  // the 108 آيات محكمة (roots), widest تفصيل first
+  const roots = useMemo(() => {
+    if (!jw) return [];
+    return Object.keys(jw.principles)
+      .filter((l) => isRootPrinciple(l))
+      .sort((a, b) => tafsilOf(b).length - tafsilOf(a).length);
+  }, [jw]);
+  const totalTafsil = useMemo(() => roots.reduce((s, l) => s + tafsilOf(l).length, 0), [roots]);
+
+  const filteredRoots = useMemo(
+    () => roots.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean, locToKubra.get(loc))),
+    [roots, q, texts, locToKubra],
+  );
   const kubra = data.kubra
     .map((kb, i) => [kb, i] as const)
     .filter(
@@ -108,53 +174,71 @@ function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) 
         kb.muhkamat.length > 0 &&
         fuzzyMatch(q, kb.title, ...kb.muhkamat.map((m) => m.title), ...kb.muhkamat.map((m) => m.theme ?? "")),
     );
+
   return (
     <>
       <header className="jw-header">
-        <h1 className="jw-title">{ar ? "المحكمات والجوامع" : "Muḥkamāt & Principles"}</h1>
+        <h1 className="jw-title">{ar ? "المحكمات" : "Muḥkamāt"}</h1>
         <p className="jw-lead">
           {ar
-            ? "سلسلةٌ واحدة نظيفة: كبرى ← محكمة ← جامعة (أصل) ← تفصيل. المحكمةُ تجمع جوامعَ متجانسة، والجامعةُ أصلٌ لها تفصيلُها من نصّ القرآن وصرفه وحدهما. ابدأ من الأعلى ثم انزل، أو تصفّح الجوامع (الأصول) مباشرةً."
-            : "One clean chain: كبرى → محكمة → جامعة (root) → تفصيل. A muḥkama gathers coherent principles; a جامعة is a root with its تفصيل — from the Qur'anic text alone. Start at the top and descend, or browse the روot principles directly."}
+            ? "الآياتُ المحكمة: أصولٌ تجمع معاني القرآن، وتحتها تفصيلُها من نصّ القرآن وصرفه وحدهما. تصفّحها مُجمَّعةً في عناوين، أو آيةً آية مع تفصيل كلٍّ منها."
+            : "The muḥkam verses: roots that gather the Qur'an's meanings, each with its تفصيل — from the Qur'anic text alone. Browse them grouped into sections, or one verse at a time with its تفصيل."}
         </p>
         <div className="jw-stats">
-          <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "كبرى" : "major roots"}</span>
-          <span className="chip"><b>{num(data.meta.muhkamat)}</b> {ar ? "محكمة" : "muḥkamāt"}</span>
-          <Link
-            to="/jawami"
-            className="chip link gold"
-            style={{ textDecoration: "none" }}
-            title={ar ? "تصفّح الأصول الجامعة (١٠٨) وتفصيلها مباشرةً" : "browse the ~108 root principles & their tafsīl"}
-          >
-            {ar ? "الجوامع (الأصول) ←" : "root principles →"}
+          <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "عنوان" : "sections"}</span>
+          <span className="chip"><b>{num(roots.length)}</b> {ar ? "آية محكمة" : "muḥkam verses"}</span>
+          <span className="chip"><b>{num(totalTafsil)}</b> {ar ? "تفصيل" : "tafsīl"}</span>
+          <Link to="/jawami/lenses" className="chip link" style={{ textDecoration: "none" }} title={ar ? "تحليلاتٌ متقدّمة لبنية الشبكة (للباحثين)" : "advanced network analytics"}>
+            {ar ? "تحليلات الشبكة ←" : "network analytics →"}
           </Link>
-          <span className="chip"><b>{num(net.giantPct)}٪</b> {ar ? "نسيجٌ واحد" : "one fabric"}</span>
         </div>
       </header>
-      <PageSearch
-        value={q}
-        onChange={setQ}
-        placeholder={ar ? "ابحث في الأصول والمحكمات…" : "search principles…"}
-      />
-      <div className="mk-kubra-grid">
-        {kubra.map(([kb, i]) => (
-          <Link key={i} to={`/muhkamat/${i}`} className="mk-kubra-card" title={kb.title}>
-            <span className="mk-kubra-title">{kb.title}</span>
-            <span className="mk-kubra-preview">
-              {kb.muhkamat.map((m) => m.title).slice(0, 3).join(" · ")}
-            </span>
-            <span className="mk-kubra-meta">
-              {num(kb.muhkamat.length)} {ar ? "محكمة" : "muhkamāt"} · {num(jawamiCount(kb))} {ar ? "جامعة" : "verses"}
-              {kb.coherent && <span className="mk-coherent"> · {ar ? "متجانسة" : "coherent"}</span>}
-            </span>
-          </Link>
-        ))}
-        {kubra.length === 0 && (
-          <div className="muted" style={{ padding: "24px 4px", gridColumn: "1/-1" }}>
-            {ar ? "لا نتائج." : "No matches."}
-          </div>
-        )}
+
+      <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحكمات وتفصيلها…" : "search…"} />
+
+      {/* the one toggle — mushaf-style: عناوين (كروت) أو آيات */}
+      <div className="jw-filters">
+        <div className="jw-chipset" style={{ justifyContent: "center" }}>
+          <span className="jw-filter-lbl">{ar ? "العرض" : "view"}</span>
+          <button className={view === "titles" ? "on" : ""} onClick={() => setView("titles")}>
+            {ar ? `عناوين (${num(data.meta.kubra)})` : `sections (${num(data.meta.kubra)})`}
+          </button>
+          <button className={view === "ayat" ? "on" : ""} onClick={() => setView("ayat")}>
+            {ar ? `آيات (${num(roots.length)})` : `verses (${num(roots.length)})`}
+          </button>
+        </div>
       </div>
+
+      {view === "titles" ? (
+        <div className="mk-kubra-grid">
+          {kubra.map(([kb, i]) => (
+            <Link key={i} to={`/muhkamat/${i}`} className="mk-kubra-card" title={kb.title}>
+              <span className="mk-kubra-title">{kb.title}</span>
+              <span className="mk-kubra-preview">{kb.muhkamat.map((m) => m.title).slice(0, 3).join(" · ")}</span>
+              <span className="mk-kubra-meta">
+                {num(kb.muhkamat.length)} {ar ? "محكمة" : "muhkamāt"} · {num(jawamiCount(kb))} {ar ? "آية" : "verses"}
+              </span>
+            </Link>
+          ))}
+          {kubra.length === 0 && (
+            <div className="muted" style={{ padding: "24px 4px", gridColumn: "1/-1" }}>{ar ? "لا نتائج." : "No matches."}</div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="muted jw-resultcount">{num(filteredRoots.length)} {ar ? "آية محكمة" : "verses"}</div>
+          <div className="jw-list">
+            {filteredRoots.slice(0, limit).map((loc) => (
+              <RootAyah key={loc} loc={loc} kubraTitle={locToKubra.get(loc) ?? null} texts={texts} />
+            ))}
+          </div>
+          {filteredRoots.length > limit && (
+            <div style={{ textAlign: "center", margin: "18px 0" }}>
+              <button onClick={() => setLimit(limit + 100)}>{ar ? `عرض المزيد (${num(filteredRoots.length - limit)})` : `show more`}</button>
+            </div>
+          )}
+        </>
+      )}
     </>
   );
 }
@@ -163,6 +247,7 @@ export default function Muhkamat() {
   useUILang();
   const params = useParams<{ k?: string }>();
   const data = useMuhkamat();
+  const jw = useJawami();
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
 
   useEffect(() => {
@@ -172,7 +257,7 @@ export default function Muhkamat() {
   const kIdx = params.k != null ? Number(params.k) : null;
   const kb = useMemo(() => (data && kIdx != null ? data.kubra[kIdx] : null), [data, kIdx]);
 
-  if (!data) {
+  if (!data || !jw) {
     return (
       <div className="page page-narrow">
         <div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div>
@@ -183,7 +268,7 @@ export default function Muhkamat() {
   return (
     <div className="page">
       <div className="jw-wrap">
-        {kb ? <KubraView kb={kb} texts={texts} /> : <Index data={data} />}
+        {kb ? <KubraView kb={kb} texts={texts} /> : <Index data={data} texts={texts} />}
       </div>
     </div>
   );
