@@ -361,8 +361,11 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <header style={{ marginBottom: 18 }}>
+        <header style={{ marginBottom: 18, display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
           <div style={{ fontSize: 20, fontWeight: 700 }}>{t("dashboard.title")}</div>
+          <Link to="/fawasil" className="chip link" style={{ textDecoration: "none" }}>
+            {getUILang() === "ar" ? "أطلس الفواصل ←" : "rhyme atlas →"}
+          </Link>
         </header>
 
         {/* stat tiles */}

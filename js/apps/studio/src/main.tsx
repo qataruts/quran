@@ -18,6 +18,7 @@ import Jawami from "./views/Jawami";
 import Gaps from "./views/Gaps";
 import Furuq from "./views/Furuq";
 import Amthal from "./views/Amthal";
+import Fawasil from "./views/Fawasil";
 import Mawdui from "./views/Mawdui";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -187,6 +188,7 @@ function App() {
           <Route path="/gaps" element={<Gaps />} />
           <Route path="/furuq" element={<Furuq />} />
           <Route path="/amthal" element={<Amthal />} />
+          <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:s" element={<Mawdui />} />
           <Route path="/mawdui/:s/:t" element={<Mawdui />} />
