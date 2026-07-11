@@ -1,0 +1,39 @@
+/**
+ * أمثال القرآن — computed purely from the text (no tafsīr):
+ *   • «مضروبة»: an ayah where God «ضرب … مثلاً» (roots ض-ر-ب AND م-ث-ل together).
+ *   • «تشبيهات»: an ayah with the similitude marker «كمثل».
+ * Writes js/apps/studio/public/amthal.json. Run: node scripts/export-amthal.mjs
+ */
+import { DatabaseSync } from "node:sqlite";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(HERE, "../..");
+const DB = path.join(ROOT, "quran-app.db");
+const OUT = path.join(ROOT, "js/apps/studio/public/amthal.json");
+
+const db = new DatabaseSync(DB, { readOnly: true });
+const key = (loc) => loc.split(":").map(Number);
+const sortLoc = (a, b) => {
+  const [s1, a1] = key(a), [s2, a2] = key(b);
+  return s1 - s2 || a1 - a2;
+};
+
+const darb = new Set(db.prepare("SELECT DISTINCT surahNo||':'||ayahNo loc FROM words WHERE root=?").all("ضرب").map((r) => r.loc));
+const mithlAyahs = db.prepare("SELECT DISTINCT surahNo||':'||ayahNo loc FROM words WHERE root=?").all("مثل").map((r) => r.loc);
+const kamithl = new Set(db.prepare("SELECT DISTINCT surahNo||':'||ayahNo loc FROM words WHERE textClean LIKE 'كمثل%'").all().map((r) => r.loc));
+db.close();
+
+const parables = mithlAyahs.filter((loc) => darb.has(loc)).sort(sortLoc);
+const pSet = new Set(parables);
+const similes = [...kamithl].filter((loc) => !pSet.has(loc)).sort(sortLoc);
+
+const out = {
+  meta: { parables: parables.length, similes: similes.length, total: parables.length + similes.length },
+  parables, // «ضرب … مثلاً»
+  similes, // «كمثل …»
+};
+fs.writeFileSync(OUT, JSON.stringify(out));
+console.log(`amthal.json: ${out.meta.total} verses (${parables.length} مضروبة + ${similes.length} تشبيهات)`);

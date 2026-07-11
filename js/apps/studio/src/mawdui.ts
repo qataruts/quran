@@ -83,6 +83,7 @@ export function loadVerseIndex(): Promise<VerseIndex> {
 export interface VerseInfo {
   topic: string | null;
   section: string | null;
+  sectionIdx: number | null; // for /mawdui/:sectionIdx
   jamiaKind: string | null;
   grade: string | null;
   muhkama: string | null;
@@ -99,6 +100,7 @@ export function verseInfo(loc: string): VerseInfo | null {
   return {
     topic: topic?.title ?? null,
     section: topic ? vidx.sections[topic.sec]?.title ?? null : null,
+    sectionIdx: topic ? topic.sec : null,
     jamiaKind: r[1] ? KIND_AR[r[1]] : null,
     grade: r[2] ? GRADE_AR[r[2]] : null,
     muhkama: r[6] >= 0 ? vidx.muhkamat[r[6]]?.title ?? null : null,

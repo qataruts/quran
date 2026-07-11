@@ -28,6 +28,7 @@ import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId }
 import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip from "../components/TafsilChip";
 import TafsilAside from "../components/TafsilAside";
+import VerseContext from "../components/VerseContext";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -707,6 +708,7 @@ export default function Reader() {
             minHeight: 0,
           }}
         >
+          <VerseContext location={selectedLoc} />
           <TafsilAside location={selectedLoc} />
           <Inspector word={selected} />
         </aside>

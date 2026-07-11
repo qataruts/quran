@@ -49,6 +49,16 @@ function Sections({ sections }: { sections: MSection[] }) {
         </p>
       </header>
       <div className="mw-sections">
+        <Link
+          to="/amthal"
+          className="mw-sec-card"
+          style={{ borderColor: "var(--gold)", background: "var(--gold-soft)" }}
+          title={ar ? "الأمثال التي ضربها الله والتشبيهات القرآنية — من نصّ القرآن" : "the Qur'an's own parables & similitudes"}
+        >
+          <span className="mw-sec-name" style={{ color: "var(--gold)" }}>✦ {ar ? "أمثال القرآن" : "Parables of the Qur'an"}</span>
+          <span className="mw-sec-meta">{ar ? "٤٣ مَثَلًا وتشبيهًا" : "43 parables & similitudes"}</span>
+          <span className="mw-sec-preview">{ar ? "البعوضة · النور · العنكبوت · الحبّة · الكلمة الطيّبة" : "the mosquito · the light · the spider · the grain"}</span>
+        </Link>
         {sections.map((s, i) => (
           <Link
             key={i}

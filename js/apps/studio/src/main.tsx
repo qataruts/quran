@@ -16,6 +16,7 @@ import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
 import Furuq from "./views/Furuq";
+import Amthal from "./views/Amthal";
 import Mawdui from "./views/Mawdui";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -183,6 +184,7 @@ function App() {
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           <Route path="/jawami" element={<Jawami />} />
           <Route path="/furuq" element={<Furuq />} />
+          <Route path="/amthal" element={<Amthal />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:s" element={<Mawdui />} />
           <Route path="/mawdui/:s/:t" element={<Mawdui />} />

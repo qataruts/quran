@@ -476,6 +476,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
 }
 :root[data-theme="dark"] .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
+
+/* أمثال القرآن — parable verse cards */
+.am-card { display: block; text-decoration: none; color: var(--ink); transition: border-color .15s; }
+.am-card:hover { border-color: var(--gold); text-decoration: none; }
+.am-ref { display: block; color: var(--accent); font-weight: 700; font-size: 13px; margin-bottom: 5px; }
+.am-text { display: block; font-size: calc(21px * var(--quran-scale, 1)); line-height: 2.05; }
 .jw-header { text-align: center; margin-bottom: 18px; }
 .jw-title { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 4px 0 6px; }
 .jw-lead { color: var(--ink-2); max-width: 680px; margin: 0 auto 12px; line-height: 1.7; font-size: 14px; }

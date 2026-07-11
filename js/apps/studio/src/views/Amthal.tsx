@@ -1,0 +1,90 @@
+/**
+ * أمثال القرآن — the Qur'an's own parables and similitudes, gathered straight
+ * from the text (roots ض-ر-ب + م-ث-ل for «ضرب مثلاً», and the marker «كمثل») —
+ * not from any tafsīr. Data: public/amthal.json (see scripts/export-amthal.mjs).
+ */
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ayahByLocationMap, surahNameAr } from "../db";
+import { getUILang, num, t, useUILang } from "../i18n";
+import { readPathOf } from "../types";
+import type { AyahDoc } from "../types";
+
+interface AmthalData {
+  meta: { parables: number; similes: number; total: number };
+  parables: string[];
+  similes: string[];
+}
+
+const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
+
+export default function Amthal() {
+  useUILang();
+  const [data, setData] = useState<AmthalData | null>(null);
+  const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
+  const ar = getUILang() === "ar";
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}amthal.json?v=${__DATA_VERSION__}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setData(d))
+      .catch(() => {});
+    ayahByLocationMap().then(setTexts);
+  }, []);
+
+  if (!data) {
+    return (
+      <div className="page page-narrow">
+        <div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div>
+      </div>
+    );
+  }
+
+  const group = (title: string, note: string, locs: string[]) => (
+    <section style={{ marginTop: 22 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+        <h2 style={{ margin: 0, fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22 }}>{title}</h2>
+        <span className="muted">· {num(locs.length)}</span>
+      </div>
+      <p className="muted" style={{ margin: "0 0 12px" }}>{note}</p>
+      <div className="fr-list">
+        {locs.map((loc) => (
+          <Link key={loc} to={readPathOf(loc)} className="fr-card am-card">
+            <span className="fr-ref am-ref">{arName(loc)}</span>
+            <span className="quran am-text">{texts.get(loc)?.textUthmani ?? loc}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="page">
+      <div className="fr-wrap">
+        <header className="jw-header">
+          <h1 className="jw-title">{ar ? "أمثال القرآن" : "Parables of the Qur'an"}</h1>
+          <p className="jw-lead">
+            {ar
+              ? "الأمثال التي ضربها الله في كتابه، والتشبيهات القرآنية التي تُقرِّب المعنى — مُلتقَطةً من نصّ القرآن وحده (الجذران «ضرب» و«مثل»، وأداة التشبيه «كمثل»)، لا من تفسير."
+              : "The parables God strikes in His Book, and the Qur'anic similitudes — gathered from the text alone (the roots ḍ-r-b + m-th-l, and the marker «kamathal»), not from tafsīr."}
+          </p>
+          <div className="jw-stats">
+            <span className="chip"><b>{num(data.meta.total)}</b> {ar ? "موضعًا" : "verses"}</span>
+            <span className="chip"><b>{num(data.meta.parables)}</b> {ar ? "مضروبة" : "struck"}</span>
+            <span className="chip"><b>{num(data.meta.similes)}</b> {ar ? "تشبيهًا" : "similitudes"}</span>
+          </div>
+        </header>
+        {group(
+          ar ? "أمثالٌ مضروبة" : "Struck parables",
+          ar ? "﴿ضَرَبَ اللَّهُ مَثَلًا﴾ — تصويرُ معنًى غائبٍ بمشهدٍ محسوس." : "«God strikes a parable» — an abstract meaning cast as a vivid scene.",
+          data.parables,
+        )}
+        {group(
+          ar ? "تشبيهاتٌ قرآنية" : "Similitudes",
+          ar ? "﴿كَمَثَلِ …﴾ — تشبيهٌ يُقرِّب المعنى بنظيرٍ محسوس." : "«like the likeness of …» — a comparison that brings the meaning near.",
+          data.similes,
+        )}
+      </div>
+    </div>
+  );
+}
