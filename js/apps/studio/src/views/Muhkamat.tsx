@@ -139,7 +139,7 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
   const ar = getUILang() === "ar";
   const jw = useJawami();
   const [q, setQ] = useState("");
-  const [view, setView] = useState<"titles" | "ayat">("titles");
+  const [view, setView] = useState<"titles" | "ayat">("ayat");
   const [limit, setLimit] = useState(60);
   useEffect(() => setLimit(60), [q, view]);
 
@@ -162,6 +162,14 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
       .sort((a, b) => tafsilOf(b).length - tafsilOf(a).length);
   }, [jw]);
   const totalTafsil = useMemo(() => roots.reduce((s, l) => s + tafsilOf(l).length, 0), [roots]);
+  // the whole تفصيل network reachable across all levels (honest total — a root's
+  // تفصيل can itself have تفصيل; 108 roots sit atop a much larger fabric)
+  const networkSize = useMemo(() => {
+    if (!jw) return 0;
+    const s = new Set<string>(Object.keys(jw.principles));
+    for (const loc of Object.keys(jw.principles)) for (const l of tafsilOf(loc)) s.add(l.loc);
+    return s.size;
+  }, [jw]);
 
   const filteredRoots = useMemo(
     () => roots.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean, locToKubra.get(loc))),
@@ -187,7 +195,12 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
         <div className="jw-stats">
           <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "عنوان" : "sections"}</span>
           <span className="chip"><b>{num(roots.length)}</b> {ar ? "آية محكمة" : "muḥkam verses"}</span>
-          <span className="chip"><b>{num(totalTafsil)}</b> {ar ? "تفصيل" : "tafsīl"}</span>
+          <span
+            className="chip"
+            title={ar ? `تفصيلٌ مباشر ${num(totalTafsil)}، ويتفرّع عبر مستوياتٍ إلى شبكةٍ أوسع` : "108 roots atop a multi-level تفصيل fabric"}
+          >
+            <b>{num(networkSize)}</b> {ar ? "في شبكة تفصيلها" : "in its tafsīl network"}
+          </span>
           <Link to="/jawami/lenses" className="chip link" style={{ textDecoration: "none" }} title={ar ? "تحليلاتٌ متقدّمة لبنية الشبكة (للباحثين)" : "advanced network analytics"}>
             {ar ? "تحليلات الشبكة ←" : "network analytics →"}
           </Link>
@@ -200,11 +213,11 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
       <div className="jw-filters">
         <div className="jw-chipset" style={{ justifyContent: "center" }}>
           <span className="jw-filter-lbl">{ar ? "العرض" : "view"}</span>
-          <button className={view === "titles" ? "on" : ""} onClick={() => setView("titles")}>
-            {ar ? `عناوين (${num(data.meta.kubra)})` : `sections (${num(data.meta.kubra)})`}
-          </button>
           <button className={view === "ayat" ? "on" : ""} onClick={() => setView("ayat")}>
             {ar ? `آيات (${num(roots.length)})` : `verses (${num(roots.length)})`}
+          </button>
+          <button className={view === "titles" ? "on" : ""} onClick={() => setView("titles")}>
+            {ar ? `عناوين (${num(data.meta.kubra)})` : `sections (${num(data.meta.kubra)})`}
           </button>
         </div>
       </div>

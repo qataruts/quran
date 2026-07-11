@@ -232,36 +232,23 @@ function RootIndex() {
               <div className="muted" style={{ marginBottom: 8 }}>
                 {t("roots.top")} ({num(roots.length)})
               </div>
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>{t("morph.root")}</th>
-                    <th>{t("roots.occurrences")}</th>
-                    <th>{t("roots.lemmas")}</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {roots.map((r: RootDoc) => (
-                    <tr key={r._id}>
-                      <td>
-                        <Link
-                          to={`/roots/${encodeURIComponent(r.root)}`}
-                          className="quran"
-                          style={{ fontSize: 24, lineHeight: 1.4 }}
-                        >
-                          {r.root}
-                        </Link>
-                      </td>
-                      <td>{num(r.occurrences)}</td>
-                      <td>{num(r.lemmas.length)}</td>
-                      <td>
-                        <Link to={`/roots/${encodeURIComponent(r.root)}`}>{t("roots.explore")}</Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {/* mobile-first: a responsive grid of tappable root cards — the
+                  whole card navigates (no redundant «استكشف»). */}
+              <div className="roots-grid">
+                {roots.map((r: RootDoc) => (
+                  <Link
+                    key={r._id}
+                    to={`/roots/${encodeURIComponent(r.root)}`}
+                    className="root-card"
+                    title={`${r.root} — ${num(r.occurrences)} ${t("roots.occurrences")} · ${num(r.lemmas.length)} ${t("roots.lemmas")}`}
+                  >
+                    <span className="root-card-name quran">{r.root}</span>
+                    <span className="root-card-meta">
+                      {num(r.occurrences)} {t("roots.occurrences")} · {num(r.lemmas.length)} {t("roots.lemmas")}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </>
           )}
         </div>

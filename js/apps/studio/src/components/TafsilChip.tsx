@@ -39,13 +39,54 @@ function useParticipation(location: string) {
   return { p, fwd, back };
 }
 
-function VerseLine({ loc, texts, rel }: { loc: string; texts: Map<string, AyahDoc>; rel?: Rel }) {
+/** A تفصيل verse. If it *itself* elaborates further verses, it can be opened to
+ *  reveal its own تفصيل — so the whole network unfolds level by level on tap
+ *  (depth-capped against the network's cycles). */
+function VerseLine({
+  loc,
+  texts,
+  rel,
+  depth = 0,
+}: {
+  loc: string;
+  texts: Map<string, AyahDoc>;
+  rel?: Rel;
+  depth?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const ar = getUILang() === "ar";
+  const sub = tafsilOf(loc);
+  const canDrill = sub.length > 0 && depth < 3;
   return (
-    <div className="jw-verse">
-      {rel && <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />}
-      <span className="jw-verse-ref">{arName(loc)}</span>
-      <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
-      <MushafLink loc={loc} compact />
+    <div className="jw-subwrap">
+      <div className="jw-verse">
+        {rel && <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />}
+        <span className="jw-verse-ref">{arName(loc)}</span>
+        <span
+          className="jw-verse-text quran"
+          onClick={canDrill ? () => setOpen((v) => !v) : undefined}
+          style={{ cursor: canDrill ? "pointer" : "default" }}
+        >
+          {texts.get(loc)?.textClean ?? loc}
+        </span>
+        {canDrill && (
+          <button
+            className="chip gold jw-subtoggle"
+            onClick={() => setOpen((v) => !v)}
+            title={ar ? "افتح تفصيلَ هذه الآية" : "open its تفصيل"}
+          >
+            {num(sub.length)} {ar ? "تفصيل" : ""} {open ? "▾" : "◂"}
+          </button>
+        )}
+        <MushafLink loc={loc} compact />
+      </div>
+      {open && canDrill && (
+        <div className="jw-subtafsil">
+          {sub.map((l) => (
+            <VerseLine key={l.loc} loc={l.loc} texts={texts} rel={l.rel} depth={depth + 1} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

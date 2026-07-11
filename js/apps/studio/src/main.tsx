@@ -132,11 +132,11 @@ function Nav() {
   return (
     <nav>
       <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/muhkamat" title={getUILang() === "ar" ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
-      <NavLink to="/amthal" title={getUILang() === "ar" ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{getUILang() === "ar" ? "الأمثال" : "Parables"}</NavLink>
-      <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
+      <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
+      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
+      <NavLink to="/amthal" title={getUILang() === "ar" ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{getUILang() === "ar" ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
@@ -183,12 +183,12 @@ function useIsMobile(): boolean {
 // every primary destination, for the mobile drawer (vertical list has room)
 const DRAWER_LINKS: [string, string, string][] = [
   ["/read", "المصحف", "Reader"],
-  ["/mawdui", "المواضيع", "Topics"],
   ["/muhkamat", "المحكمات", "Muhkamāt"],
+  ["/roots", "الجذور", "Roots"],
   ["/furuq", "الفروق", "Furūq"],
+  ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
-  ["/roots", "الجذور", "Roots"],
   ["/search", "البحث", "Search"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات", "Stats"],
