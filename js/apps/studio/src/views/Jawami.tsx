@@ -384,12 +384,14 @@ function Mathani({ texts }: { texts: Map<string, AyahDoc> }) {
   );
 }
 
-type Tab = "list" | "relations" | "convergence" | "mathani";
+type Lens = "relations" | "convergence" | "mathani";
 
 export default function Jawami() {
   useUILang();
   const jw = useJawami();
-  const [tab, setTab] = useState<Tab>("list");
+  // advanced lenses are collapsed by default (progressive disclosure); the
+  // browsable list is always the primary surface.
+  const [lens, setLens] = useState<Lens | null>(null);
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   const [kind, setKind] = useState<string>("");
   const [grade, setGrade] = useState<string>("");
@@ -448,6 +450,21 @@ export default function Jawami() {
   }, [jw, kind, grade, q, texts, rootAyahs]);
 
   useEffect(() => setLimit(60), [kind, grade, q]);
+
+  // the single widest-branching جامعة — a concrete worked example for the intro
+  const example = useMemo(() => {
+    if (!jw) return null;
+    let best: string | null = null;
+    let bestN = 0;
+    for (const loc of Object.keys(jw.principles)) {
+      const n = tafsilOf(loc).length;
+      if (n > bestN) {
+        bestN = n;
+        best = loc;
+      }
+    }
+    return best ? { loc: best, n: bestN } : null;
+  }, [jw]);
 
   if (!jw) {
     return (
@@ -508,167 +525,163 @@ export default function Jawami() {
               {ar ? "معجم الجوامع ←" : "lexicon →"}
             </Link>
           </div>
+          {example && (
+            <Link
+              to={readPathOf(example.loc)}
+              className="jw-example"
+              title={ar ? "افتح هذه الجامعة في المصحف" : "open this principle in the reader"}
+            >
+              <span className="jw-example-lbl">{ar ? "مثال" : "e.g."}</span>
+              <span className="quran jw-example-text">
+                {texts.get(example.loc)?.textClean ?? arName(example.loc)}
+              </span>
+              <span className="jw-example-meta">
+                {ar ? `← تُبيِّنها ${num(example.n)} آية` : `← ${num(example.n)} verses clarify it`}
+              </span>
+            </Link>
+          )}
         </header>
 
-        <div className="jw-tabs">
+        <PageSearch
+          value={q}
+          onChange={setQ}
+          placeholder={ar ? "ابحث بكلمةٍ أو معنى (مثل: الزنى)…" : "search by any word…"}
+        />
+        <div className="jw-filters">
+          <div className="jw-chipset">
+            <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
+            <button
+              className={kind === "" ? "on" : ""}
+              onClick={() => setKind("")}
+              title={ar ? "أظهر كل الأنواع" : "show all kinds"}
+            >
+              {ar ? "الكل" : "all"}
+            </button>
+            {KINDS.map((k) => (
+              <button
+                key={k}
+                className={kind === k ? "on" : ""}
+                onClick={() => setKind(kind === k ? "" : k)}
+                title={ar ? `أظهر جوامع «${k}» فقط` : `only «${k}»`}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+          <div className="jw-chipset">
+            <span className="jw-filter-lbl">{ar ? "الدرجة" : "grade"}</span>
+            <button
+              className={grade === "" ? "on" : ""}
+              onClick={() => setGrade("")}
+              title={ar ? "أظهر كل الدرجات" : "show all grades"}
+            >
+              {ar ? "الكل" : "all"}
+            </button>
+            {GRADES.map((g) => (
+              <button
+                key={g}
+                className={grade === g ? "on gold" : "gold"}
+                onClick={() => setGrade(grade === g ? "" : g)}
+                title={ar ? `أظهر «${g}» فقط` : `only grade «${g}»`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="muted jw-resultcount">
+          {num(rows.length)} {ar ? "آية" : "verses"}
+          {resolvedRoot && resolvedRoot !== q.trim() && (
+            <span
+              className="chip gold"
+              style={{ marginInlineStart: 8 }}
+              title={
+                ar
+                  ? "طابقنا كلمتك بجذرها القرآني فبحثنا في كل مشتقّاته"
+                  : "matched your word to its Quranic root"
+              }
+            >
+              {ar ? "الجذر" : "root"}: <span className="quran">{resolvedRoot}</span>
+              {rootAyahs.size > 0 && (
+                <> · {num(rootAyahs.size)} {ar ? "آية بالجذر" : "by root"}</>
+              )}
+            </span>
+          )}
+        </div>
+
+        <div className="jw-list">
+          {rows.slice(0, limit).map(([loc, p]) => (
+            <Card
+              key={loc}
+              hub={loc}
+              p={p}
+              texts={texts}
+              open={open === loc}
+              onToggle={() => setOpen(open === loc ? null : loc)}
+            />
+          ))}
+        </div>
+        {rows.length > limit && (
+          <div style={{ textAlign: "center", margin: "18px 0" }}>
+            <button onClick={() => setLimit(limit + 100)}>
+              {ar
+                ? `عرض المزيد (${num(rows.length - limit)})`
+                : `show more (${rows.length - limit})`}
+            </button>
+          </div>
+        )}
+
+        {/* progressive disclosure: the three analytical lenses, explained in
+            plain Arabic and collapsed by default so the first screen stays the
+            browsable list. One open at a time. */}
+        <section className="jw-lenses">
+          <h2 className="jw-lenses-title">{ar ? "طرقٌ أخرى للاستكشاف" : "Other ways to explore"}</h2>
           {(
             [
-              [
-                "list",
-                ar ? "الجوامع" : "Principles",
-                ar
-                  ? "كل الآيات الجوامع، الأوسع تفصيلًا أولًا"
-                  : "all principle verses",
-              ],
               [
                 "relations",
                 ar ? "العلاقات" : "Relations",
                 ar
-                  ? "الشبكة مقسّمةً حسب نوع العلاقة: توكيد/بيان/جزاء/مثال"
-                  : "network by relation type",
+                  ? "الشبكة مقسّمةً حسب نوع الصلة: بيانٌ يوضّح، مثالٌ يُجسّد، جزاءٌ يذكر العاقبة، توكيدٌ يُعيد التقرير."
+                  : "the network split by relation type: clarify · exemplify · requite · restate.",
               ],
               [
                 "convergence",
                 ar ? "نقاط الالتقاء" : "Convergence",
                 ar
-                  ? "آياتٌ تلتقي عندها عدةُ جوامع تُفصِّلها"
-                  : "verses many principles elaborate",
+                  ? "آياتٌ تلتقي عندها عدّةُ جوامع تُفصِّلها معًا — أكثر المواضع تردُّدًا في الشبكة."
+                  : "verses where several principles converge — the network's busiest nodes.",
               ],
               [
                 "mathani",
                 ar ? "المثاني" : "Mathānī",
                 ar
-                  ? "آيتان يُفصِّل كلٌّ منهما الأخرى"
-                  : "verse pairs that elaborate each other",
+                  ? "آيتان يُفصِّل كلٌّ منهما الأخرى — أعمدةٌ متقابلة يشدّ بعضها بعضًا."
+                  : "verse pairs that each elaborate the other — mutually reinforcing pillars.",
               ],
-            ] as [Tab, string, string][]
-          ).map(([key, lbl, tip]) => (
-            <button
-              key={key}
-              className={tab === key ? "on" : ""}
-              onClick={() => setTab(key)}
-              title={tip}
-            >
-              {lbl}
-            </button>
-          ))}
-        </div>
-
-        {tab === "list" && (
-          <>
-            <PageSearch
-              value={q}
-              onChange={setQ}
-              placeholder={ar ? "ابحث بكلمةٍ أو معنى (مثل: الزنى)…" : "search by any word…"}
-            />
-            <div className="jw-filters">
-              <div className="jw-chipset">
-                <button
-                  className={kind === "" ? "on" : ""}
-                  onClick={() => setKind("")}
-                  title={
-                    ar
-                      ? "فلتر النوع: أظهر كل الأنواع"
-                      : "filter: show all kinds"
-                  }
-                >
-                  {ar ? "كل الأنواع" : "all kinds"}
-                </button>
-                {KINDS.map((k) => (
-                  <button
-                    key={k}
-                    className={kind === k ? "on" : ""}
-                    onClick={() => setKind(kind === k ? "" : k)}
-                    title={
-                      ar
-                        ? `فلتر النوع: أظهر جوامع «${k}» فقط`
-                        : `filter: show only «${k}» principles`
-                    }
-                  >
-                    {k}
-                  </button>
-                ))}
-              </div>
-              <div className="jw-chipset">
-                <button
-                  className={grade === "" ? "on" : ""}
-                  onClick={() => setGrade("")}
-                  title={
-                    ar
-                      ? "فلتر الدرجة: أظهر كل الدرجات"
-                      : "filter: show all grades"
-                  }
-                >
-                  {ar ? "كل الدرجات" : "all grades"}
-                </button>
-                {GRADES.map((g) => (
-                  <button
-                    key={g}
-                    className={grade === g ? "on gold" : "gold"}
-                    onClick={() => setGrade(grade === g ? "" : g)}
-                    title={
-                      ar
-                        ? `فلتر الدرجة: أظهر «${g}» فقط`
-                        : `filter: show only grade «${g}»`
-                    }
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="muted jw-resultcount">
-              {num(rows.length)} {ar ? "آية" : "verses"}
-              {resolvedRoot && resolvedRoot !== q.trim() && (
-                <span
-                  className="chip gold"
-                  style={{ marginInlineStart: 8 }}
-                  title={
-                    ar
-                      ? "طابقنا كلمتك بجذرها القرآني فبحثنا في كل مشتقّاته"
-                      : "matched your word to its Quranic root"
-                  }
-                >
-                  {ar ? "الجذر" : "root"}:{" "}
-                  <span className="quran">{resolvedRoot}</span>
-                  {rootAyahs.size > 0 && (
-                    <>
-                      {" "}
-                      · {num(rootAyahs.size)} {ar ? "آية بالجذر" : "by root"}
-                    </>
-                  )}
-                </span>
+            ] as [Lens, string, string][]
+          ).map(([key, title, desc]) => (
+            <div key={key} className={`jw-lens-card${lens === key ? " open" : ""}`}>
+              <button
+                className="jw-lens-head"
+                onClick={() => setLens(lens === key ? null : key)}
+                aria-expanded={lens === key}
+              >
+                <span className="jw-lens-caret">{lens === key ? "▾" : "◂"}</span>
+                <span className="jw-lens-title">{title}</span>
+                {lens !== key && <span className="jw-lens-desc">{desc}</span>}
+              </button>
+              {lens === key && (
+                <div className="jw-lens-body">
+                  {key === "relations" && <RelationLens texts={texts} />}
+                  {key === "convergence" && <Convergence texts={texts} />}
+                  {key === "mathani" && <Mathani texts={texts} />}
+                </div>
               )}
             </div>
-
-            <div className="jw-list">
-              {rows.slice(0, limit).map(([loc, p]) => (
-                <Card
-                  key={loc}
-                  hub={loc}
-                  p={p}
-                  texts={texts}
-                  open={open === loc}
-                  onToggle={() => setOpen(open === loc ? null : loc)}
-                />
-              ))}
-            </div>
-            {rows.length > limit && (
-              <div style={{ textAlign: "center", margin: "18px 0" }}>
-                <button onClick={() => setLimit(limit + 100)}>
-                  {ar
-                    ? `عرض المزيد (${num(rows.length - limit)})`
-                    : `show more (${rows.length - limit})`}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {tab === "relations" && <RelationLens texts={texts} />}
-        {tab === "convergence" && <Convergence texts={texts} />}
-        {tab === "mathani" && <Mathani texts={texts} />}
+          ))}
+        </section>
       </div>
     </div>
   );
