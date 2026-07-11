@@ -26,6 +26,7 @@ import Mawdui from "./views/Mawdui";
 import Graph from "./views/Graph";
 import RootsGraph from "./views/RootsGraph";
 import Maalim from "./views/Maalim";
+import Mujam from "./views/Mujam";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
@@ -188,6 +189,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/read", "المصحف", "Reader"],
   ["/muhkamat", "المحكمات", "Muhkamāt"],
   ["/roots", "الجذور", "Roots"],
+  ["/mujam", "معجم القرآن", "Dictionary"],
   ["/furuq", "الفروق", "Furūq"],
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
@@ -273,6 +275,8 @@ function App() {
           <Route path="/fabric" element={<RootsGraph />} />
           <Route path="/fabric/:root" element={<RootsGraph />} />
           <Route path="/maalim" element={<Maalim />} />
+          <Route path="/mujam" element={<Mujam />} />
+          <Route path="/mujam/:root" element={<Mujam />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

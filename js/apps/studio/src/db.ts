@@ -255,6 +255,15 @@ export async function allRootsList(): Promise<RootDoc[]> {
   return allRoots();
 }
 
+/** every root that carries a classical lexicon entry (الراغب / مقاييس), in
+ *  Arabic order — for the معجم القرآن browser. */
+export async function rootsWithMeanings(): Promise<RootDoc[]> {
+  const all = await allRoots();
+  return all
+    .filter((r) => r.meanings && r.meanings.length > 0)
+    .sort((a, b) => a.root.localeCompare(b.root, "ar"));
+}
+
 /** total number of distinct roots in the corpus. */
 export async function countRoots(): Promise<number> {
   const c = coll("roots") as { count?: () => Promise<number>; findMany: (a: unknown) => Promise<unknown[]> };

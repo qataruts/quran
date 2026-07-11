@@ -438,6 +438,13 @@ function RootDetail({ root }: { root: string }) {
               title={rootDoc.meanings[0].title}
               text={rootDoc.meanings[0].text}
             />
+            <div style={{ marginTop: 10 }}>
+              <Link to={`/mujam/${encodeURIComponent(rootDoc.root)}`}>
+                {getUILang() === "ar"
+                  ? `المدخل كاملًا في المعجم${rootDoc.meanings.length > 1 ? " (الراغب ومقاييس)" : ""} ←`
+                  : "Full dictionary entry →"}
+              </Link>
+            </div>
           </div>
         )}
 
