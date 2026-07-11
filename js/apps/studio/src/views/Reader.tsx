@@ -26,7 +26,7 @@ import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
-import TafsilChip from "../components/TafsilChip";
+import TafsilChip, { TafsilPanel } from "../components/TafsilChip";
 import TafsilAside from "../components/TafsilAside";
 import VerseContext from "../components/VerseContext";
 import { useVerseIndex, verseInfo } from "../mawdui";
@@ -281,6 +281,9 @@ export default function Reader() {
   const [wordsByAyah, setWordsByAyah] = useState<Map<number, WordDoc[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WordDoc | null>(null);
+  // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
+  // page short and the panel renders beneath the verse, not above it.
+  const [openTafsil, setOpenTafsil] = useState<string | null>(null);
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
   const [pageIdx, setPageIdx] = useState(0);
   const wantLastPage = useRef<number | null>(null); // surah we back-flipped INTO → show its last page
@@ -685,7 +688,13 @@ export default function Reader() {
                   >
                     {bookmarks.includes(ayah.location) ? "★" : "☆"}
                   </button>
-                  <TafsilChip location={ayah.location} />
+                  <TafsilChip
+                    location={ayah.location}
+                    open={openTafsil === ayah.location}
+                    onToggle={() =>
+                      setOpenTafsil((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
+                  />
                 </div>
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
@@ -694,6 +703,7 @@ export default function Reader() {
                   onSelect={(w: WordDoc) => setSelected(w)}
                 />
                 <Translations ayah={ayah} />
+                <TafsilPanel location={ayah.location} open={openTafsil === ayah.location} />
               </article>
             );
           })

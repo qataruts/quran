@@ -691,6 +691,14 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .jw-cardtext:hover { text-decoration: none; background: var(--accent-soft); }
 
 .jw-panel { padding: 6px 14px 14px; background: var(--panel-2); border-top: 1px solid var(--line); }
+/* in the reader the panel sits beneath its آية — set it apart as a nested,
+   inset card tied to the verse above (gold rail on the start edge). */
+.jw-panel-tafsil {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--gold);
+  border-radius: 10px;
+}
 .jw-relgroup { margin-top: 10px; }
 .jw-relhead { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
 .jw-reldot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex: none; }
@@ -866,13 +874,15 @@ a.lyr:hover { border-color: var(--accent); transform: translateY(-1px); text-dec
 
 /* loading screen */
 .boot {
-  height: 100vh; display: grid; place-items: center; text-align: center;
+  height: 100vh; height: 100dvh; display: grid; place-items: center;
+  text-align: center; padding: 24px; box-sizing: border-box;
 }
+.boot > div { max-width: min(420px, 100%); }
 .boot .bar {
-  width: 320px; height: 6px; border-radius: 3px; background: var(--panel-2);
+  width: 100%; max-width: 320px; height: 6px; border-radius: 3px; background: var(--panel-2);
   overflow: hidden; margin: 14px auto 6px;
 }
-.boot .bar > div { height: 100%; background: var(--accent); transition: width 0.15s; }
+.boot .bar > div { height: 100%; max-width: none; background: var(--accent); transition: width 0.15s; }
 .boot .title { font-family: var(--font-quran); font-size: 34px; color: var(--accent); }
 
 /* tables */
