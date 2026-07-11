@@ -257,6 +257,15 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .sem-tab { border: none; background: transparent; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; border-radius: 999px; padding: 6px 18px; }
 .sem-tab:hover { color: var(--ink); }
 .sem-tab.on { background: var(--accent); color: #fff; font-weight: 600; }
+.sem-try { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+
+/* الذكاء الاصطناعي — a Gemini-style 4-point spark marking AI-produced features */
+.ai-spark {
+  display: inline-block; width: 13px; height: 13px; vertical-align: -2px; flex: none;
+  background: linear-gradient(135deg, #4589f0 0%, #9b72cb 55%, #d96570 100%);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 
 /* InlineOmni — on-page search/jump with a results dropdown (reader header) */
 .inline-omni { position: relative; margin-bottom: 14px; }

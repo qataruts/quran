@@ -434,6 +434,18 @@ export default function Search() {
   const shown = hits ? hits.slice(0, DISPLAY_CAP) : [];
   const examples = mode === "meaning" ? (ar ? MEANING_EXAMPLES_AR : MEANING_EXAMPLES_EN) : TEXT_EXAMPLES;
 
+  /** Clear results and return to the empty state (keeps the current mode). */
+  const resetSearch = () => {
+    seq.current++;
+    setInput("");
+    setHits(null);
+    setError(null);
+    setNeedsSetup(false);
+    setLinkVerse(null);
+    lastPushed.current = "";
+    setSearchParams(mode === "meaning" ? {} : { m: mode }, { replace: true });
+  };
+
   return (
     <div className="page">
       <div className="page-narrow">
@@ -457,7 +469,7 @@ export default function Search() {
           <div className="inline-omni-wrap">
             <VersePicker onPick={(loc) => runLinks(loc)} />
             {!linkVerse && (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2, alignItems: "center" }}>
+              <div className="sem-try">
                 <span className="muted">{ar ? "جرّب:" : "try:"}</span>
                 {LINKS_EXAMPLES.map((ex) => (
                   <button key={ex.loc} className="chip link" onClick={() => runLinks(ex.loc)}>
@@ -481,15 +493,27 @@ export default function Search() {
                 style={{ fontSize: 17 }}
                 enterKeyHint="search"
               />
-              {input && (
-                <button type="button" className="page-search-clear" onClick={() => setInput("")} aria-label={ar ? "مسح" : "clear"}>
+              {(input || q) && (
+                <button type="button" className="page-search-clear" onClick={resetSearch} aria-label={ar ? "مسح" : "clear"}>
                   ✕
                 </button>
               )}
             </div>
-            {mode === "meaning" && (
-              <div className="muted" style={{ fontSize: 12.5, marginTop: 4 }}>
-                {ar ? "اكتب ثم اضغط Enter للبحث" : "type, then press Enter to search"}
+            {!q && !loading && !needsSetup && (
+              <div className="sem-try">
+                <span className="muted">{ar ? "جرّب:" : "try:"}</span>
+                {examples.map((ex: string) => (
+                  <button
+                    key={ex}
+                    className="chip link"
+                    onClick={() => {
+                      setInput(ex);
+                      if (mode === "meaning") void runMeaning(ex);
+                    }}
+                  >
+                    {ex}
+                  </button>
+                ))}
               </div>
             )}
           </form>
@@ -514,25 +538,6 @@ export default function Search() {
           </div>
         )}
 
-        {!q && !loading && !needsSetup && mode !== "links" && (
-          <div className="card" style={{ marginTop: 18 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {examples.map((ex: string) => (
-                <button
-                  key={ex}
-                  className="chip link"
-                  onClick={() => {
-                    setInput(ex);
-                    if (mode === "meaning") void runMeaning(ex);
-                  }}
-                >
-                  {ex}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {mode === "links" && linkVerse && (
           <div className="card" style={{ marginTop: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
@@ -542,6 +547,9 @@ export default function Search() {
               <Link to={readPathOf(linkVerse.location)} className="chip link" style={{ textDecoration: "none" }}>
                 ↗ {ar ? "المصحف" : "read"}
               </Link>
+              <button type="button" className="chip" onClick={resetSearch} title={ar ? "مسح" : "clear"} style={{ border: "none", cursor: "pointer" }}>
+                ✕
+              </button>
             </div>
             <div className="quran" style={{ fontSize: 22, lineHeight: 2 }}>{linkVerse.textUthmani}</div>
             <Translations ayah={linkVerse} />

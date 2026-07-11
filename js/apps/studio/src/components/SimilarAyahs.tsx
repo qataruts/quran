@@ -72,7 +72,7 @@ export default function SimilarAyahs({ ayahId, location }: { ayahId: number; loc
         style={{ cursor: "pointer" }}
         title={t("similar.title")}
       >
-        ✦ {t("similar.chip")}
+        <span className="ai-spark" aria-hidden /> {t("similar.chip")}
         {count != null && count > 0 && <span className="count-badge">{num(count)}</span>}
       </button>
       {open && <SimilarAyahsPanel ayahId={ayahId} location={location} />}
