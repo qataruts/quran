@@ -244,8 +244,8 @@ function RelationLens({ texts }: { texts: Map<string, AyahDoc> }) {
     <div>
       <p className="jw-lead">
         {ar
-          ? "الشبكة مقسّمةً حسب نوع العلاقة: توكيدٌ (تقرير القاعدة بصياغة أخرى) · بيانٌ · جزاءٌ · مثال. لكل نوعٍ الجوامعُ الأكثر ارتباطًا به."
-          : "The network sliced by relation: restatement (توكيد), clarification, requital, instance. For each, the most-connected principles."}
+          ? "الشبكة مقسّمةً حسب نوع العلاقة: توكيدٌ (تقرير القاعدة بصياغة أخرى) · بيانٌ · جزاءٌ · مثال. لكل نوعٍ الآياتُ الأكثر ارتباطًا به في الشبكة."
+          : "The network sliced by relation: restatement (توكيد), clarification, requital, instance. For each, the most-connected verses."}
       </p>
       <div
         className="jw-chipset"
@@ -272,7 +272,7 @@ function RelationLens({ texts }: { texts: Map<string, AyahDoc> }) {
       </div>
       <div className="muted jw-resultcount">
         {num(hubs.reduce((s, h) => s + h.count, 0))} {ar ? "رابط" : "links"} ·{" "}
-        {num(hubs.length)} {ar ? "جامعة" : "principles"}
+        {num(hubs.length)} {ar ? "آيةً مرتبطة" : "linked verses"}
       </div>
       <div className="jw-list">
         {hubs.slice(0, limit).map((h) => (
@@ -305,14 +305,14 @@ function Convergence({ texts }: { texts: Map<string, AyahDoc> }) {
     <div>
       <p className="jw-lead">
         {ar
-          ? "آياتٌ تلتقي عندها عدةُ قواعدَ جامعة — كلّما كثُر عددُ الجوامع التي تُفصِّلها الآية، كانت أشدَّ مركزيةً في نظم القرآن."
-          : "Verses where several principles converge — the more جوامع elaborate a verse, the more central it is to the Quran's weave."}
+          ? "آياتٌ تلتقي عندها عدةُ آياتٍ مُفصِّلة — كلّما كثُر عددُ الآيات التي تُفصِّلها آيةٌ واحدة، كانت أشدَّ مركزيةً في نظم القرآن."
+          : "Verses that several verses converge upon — the more verses elaborate one verse, the more central it is to the Quran's weave."}
       </p>
       <div className="muted jw-resultcount">
         {num(items.length)}{" "}
         {ar
-          ? "نقطة التقاء (تُفصِّلها جامعتان فأكثر)"
-          : "convergence points (≥2 principles)"}
+          ? "نقطة التقاء (تُفصِّلها آيتان مُحكَمتان فأكثر)"
+          : "convergence points (≥2 verses)"}
       </div>
       <div className="jw-list">
         {items.slice(0, limit).map((it) => (
@@ -529,10 +529,10 @@ export default function Jawami() {
             <span className="mw-here">{ar ? "تحليلات الشبكة" : "Network analytics"}</span>
           </nav>
           <header className="jw-header">
-            <h1 className="jw-title">{ar ? "تحليلات شبكة الجوامع" : "Principle-network analytics"}</h1>
+            <h1 className="jw-title">{ar ? "تحليلات شبكة المحكمات وتفصيلها" : "Muḥkamāt-network analytics"}</h1>
             <p className="jw-lead">
               {ar
-                ? "عدساتٌ للباحثين على بنية الروابط بين الجوامع وتفصيلها — ليست طبقةَ بياناتٍ جديدة، بل زوايا نظرٍ إلى الشبكة نفسها. اختر عدسة:"
+                ? "عدساتٌ للباحثين على بنية الروابط بين المحكمات وتفصيلها — تعمل على الشبكة الكاملة (كلُّ آيةٍ مُرتبطة، لا الأصول الـ٨٨ وحدها)، وليست طبقةَ بياناتٍ جديدة. اختر عدسة:"
                 : "Research lenses over the link structure between principles and their تفصيل — not a new data layer, just angles on the same network."}
             </p>
           </header>

@@ -72,11 +72,10 @@ function Index({ texts }: { texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
   const jw = useJawami();
   const [q, setQ] = useState("");
-  const [view, setView] = useState<"titles" | "ayat">("ayat");
   const [sort, setSort] = useState<"quran" | "tafsil">("quran"); // mushaf order by default
-  const [kind, setKind] = useState<string>(""); // filter the آيات by kind (عنوان)
+  const [kind, setKind] = useState<string>(""); // filter by kind (نوع المحكمة)
   const [limit, setLimit] = useState(60);
-  useEffect(() => setLimit(60), [q, view, sort, kind]);
+  useEffect(() => setLimit(60), [q, sort, kind]);
 
   const kindOf = (loc: string) => jw?.principles[loc]?.kind ?? "";
 
@@ -125,22 +124,16 @@ function Index({ texts }: { texts: Map<string, AyahDoc> }) {
     [roots, q, texts, kind, jw],
   );
 
-  const pickKind = (name: string) => {
-    setKind(name);
-    setView("ayat");
-  };
-
   return (
     <>
       <header className="jw-header">
         <h1 className="jw-title">{ar ? "المحكمات" : "Muḥkamāt"}</h1>
         <p className="jw-lead">
           {ar
-            ? "الآياتُ المحكمة: أصولٌ تجمع معاني القرآن، وتحتها تفصيلُها من نصّ القرآن وصرفه وحدهما. تصفّحها مُجمَّعةً في عناوين حسب نوعها، أو آيةً آية مع تفصيل كلٍّ منها."
-            : "The muḥkam verses: roots that gather the Qur'an's meanings, each with its تفصيل — from the Qur'anic text alone. Browse them grouped by kind, or one verse at a time."}
+            ? "الآياتُ المحكمة: أصولٌ تجمع معاني القرآن، وتحتها تفصيلُها من نصّ القرآن وصرفه وحدهما. صفِّها بالنوع، وانقر أيّ آيةٍ لترى تفصيلها."
+            : "The muḥkam verses: roots that gather the Qur'an's meanings, each with its تفصيل — from the Qur'anic text alone. Filter by kind; tap any verse for its تفصيل."}
         </p>
         <div className="jw-stats">
-          <span className="chip"><b>{num(kinds.length)}</b> {ar ? "عنوان" : "kinds"}</span>
           <span className="chip"><b>{num(roots.length)}</b> {ar ? "آية محكمة" : "muḥkam verses"}</span>
           <span className="chip"><b>{num(networkSize)}</b> {ar ? "في شبكة تفصيلها" : "in its tafsīl network"}</span>
           <Link to="/jawami/lenses" className="chip link" style={{ textDecoration: "none" }} title={ar ? "تحليلاتٌ متقدّمة لبنية الشبكة (للباحثين)" : "advanced network analytics"}>
@@ -151,60 +144,44 @@ function Index({ texts }: { texts: Map<string, AyahDoc> }) {
 
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحكمات وتفصيلها…" : "search…"} />
 
-      {/* one consolidated controls row (view · sort · active kind) */}
+      {/* kind filter (each chip explains itself on hover) + sort */}
       <div className="jw-filters">
-        <div className="jw-chipset" style={{ justifyContent: "center" }}>
-          <button className={view === "ayat" ? "on" : ""} onClick={() => setView("ayat")}>
-            {ar ? `آيات (${num(roots.length)})` : `verses (${num(roots.length)})`}
+        <div className="jw-chipset">
+          <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
+          <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "كل الأنواع" : "all kinds"}>
+            {ar ? "الكل" : "all"} <span className="muted">· {num(roots.length)}</span>
           </button>
-          <button className={view === "titles" ? "on" : ""} onClick={() => setView("titles")}>
-            {ar ? `عناوين (${num(kinds.length)})` : `kinds (${num(kinds.length)})`}
-          </button>
-          {view === "ayat" && (
-            <>
-              <span className="jw-filter-lbl" style={{ marginInlineStart: 10 }}>{ar ? "الترتيب" : "sort"}</span>
-              <button className={sort === "quran" ? "on" : ""} onClick={() => setSort("quran")}>
-                {ar ? "المصحف" : "mushaf"}
-              </button>
-              <button className={sort === "tafsil" ? "on" : ""} onClick={() => setSort("tafsil")}>
-                {ar ? "الأوسع تفصيلًا" : "most tafsīl"}
-              </button>
-              {kind && (
-                <button className="on gold" onClick={() => setKind("")} title={ar ? "أزل تصفية العنوان" : "clear kind filter"}>
-                  {kind} ✕
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {view === "titles" ? (
-        <div className="mk-kubra-grid">
           {kinds.map((k) => (
-            <button key={k.name} className="mk-kubra-card" onClick={() => pickKind(k.name)} style={{ cursor: "pointer", textAlign: "start" }}>
-              <span className="mk-kubra-title">{k.name}</span>
-              <span className="mk-kubra-preview">{KIND_NOTE[k.name] ?? ""}</span>
-              <span className="mk-kubra-meta">
-                {num(k.locs.length)} {ar ? "آية محكمة" : "verses"} · {num(k.tafsil)} {ar ? "تفصيل" : "tafsīl"}
-              </span>
+            <button
+              key={k.name}
+              className={kind === k.name ? "on gold" : ""}
+              onClick={() => setKind(kind === k.name ? "" : k.name)}
+              title={KIND_NOTE[k.name] ? `${k.name} — ${KIND_NOTE[k.name]}` : k.name}
+            >
+              {k.name} <span className="muted">· {num(k.locs.length)}</span>
             </button>
           ))}
         </div>
-      ) : (
-        <>
-          <div className="muted jw-resultcount">{num(filteredRoots.length)} {ar ? "آية محكمة" : "verses"}</div>
-          <div className="jw-list">
-            {filteredRoots.slice(0, limit).map((loc) => (
-              <RootAyah key={loc} loc={loc} kindLabel={kindOf(loc) || null} texts={texts} />
-            ))}
-          </div>
-          {filteredRoots.length > limit && (
-            <div style={{ textAlign: "center", margin: "18px 0" }}>
-              <button onClick={() => setLimit(limit + 100)}>{ar ? `عرض المزيد (${num(filteredRoots.length - limit)})` : `show more`}</button>
-            </div>
-          )}
-        </>
+        <div className="jw-chipset">
+          <span className="jw-filter-lbl">{ar ? "الترتيب" : "sort"}</span>
+          <button className={sort === "quran" ? "on" : ""} onClick={() => setSort("quran")}>{ar ? "المصحف" : "mushaf"}</button>
+          <button className={sort === "tafsil" ? "on" : ""} onClick={() => setSort("tafsil")}>{ar ? "الأوسع تفصيلًا" : "most tafsīl"}</button>
+        </div>
+      </div>
+
+      <div className="muted jw-resultcount">
+        {num(filteredRoots.length)} {ar ? "آية محكمة" : "verses"}
+        {kind && KIND_NOTE[kind] && <span> · {KIND_NOTE[kind]}</span>}
+      </div>
+      <div className="jw-list">
+        {filteredRoots.slice(0, limit).map((loc) => (
+          <RootAyah key={loc} loc={loc} kindLabel={kindOf(loc) || null} texts={texts} />
+        ))}
+      </div>
+      {filteredRoots.length > limit && (
+        <div style={{ textAlign: "center", margin: "18px 0" }}>
+          <button onClick={() => setLimit(limit + 100)}>{ar ? `عرض المزيد (${num(filteredRoots.length - limit)})` : `show more`}</button>
+        </div>
       )}
     </>
   );
