@@ -669,6 +669,18 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
 
+/* knowledge-layer stat cards on the إحصاءات page */
+.lyr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+.lyr {
+  display: block; text-decoration: none; color: var(--ink);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; transition: border-color .15s, transform .1s;
+}
+a.lyr:hover { border-color: var(--accent); transform: translateY(-1px); text-decoration: none; }
+.lyr-n { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lyr-t { font-weight: 600; font-size: 14px; margin-top: 3px; }
+.lyr-s { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
 /* loading screen */
 .boot {
   height: 100vh; display: grid; place-items: center; text-align: center;

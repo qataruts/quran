@@ -256,23 +256,37 @@ function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
 
 // --- the view ----------------------------------------------------------------
 
+/** The small `meta` roll-up of every knowledge layer (public/layer-stats.json). */
+interface LayerStats {
+  jawami: { principles: number; hubs: number; links: number; rels: Record<string, number> };
+  muhkamat: { count: number; kubra: number; network: { nodes: number; giantPct: number; avgHops: number } };
+  mawdui: { sections: number; topics: number; verses: number };
+  furuq: { pairs: number; categories: Record<string, number> };
+  network: { inNetwork: number; mathani: number };
+}
+
 export default function Dashboard() {
   useUILang();
   const [surahs, setSurahs] = useState<SurahDoc[]>([]);
   const [stats, setStats] = useState<StatsDoc | null>(null);
   const [rootStats, setRootStats] = useState<NamedCount[]>([]);
+  const [layers, setLayers] = useState<LayerStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [all, statsDoc] = await Promise.all([
+      const [all, statsDoc, lyr] = await Promise.all([
         listSurahs(),
         getStats().catch(() => null as StatsDoc | null),
+        fetch(`${import.meta.env.BASE_URL}layer-stats.json?v=${__DATA_VERSION__}`)
+          .then((r) => (r.ok ? (r.json() as Promise<LayerStats>) : null))
+          .catch(() => null),
       ]);
       if (cancelled) return;
       setSurahs(all);
       setStats(statsDoc);
+      setLayers(lyr);
       let roots = extractRootStats(statsDoc).slice(0, 20);
       if (statsDoc && roots.length === 0) {
         // stats doc exists but has no usable top-roots list: derive live.
@@ -360,6 +374,74 @@ export default function Dashboard() {
             );
           })}
         </div>
+
+        {/* knowledge layers — everything we computed over the text */}
+        {layers &&
+          (() => {
+            const ar = getUILang() === "ar";
+            const rels = Object.entries(layers.jawami.rels)
+              .map(([name, count]) => ({ name, count }))
+              .sort((a, b) => b.count - a.count);
+            const cats = Object.entries(layers.furuq.categories)
+              .map(([name, count]) => ({ name, count }))
+              .sort((a, b) => b.count - a.count);
+            const net = layers.muhkamat.network;
+            return (
+              <div className="card" style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>{ar ? "طبقات المعرفة" : "Knowledge layers"}</div>
+                <div className="muted" style={{ marginBottom: 14 }}>
+                  {ar ? "ما حسبناه فوق النصّ — كلٌّ قابل للتصفّح" : "what we computed over the text — each browsable"}
+                </div>
+                <div className="lyr-grid">
+                  <Link to="/jawami" className="lyr">
+                    <div className="lyr-n">{num(layers.jawami.principles)}</div>
+                    <div className="lyr-t">{ar ? "آية جامعة" : "principles"}</div>
+                    <div className="lyr-s">{num(layers.jawami.hubs)} {ar ? "لها تفصيل" : "with tafsil"}</div>
+                  </Link>
+                  <Link to="/jawami" className="lyr">
+                    <div className="lyr-n">{num(layers.jawami.links)}</div>
+                    <div className="lyr-t">{ar ? "رابط تفصيل" : "tafsil links"}</div>
+                    <div className="lyr-s">{ar ? "٤ علاقات مُراجَعة" : "4 reviewed relations"}</div>
+                  </Link>
+                  <Link to="/jawami" className="lyr">
+                    <div className="lyr-n">{num(layers.muhkamat.count)}</div>
+                    <div className="lyr-t">{ar ? "محكمة جامعة" : "muhkamat"}</div>
+                    <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} عنقودًا` : `from ${layers.muhkamat.kubra}`}</div>
+                  </Link>
+                  <Link to="/mawdui" className="lyr">
+                    <div className="lyr-n">{num(layers.mawdui.topics)}</div>
+                    <div className="lyr-t">{ar ? "موضوعًا" : "topics"}</div>
+                    <div className="lyr-s">{num(layers.mawdui.sections)} {ar ? "أقسام · تغطية كاملة" : "sections"}</div>
+                  </Link>
+                  <div className="lyr" style={{ cursor: "default" }}>
+                    <div className="lyr-n">{num(net.giantPct)}٪</div>
+                    <div className="lyr-t">{ar ? "نسيجٌ واحد" : "one fabric"}</div>
+                    <div className="lyr-s">{num(layers.network.inNetwork)} {ar ? `آية · ${num(net.avgHops)} خطوة` : "ayahs in network"}</div>
+                  </div>
+                  <Link to="/jawami" className="lyr">
+                    <div className="lyr-n">{num(layers.network.mathani)}</div>
+                    <div className="lyr-t">{ar ? "مثاني" : "mathani"}</div>
+                    <div className="lyr-s">{ar ? "أزواج متقابلة" : "reciprocal pairs"}</div>
+                  </Link>
+                  <div className="lyr" style={{ cursor: "default" }}>
+                    <div className="lyr-n">{num(layers.furuq.pairs)}</div>
+                    <div className="lyr-t">{ar ? "فروق التنزيل" : "furuq"}</div>
+                    <div className="lyr-s">{ar ? "بين المتشابهات لفظًا" : "between look-alikes"}</div>
+                  </div>
+                </div>
+                <div className="grid-2" style={{ marginTop: 16 }}>
+                  <div>
+                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13 }}>{ar ? "علاقات التفصيل" : "tafsil relations"}</div>
+                    <BarList items={rels} labelWidth={44} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13 }}>{ar ? "فئات فروق التنزيل" : "furuq categories"}</div>
+                    <BarList items={cats} labelWidth={72} />
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         {/* Meccan vs Medinan + revelation-order strip */}
         <div className="card" style={{ marginBottom: 16 }}>
