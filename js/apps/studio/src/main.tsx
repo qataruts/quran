@@ -24,6 +24,7 @@ import Amthal from "./views/Amthal";
 import Fawasil from "./views/Fawasil";
 import Mawdui from "./views/Mawdui";
 import Graph from "./views/Graph";
+import Maalim from "./views/Maalim";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
@@ -189,6 +190,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/furuq", "الفروق", "Furūq"],
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
+  ["/maalim", "معالم القرآن", "Landmarks"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
   ["/search", "البحث", "Search"],
   ["/collections", "المجموعات", "Collections"],
@@ -267,6 +269,7 @@ function App() {
           <Route path="/muhkamat/:k" element={<Muhkamat />} />
           <Route path="/graph" element={<Graph />} />
           <Route path="/graph/:s/:a" element={<Graph />} />
+          <Route path="/maalim" element={<Maalim />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

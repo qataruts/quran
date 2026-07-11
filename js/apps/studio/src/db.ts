@@ -245,6 +245,16 @@ export async function topRoots(limit = 100): Promise<RootDoc[]> {
   })) as RootDoc[];
 }
 
+/** every ayah (all 6236) — for the معالم / statistics page. */
+export async function allAyahs(): Promise<AyahDoc[]> {
+  return (await coll("ayahs").findMany({ take: 6300 })) as AyahDoc[];
+}
+
+/** every root — for hapax / frequency landmarks. */
+export async function allRootsList(): Promise<RootDoc[]> {
+  return allRoots();
+}
+
 /** total number of distinct roots in the corpus. */
 export async function countRoots(): Promise<number> {
   const c = coll("roots") as { count?: () => Promise<number>; findMany: (a: unknown) => Promise<unknown[]> };
