@@ -32,6 +32,7 @@ import About from "./views/About";
 import Galaxy from "./views/Galaxy";
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
+import BookmarksPanel from "./components/BookmarksPanel";
 import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
 
@@ -218,20 +219,24 @@ function useIsMobile(): boolean {
   return m;
 }
 
-// every primary destination, for the mobile drawer (vertical list has room)
+// every destination, for the mobile drawer — SAME ORDER as the desktop nav
+// (primary tabs first, then everything under «المزيد»).
 const DRAWER_LINKS: [string, string, string][] = [
+  // primary nav (desktop order)
   ["/read", "المصحف", "Reader"],
   ["/muhkamat", "المحكمات", "Muhkamāt"],
-  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/roots", "الجذور", "Roots"],
-  ["/mujam", "معجم القرآن", "Dictionary"],
   ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
   ["/furuq", "فروق التنزيل", "Furūq"],
+  ["/wujuh", "الوجوه والنظائر", "Polysemy"],
   ["/mawdui", "المواضيع", "Topics"],
-  ["/amthal", "أمثال القرآن", "Parables"],
-  ["/fawasil", "أطلس الفواصل", "Rhyme"],
-  ["/galaxy", "شبكة القرآن", "Network"],
+  ["/amthal", "الأمثال", "Parables"],
   ["/search", "البحث الدلالي", "Semantic"],
+  ["/galaxy", "شبكة القرآن", "Network"],
+  // «المزيد» (desktop order)
+  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
+  ["/mujam", "معجم القرآن", "Dictionary"],
+  ["/fawasil", "أطلس الفواصل", "Rhyme"],
   ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Stats"],
@@ -286,9 +291,13 @@ function App() {
           {!mobile && <Nav />}
           <span className="spacer" />
           {mobile ? (
-            <SettingsPanel />
+            <>
+              <BookmarksPanel />
+              <SettingsPanel />
+            </>
           ) : (
             <>
+              <BookmarksPanel />
               <SourcesPanel />
               <LangToggle />
               <ThemeToggle />

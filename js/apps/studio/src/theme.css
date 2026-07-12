@@ -508,6 +508,9 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 7px 14px; margin-bottom: 14px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  /* stay put while reading — the surah name, search and modes are always at hand */
+  position: sticky; top: 0; z-index: 15;
+  box-shadow: 0 6px 16px -12px rgba(0,0,0,0.4);
 }
 .reader-bar-name { font-family: var(--font-quran); font-size: 22px; font-weight: 700; color: var(--accent); line-height: 1.4; }
 .reader-bar-meta { font-size: 12.5px; }

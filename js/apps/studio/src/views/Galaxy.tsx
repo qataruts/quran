@@ -41,6 +41,8 @@ export default function Galaxy() {
   const byCluster = useRef<number[][]>([]);
   const colors = useRef({ bg: "#f7f4ee", ink: "#222", dark: false });
   const drag = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const pointers = useRef<Map<number, { x: number; y: number }>>(new Map()); // active touches
+  const pinch = useRef<{ dist: number; cx: number; cy: number } | null>(null); // two-finger zoom
   const raf = useRef(0);
   const netCache = useRef<Map<number, Net>>(new Map());
 
@@ -203,20 +205,50 @@ export default function Galaxy() {
     return best < 0 ? null : best;
   }
   const xy = (e: React.PointerEvent | React.WheelEvent) => { const r = canvasRef.current!.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-  const onWheel = (e: React.WheelEvent) => {
-    const { x, y } = xy(e); const v = view.current;
-    const nk = Math.max(0.04, Math.min(60, v.k * Math.exp(-e.deltaY * 0.0012)));
-    v.tx = x - (x - v.tx) * (nk / v.k); v.ty = y - (y - v.ty) * (nk / v.k); v.k = nk; schedule();
+  // zoom the view by `factor`, keeping the point (x,y) fixed on screen
+  const zoomAround = (x: number, y: number, factor: number) => {
+    const v = view.current;
+    const nk = Math.max(0.04, Math.min(60, v.k * factor));
+    v.tx = x - (x - v.tx) * (nk / v.k); v.ty = y - (y - v.ty) * (nk / v.k); v.k = nk;
   };
-  const onDown = (e: React.PointerEvent) => { (e.target as Element).setPointerCapture(e.pointerId); const { x, y } = xy(e); drag.current = { x, y, moved: false }; };
+  const onWheel = (e: React.WheelEvent) => { const { x, y } = xy(e); zoomAround(x, y, Math.exp(-e.deltaY * 0.0012)); schedule(); };
+  const onDown = (e: React.PointerEvent) => {
+    (e.target as Element).setPointerCapture(e.pointerId);
+    const { x, y } = xy(e); pointers.current.set(e.pointerId, { x, y });
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+      drag.current = null; // two fingers → pinch, not pan
+    } else drag.current = { x, y, moved: false };
+  };
   const onMove = (e: React.PointerEvent) => {
     const { x, y } = xy(e);
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x, y });
+    // pinch-to-zoom (+ two-finger pan): scale around the fingers' midpoint
+    if (pinch.current && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y), cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+      const p = pinch.current;
+      if (p.dist > 0) zoomAround(cx, cy, dist / p.dist);
+      view.current.tx += cx - p.cx; view.current.ty += cy - p.cy;
+      pinch.current = { dist, cx, cy }; schedule(); return;
+    }
     if (drag.current) { const dx = x - drag.current.x, dy = y - drag.current.y; if (Math.abs(dx) + Math.abs(dy) > 2) drag.current.moved = true; view.current.tx += dx; view.current.ty += dy; drag.current.x = x; drag.current.y = y; schedule(); return; }
     const h = nodeAt(x, y); if (h !== hover.current) { hover.current = h; if (canvasRef.current) canvasRef.current.style.cursor = h == null ? "grab" : "pointer"; schedule(); }
   };
   const onUp = (e: React.PointerEvent) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    if (pointers.current.size === 1) { // second finger lifted — re-anchor pan, no tap-select
+      const [p] = [...pointers.current.values()]; drag.current = { x: p.x, y: p.y, moved: true }; return;
+    }
     const d = drag.current; drag.current = null;
-    if (d && !d.moved) { const { x, y } = xy(e); setSel(nodeAt(x, y)); }
+    if (d && !d.moved && pointers.current.size === 0) { const { x, y } = xy(e); setSel(nodeAt(x, y)); }
+  };
+  const onCancel = (e: React.PointerEvent) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    if (pointers.current.size === 0) drag.current = null;
   };
 
   function focusNode(i: number) {
@@ -272,6 +304,7 @@ export default function Galaxy() {
       <div className="gx-stage" ref={wrapRef}>
         {!net && <div className="gx-loading">{ar ? "جارٍ بناء الشبكة…" : "building the network…"}</div>}
         <canvas ref={canvasRef} onWheel={onWheel} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
+          onPointerCancel={onCancel}
           onPointerLeave={() => { if (hover.current != null) { hover.current = null; schedule(); } }}
           style={{ touchAction: "none", cursor: "grab" }} />
         {sel != null && net && (

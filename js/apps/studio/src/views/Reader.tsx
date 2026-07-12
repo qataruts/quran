@@ -718,12 +718,8 @@ export default function Reader() {
                       ۩ {t("reader.sajda")}
                     </span>
                   )}
-                  {/* listen */}
-                  <button
-                    className={`chip${selectedLoc === ayah.location ? " on" : ""}`}
-                    onClick={() => setSelectedAyah(ayah.location)}
-                    title={t("read.playHere")}
-                  >▶</button>
+                  {/* listen to this ayah (one clear audio button; continuous
+                      recitation is the surah-header «استمع للسورة») */}
                   <AudioButton ayahId={ayahIdOf(ayah)} />
                   {/* study layers */}
                   <EraabChip

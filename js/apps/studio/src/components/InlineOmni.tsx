@@ -61,7 +61,7 @@ export default function InlineOmni({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setFocused(true)}
-          placeholder={placeholder ?? (ar ? "اذهب إلى سورة أو آية أو ابحث…" : "go to a surah, ayah, or search…")}
+          placeholder={placeholder ?? (ar ? "ابحث في القرآن كلّه، أو اذهب إلى سورة أو آية…" : "search the whole Qur'an, or go to a surah/ayah…")}
           aria-label={ar ? "البحث والانتقال" : "search & jump"}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
