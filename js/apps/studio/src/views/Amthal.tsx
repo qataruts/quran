@@ -51,7 +51,7 @@ export default function Amthal() {
       <section style={{ marginTop: 22 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
           <h2 style={{ margin: 0, fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22 }}>{title}</h2>
-          <span className="muted">· {num(locs.length)}</span>
+          <span className="muted">{num(locs.length)}</span>
         </div>
         <p className="muted" style={{ margin: "0 0 12px" }}>{note}</p>
         <div className="fr-list">

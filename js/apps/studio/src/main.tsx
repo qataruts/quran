@@ -27,7 +27,6 @@ import RootsGraph from "./views/RootsGraph";
 import Maalim from "./views/Maalim";
 import Mujam from "./views/Mujam";
 import SettingsPanel from "./components/SettingsPanel";
-import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
@@ -244,7 +243,6 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           ))}
         </nav>
         <div className="drawer-controls">
-          <BookmarksPanel />
           <SourcesPanel />
           <LangToggle />
           <ThemeToggle />
@@ -276,7 +274,6 @@ function App() {
             <SettingsPanel />
           ) : (
             <>
-              <BookmarksPanel />
               <SourcesPanel />
               <LangToggle />
               <ThemeToggle />

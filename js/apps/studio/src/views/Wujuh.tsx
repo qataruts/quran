@@ -33,7 +33,7 @@ function Face({ face, idx, texts }: { face: { n: number; verses: string[] }; idx
   return (
     <div className="wj-face">
       <div className="wj-face-h">
-        {ar ? `الوجه ${num(idx + 1)}` : `sense ${num(idx + 1)}`} <span className="muted">· {num(face.n)} {ar ? "موضعًا" : "verses"}</span>
+        {ar ? `الوجه ${num(idx + 1)}` : `sense ${num(idx + 1)}`} <span className="muted">{num(face.n)} {ar ? "موضعًا" : "verses"}</span>
       </div>
       {face.verses.map((loc) => (
         <Link key={loc} to={readPathOf(loc)} className="jw-verse">

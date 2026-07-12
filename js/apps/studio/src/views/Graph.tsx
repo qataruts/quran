@@ -161,12 +161,12 @@ export default function Graph() {
           <div key={rel} className="jw-relgroup">
             <div className="jw-relhead" style={{ color: REL_INFO[rel].color }}>
               <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />
-              {rel} <span className="muted">· {num(items.length)}</span>
+              {rel} <span className="muted">{num(items.length)}</span>
             </div>
             {items.map((l) => (
               <div key={l.loc} className="jw-verse">
                 <button className="jw-verse-ref" onClick={() => recenter(l.loc)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                  {arName(l.loc)} {tafsilOf(l.loc).length > 0 && <span className="muted">· {num(tafsilOf(l.loc).length)} ↻</span>}
+                  {arName(l.loc)} {tafsilOf(l.loc).length > 0 && <span className="muted">{num(tafsilOf(l.loc).length)} ↻</span>}
                 </button>
                 <span style={{ flex: 1 }} />
                 <MushafLink loc={l.loc} compact />

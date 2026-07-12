@@ -168,7 +168,7 @@ export default function Furuq() {
         <div className="jw-filters">
           <div className="jw-chipset">
             <button className={cat === "" ? "on" : ""} onClick={() => setCat("")} title={ar ? "كل الأنواع" : "all"}>
-              {ar ? "الكل" : "all"} <span className="muted">· {num(items.length)}</span>
+              {ar ? "الكل" : "all"} <span className="muted">{num(items.length)}</span>
             </button>
             {CAT_ORDER.filter((c) => c !== "مركّب").map((c) => (
               <button
@@ -177,7 +177,7 @@ export default function Furuq() {
                 onClick={() => setCat(cat === c ? "" : c)}
                 title={CAT_INFO[c]?.note}
               >
-                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : c} <span className="muted">· {num(catCounts[c] ?? 0)}</span>
+                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : c} <span className="muted">{num(catCounts[c] ?? 0)}</span>
               </button>
             ))}
           </div>

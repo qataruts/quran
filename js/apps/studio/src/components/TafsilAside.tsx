@@ -80,7 +80,7 @@ export default function TafsilAside({ location }: { location: string | null }) {
           <div key={rel} className="jw-relgroup">
             <div className="jw-relhead" style={{ color: REL_INFO[rel].color }}>
               <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />
-              {rel} <span className="muted">· {num(items.length)}</span>
+              {rel} <span className="muted">{num(items.length)}</span>
             </div>
             {items.map((l) => (
               <Verse key={l.loc} loc={l.loc} texts={texts} />

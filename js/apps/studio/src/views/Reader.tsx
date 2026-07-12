@@ -821,7 +821,19 @@ export default function Reader() {
             zIndex: 20,
           }}
         >
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div
+            style={{
+              position: "sticky",
+              top: 0,
+              display: "flex",
+              justifyContent: "flex-end",
+              background: "var(--panel)",
+              zIndex: 2,
+              margin: "-2px 0 4px",
+              paddingBottom: 6,
+              borderBottom: "1px solid var(--line)",
+            }}
+          >
             <button
               onClick={() => {
                 setSelected(null);

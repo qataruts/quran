@@ -149,7 +149,7 @@ function Index({ texts }: { texts: Map<string, AyahDoc> }) {
         <div className="jw-chipset">
           <span className="jw-filter-lbl">{ar ? "النوع" : "kind"}</span>
           <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "كل الأنواع" : "all kinds"}>
-            {ar ? "الكل" : "all"} <span className="muted">· {num(roots.length)}</span>
+            {ar ? "الكل" : "all"} <span className="muted">{num(roots.length)}</span>
           </button>
           {kinds.map((k) => (
             <button
@@ -158,7 +158,7 @@ function Index({ texts }: { texts: Map<string, AyahDoc> }) {
               onClick={() => setKind(kind === k.name ? "" : k.name)}
               title={KIND_NOTE[k.name] ? `${k.name} — ${KIND_NOTE[k.name]}` : k.name}
             >
-              {k.name} <span className="muted">· {num(k.locs.length)}</span>
+              {k.name} <span className="muted">{num(k.locs.length)}</span>
             </button>
           ))}
         </div>
