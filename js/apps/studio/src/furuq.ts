@@ -24,14 +24,18 @@ export interface FuruqData {
 }
 
 /** display order + a short note for each category. */
-export const CAT_INFO: Record<string, { note: string; en: string }> = {
+export const CAT_INFO: Record<string, { note: string; en: string; label?: string }> = {
   "تطابق": { note: "الآيتان متطابقتان لفظًا", en: "word-identical" },
   "تقديم وتأخير": { note: "الكلمات نفسها بترتيبٍ مختلف", en: "reordering" },
   "اختلاف صيغة": { note: "الجذر نفسه بصيغةٍ مختلفة", en: "same root, other form" },
   "إبدال": { note: "كلمةٌ مكان أخرى بجذرٍ مختلف", en: "lexical substitution" },
-  "زيادة/نقص": { note: "زيادةٌ أو نقصٌ في إحداهما", en: "addition / omission" },
+  // internal id keeps its old key; shown to readers as «زيادة وإيجاز» (إيجاز, a
+  // balāgha virtue — not «نقص», which is unfitting for the Qur'an).
+  "زيادة/نقص": { note: "زيادةٌ في إحداهما وإيجازٌ في الأخرى", en: "addition / concision", label: "زيادة وإيجاز" },
   "مركّب": { note: "أكثر من نوع فرقٍ معًا", en: "composite" },
 };
+/** reader-facing label for a category id (defaults to the id itself) */
+export const catLabel = (cat: string): string => CAT_INFO[cat]?.label ?? cat;
 export const CAT_ORDER = ["تطابق", "تقديم وتأخير", "اختلاف صيغة", "إبدال", "زيادة/نقص", "مركّب"];
 
 let cache: FuruqData | null = null;

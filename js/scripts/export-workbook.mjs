@@ -71,11 +71,12 @@ addSheet("الحقول الدلالية",
 
 // ── فروق التنزيل ──
 const fr = readJson("furuq.json");
+const catLabel = (c) => (c === "زيادة/نقص" ? "زيادة وإيجاز" : c); // إيجاز, not «نقص» (see furuq.ts)
 const frRows = [["الآية الأولى", "الآية الثانية", "المستوى", "التصنيف", "نصّ الأولى", "نصّ الثانية"]];
 for (const d of fr.furuq) {
   const a = d.ops.map((o) => (typeof o === "string" ? o : o[0] === "-" ? o[1] : "")).filter(Boolean).join(" ");
   const b = d.ops.map((o) => (typeof o === "string" ? o : o[0] === "+" ? o[1] : "")).filter(Boolean).join(" ");
-  frRows.push([d.a, d.b, d.tier, d.cat, a, b]);
+  frRows.push([d.a, d.b, d.tier, catLabel(d.cat), a, b]);
 }
 addSheet("فروق التنزيل", frRows, [12, 12, 10, 14, 44, 44]);
 

@@ -35,7 +35,7 @@ export default function About() {
   const METHODS = ar
     ? [
         ["المحكمات والجوامع", "نلتقط من القرآن جُمَلَه المُحكَمة، ثم نبني شبكةً من توارُدها — أيُّ المعاني يجتمع مع أيّ في الآيات — فتنتظم في هرمٍ من القاعدة التفصيلية إلى الأصول الجامعة الكبرى، كلُّه بالإحصاء بلا ترتيبٍ مسبق."],
-        ["فروق التنزيل", "نُحاذي آليًّا بين كلِّ آيتين متشابهتين لفظًا بخوارزمية محاذاة النصوص، فتظهر مواضعُ الاختلاف كلمةً كلمة: إبدالًا وتقديمًا وزيادةً ونقصًا."],
+        ["فروق التنزيل", "نُحاذي آليًّا بين كلِّ آيتين متشابهتين لفظًا بخوارزمية محاذاة النصوص، فتظهر مواضعُ الاختلاف كلمةً كلمة: إبدالًا وتقديمًا وزيادةً وإيجازًا."],
         ["الفروق اللغوية والمترادفات", "نُحوّل تعريفَ كلِّ جذرٍ في المعجمين إلى «متّجهٍ» رقميّ يمثّل معناه، ثم نقيس القُربَ بينها: فأقربُها متّجهًا أقربُها معنًى (مترادفات)، وعناقيدُها المتبادلة حقولٌ دلالية — والقارئ يوازن الفرق بنفسه."],
         ["مثلها (الآيات القريبة)", "بالطريقة نفسها نُمثّل كلَّ آيةٍ بمتّجه معنى، فنكشف أقربَ الآيات إليها دلالةً عبر المصحف كلِّه — ترتيبٌ بحسب القُرب، لا تأويلٌ للمعنى."],
         ["الصرف والنحو بالأرقام", "نمرُّ على ١٣٠٬٠٣٠ مقطعًا صرفيًّا في الوسم القرآنيّ (QAC) ونُحصي كلَّ سِمة: قسمَ الكلمة، ووزنَ الفعل وزمنَه، وحالتَه الإعرابية — فيخرج إحصاءٌ للقرآن كلِّه."],
@@ -43,7 +43,7 @@ export default function About() {
       ]
     : [
         ["Muḥkamāt & principles", "We lift the Qur'an's decisive statements, then build a network of their co-occurrence — which meanings gather with which — so they settle into a pyramid from detail up to the great governing principles, by counting alone, with no prior ordering."],
-        ["Furūq al-tanzīl", "We align every pair of near-identical verses with a sequence-alignment algorithm, surfacing each difference word by word: substitution, reordering, addition, omission."],
+        ["Furūq al-tanzīl", "We align every pair of near-identical verses with a sequence-alignment algorithm, surfacing each difference word by word: substitution, reordering, addition and concision."],
         ["Lexical distinctions & synonyms", "We turn each root's lexicon definition into a numeric meaning-vector, then measure closeness: nearest by vector = nearest by meaning (synonyms), and mutual clusters are semantic fields — the reader weighs the difference."],
         ["Similar verses", "The same way, each verse becomes a meaning-vector, revealing its closest āyāt across the whole muṣḥaf — ranked by nearness, not interpreted."],
         ["Morphology by the numbers", "We walk all 130,030 segments of the QAC morphology and tally every feature: word class, verb form and tense, grammatical case — a census of the whole Qur'an."],
@@ -149,8 +149,8 @@ export default function About() {
           </ul>
           <p className="ab-ai-ground">
             {ar
-              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه؛ لا نُغذّيه بتفسيرٍ ولا حديثٍ نأخذه مصدرًا. ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف — نحسب ونعرض، والقارئ يحكم."
-              : "In all of it, its material is the Qur'anic text, its meanings and its dictionaries; we feed it no tafsīr or ḥadīth as a source. Then we present what it drew out for the reader to check against the mushaf — we compute and present; the reader judges."}
+              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه — على ما تقدّم في «حدودٍ نلتزمها». ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف؛ نحسب ونعرض، والقارئ يحكم."
+              : "In all of it, its material is the Qur'anic text, its meanings and its lexica — within the bounds set out above. Then we present what it drew out for the reader to check against the mushaf; we compute and present, and the reader judges."}
           </p>
         </div>
 

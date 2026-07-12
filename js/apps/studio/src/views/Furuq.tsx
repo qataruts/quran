@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
-import { CAT_INFO, CAT_ORDER, sides, useFuruq, type Furq } from "../furuq";
+import { CAT_INFO, CAT_ORDER, catLabel, sides, useFuruq, type Furq } from "../furuq";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
 
@@ -48,7 +48,7 @@ function PairCard({ f }: { f: Furq }) {
         <span className="fr-vs">↔</span>
         <Link to={readPathOf(f.b)} className="fr-ref">{arName(f.b)}</Link>
         <span className="spacer" style={{ flex: 1 }} />
-        <span className="chip gold" title={CAT_INFO[f.cat]?.note}>{f.cat}</span>
+        <span className="chip gold" title={CAT_INFO[f.cat]?.note}>{catLabel(f.cat)}</span>
       </div>
       <VerseLine segs={a} side="a" />
       <VerseLine segs={b} side="b" />
@@ -177,7 +177,7 @@ export default function Furuq() {
                 onClick={() => setCat(cat === c ? "" : c)}
                 title={CAT_INFO[c]?.note}
               >
-                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : c} <span className="muted">{num(catCounts[c] ?? 0)}</span>
+                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : catLabel(c)} <span className="muted">{num(catCounts[c] ?? 0)}</span>
               </button>
             ))}
           </div>
