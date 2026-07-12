@@ -60,6 +60,7 @@ function WordCard({ w, texts }: { w: WWord; texts: Map<string, AyahDoc> }) {
           {ar ? "جذر" : "root"} <span className="quran">{w.root}</span>
         </Link>
         <span className="spacer" style={{ flex: 1 }} />
+        <span className="chip gold">{w.faces.length === 2 ? (ar ? "وجهان" : "2 senses") : `${num(w.faces.length)} ${ar ? "أوجه" : "senses"}`}</span>
         <span className="jw-deg">{num(w.n)} {ar ? "موضعًا" : "verses"}</span>
         <span className="jw-caret">{open ? "▾" : "◂"}</span>
       </button>
@@ -108,12 +109,13 @@ export default function Wujuh() {
           <h1 className="jw-title">{ar ? "الوجوه والنظائر" : "Polysemy (computed)"}</h1>
           <p className="jw-lead">
             {ar
-              ? "كلماتٌ ترِد سياقاتُها القرآنية في مجموعتين متمايزتين في المعنى — ما قد يدلّ على تعدّد «وجوهها». محسوبةٌ من تقارب المعنى (تضمين الآيات) لا من كتب الوجوه والنظائر، مرتّبةً بحسب وضوح الانقسام. عرضٌ مفتوحٌ للاستكشاف، والقارئ يحكم."
-              : "Content-words whose Qur'anic contexts fall into two distinct meaning-groups — a hint of two «senses». Computed from verse-embedding proximity (not from a polysemy lexicon), ranked by how clear the split is. An open exploration; the reader judges."}
+              ? "الكلمةُ الواحدة قد تحمل في القرآن أكثرَ من وجهٍ في المعنى بحسب سياقها. نجمع مواضعَ كلِّ كلمةٍ ونقيس تقارُبها في المعنى بمتّجهات الآيات؛ فإذا انقسمت مواضعُها إلى مجموعتين متمايزتين، عرَضناها هنا احتمالًا لوجهين — استنباطًا من الاستعمال القرآنيّ نفسه، لا نقلًا عن كتب الوجوه والنظائر، مرتّبةً بحسب وضوح الانقسام."
+              : "One word may carry more than one «sense» (wajh) across the Qur'an by its context. We gather each word's occurrences and measure their meaning-proximity with verse-vectors; where they split into two distinct groups, we show it here as a possible two senses — drawn from Qur'anic usage itself, not copied from a polysemy lexicon, ranked by how clear the split is."}
           </p>
           <div className="jw-stats">
-            <span className="chip"><b>{num(d.meta.candidates)}</b> {ar ? "كلمة مرشّحة" : "candidates"}</span>
-            <span className="chip">{ar ? `من ${num(d.meta.scanned)} كلمة مُفحَصة` : `of ${num(d.meta.scanned)} scanned`}</span>
+            <span className="chip"><span className="ai-spark" aria-hidden /> {ar ? "محسوبٌ بالمعنى" : "meaning-computed"}</span>
+            <span className="chip"><b>{num(d.meta.candidates)}</b> {ar ? "كلمةً لها وجهان محتمَلان" : "words with two senses"}</span>
+            <span className="chip">{ar ? `من ${num(d.meta.scanned)} كلمةٍ كثيرةِ الورود` : `of ${num(d.meta.scanned)} frequent words`}</span>
           </div>
         </header>
 

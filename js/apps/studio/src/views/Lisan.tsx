@@ -238,8 +238,8 @@ export default function Lisan() {
           <h1 className="jw-title">{ar ? "الفروق اللغوية" : "Lexical distinctions"}</h1>
           <p className="jw-lead">
             {ar
-              ? "قارِن أيّ كلمتين قرآنيّتين، وزِنِ الفرق بينهما بنفسك من نصّ «المفردات» للراغب و«مقاييس اللغة» لابن فارس. أقربُ الكلمات في المعنى والحقولُ الدلاليّة محسوبةٌ آليًّا بمتّجهات المعنى — نحسب ونعرض، والقارئ يحكم. (غير «فروق التنزيل» التي توازن بين الآيات المتشابهة.)"
-              : "Compare any two Qur'anic words and weigh the shade of difference yourself, from al-Rāghib's Mufradāt and Ibn Fāris's Maqāyīs. Nearest words and semantic fields are computed by meaning-vectors — we compute and present; the reader judges. (Distinct from «فروق التنزيل», which compares near-identical verses.)"}
+              ? "قارِن أيّ كلمتين قرآنيّتين، وزِنِ الفرق بينهما بنفسك من نصّ «المفردات» للراغب و«مقاييس اللغة» لابن فارس. أقربُ الكلمات في المعنى والحقولُ الدلاليّة محسوبةٌ آليًّا بمتّجهات المعنى. (غير «فروق التنزيل» التي توازن بين الآيات المتشابهة.)"
+              : "Compare any two Qur'anic words and weigh the shade of difference yourself, from al-Rāghib's Mufradāt and Ibn Fāris's Maqāyīs. Nearest words and semantic fields are computed by meaning-vectors. (Distinct from «فروق التنزيل», which compares near-identical verses.)"}
           </p>
           <div className="jw-stats">
             <span className="chip"><span className="ai-spark" aria-hidden /> {ar ? "محسوب بالمعنى" : "meaning-computed"}</span>

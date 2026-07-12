@@ -57,8 +57,8 @@ export default function About() {
           <h1 className="jw-title">{ar ? "عن المشروع" : "About the project"}</h1>
           <p className="jw-lead">
             {ar
-              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نستخرج من نصّ المصحف — بالذكاء الاصطناعيّ والحساب — شبكةً من المعاني والعلاقات، ونعرضها في يُسرٍ ووضوح. مبدؤنا واحد: نحسب ونعرض، والقارئ يتدبّر."
-              : "Mishkāt is an experiment in serving the Qur'an computationally: from the mushaf's text — with AI and computation — we extract a graph of meanings and relations, presented with ease and clarity. One principle: we compute and present; the reader reflects."}
+              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نستخرج من نصّ المصحف — بالذكاء الاصطناعيّ والحساب — شبكةً من المعاني والعلاقات، ونعرضها في يُسرٍ ووضوح، إعانةً للقارئ على التدبّر والبحث."
+              : "Mishkāt is an experiment in serving the Qur'an computationally: from the mushaf's text — with AI and computation — we extract a graph of meanings and relations, presented with ease and clarity, to aid the reader's reflection and study."}
           </p>
         </header>
 
@@ -98,8 +98,8 @@ export default function About() {
           </div>
           <p className="ab-covenant-note">
             {ar
-              ? "وليس في هذا حكمٌ على تلك العلوم ولا استغناءٌ عنها — فالتفسيرُ والحديثُ وعلومُ القرآن أصلُ فهمِ الكتاب، ولها أهلُها الراسخون. وإنّما هو انضباطٌ في الأداة: نَقصُرها على ما يُحسَب ويُتحقَّق منه، ولا نُقحِمُ فيه رأيًا من عندنا — نعرض المحسوب، والحكمُ للقارئ. فالمشروعُ رافدٌ بين يدَيه، لا بديلٌ عن عالمٍ ولا عن كتاب."
-              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed, and the reader reflects. The project is an aid in the reader's hands, never a substitute for a scholar or a book."}
+              ? "وليس في هذا حكمٌ على تلك العلوم ولا استغناءٌ عنها — فالتفسيرُ والحديثُ وعلومُ القرآن أصلُ فهمِ الكتاب، ولها أهلُها الراسخون. وإنّما هو انضباطٌ في الأداة: نَقصُرها على ما يُحسَب ويُتحقَّق منه، ولا نُقحِمُ فيه رأيًا من عندنا؛ نعرض المحسوب مادّةً بين يدَي القارئ. فالمشروعُ رافدٌ، لا بديلٌ عن عالمٍ ولا عن كتاب."
+              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed as material in the reader's hands. The project is an aid, never a substitute for a scholar or a book."}
           </p>
         </div>
 
@@ -149,8 +149,8 @@ export default function About() {
           </ul>
           <p className="ab-ai-ground">
             {ar
-              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه — على ما تقدّم في «حدودٍ نلتزمها». ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف؛ نحسب ونعرض، والقارئ يتدبّر."
-              : "In all of it, its material is the Qur'anic text, its meanings and its lexica — within the bounds set out above. Then we present what it drew out for the reader to check against the mushaf; we compute and present, and the reader reflects."}
+              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه — على ما تقدّم في «حدودٍ نلتزمها». ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف."
+              : "In all of it, its material is the Qur'anic text, its meanings and its lexica — within the bounds set out above. Then we present what it drew out for the reader to check against the mushaf."}
           </p>
         </div>
 

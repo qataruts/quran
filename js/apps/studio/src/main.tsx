@@ -134,7 +134,6 @@ const MORE_LINKS: [string, string, string][] = [
   ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
-  ["/wujuh", "الوجوه والنظائر", "Polysemy"],
   ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
@@ -158,6 +157,7 @@ function Nav() {
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/lisan" title={ar ? "الفروق اللغوية: قارن كلمتين من المعجمين — مترادفات وحقول دلالية محسوبة" : "compare two words from the two lexica — computed synonyms & fields"}>{t("nav.lisan")}</NavLink>
       <NavLink to="/furuq" title={ar ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
+      <NavLink to="/wujuh" title={ar ? "الوجوه والنظائر: كلماتٌ بمعانٍ متعدّدة، محسوبةٌ من سياقاتها" : "computed polysemy — words with multiple senses"}>{ar ? "الوجوه والنظائر" : "Polysemy"}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/search"><span className="ai-spark" aria-hidden /> {t("nav.search")}</NavLink>
