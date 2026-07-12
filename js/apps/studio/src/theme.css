@@ -986,6 +986,11 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 }
 .jw-verse:hover { background: var(--accent-soft); text-decoration: none; }
 .jw-verse-ref { color: var(--accent); font-weight: 600; white-space: nowrap; font-size: 13px; min-width: 78px; }
+.jw-reflink { text-decoration: none; }
+.jw-reflink:hover { text-decoration: underline; }
+/* role marker on an أصل row: is this parent a root محكمة, or does it lead further up? */
+.jw-roottag { flex: none; padding: 1px 7px; border-radius: 999px; background: var(--gold-soft); color: var(--gold); font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+.jw-uptag { flex: none; padding: 1px 6px; border-radius: 999px; background: var(--panel-2); color: var(--muted); font-size: 10px; white-space: nowrap; }
 .jw-verse-text {
   flex: 1; min-width: 0;
   font-family: var(--font-quran); direction: rtl; text-align: right; font-size: 18px;

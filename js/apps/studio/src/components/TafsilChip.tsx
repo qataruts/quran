@@ -9,9 +9,11 @@
  * and the verse would push the verse itself far below its own elaboration.
  */
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   REL_INFO,
   elaborates,
+  isRootPrinciple,
   principleOf,
   tafsilOf,
   useJawami,
@@ -46,21 +48,32 @@ function VerseLine({
   texts,
   rel,
   depth = 0,
+  showRole = false,
 }: {
   loc: string;
   texts: Map<string, AyahDoc>;
   rel?: Rel;
   depth?: number;
+  showRole?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ar = getUILang() === "ar";
   const sub = tafsilOf(loc);
   const canDrill = sub.length > 0 && depth < 3;
+  const isRoot = showRole && isRootPrinciple(loc);
+  const [s, a] = loc.split(":");
   return (
     <div className="jw-subwrap">
       <div className="jw-verse">
         {rel && <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />}
-        <span className="jw-verse-ref">{arName(loc)}</span>
+        <Link to={`/read/${s}/${a}`} className="jw-verse-ref jw-reflink" title={ar ? "اذهب إلى هذه الآية" : "go to this verse"}>
+          {arName(loc)}
+        </Link>
+        {showRole && (
+          isRoot
+            ? <span className="jw-roottag" title={ar ? "أصلٌ محكمة — لا أصلَ فوقه" : "muḥkam root — nothing above it"}>★ {ar ? "محكمة" : "root"}</span>
+            : <span className="jw-uptag" title={ar ? "فوقها أصلٌ آخر — انقُرْها لتصعد" : "has an أصل above — tap to go up"}>↑ {ar ? "متفرّع" : "branch"}</span>
+        )}
         <span
           className="jw-verse-text quran"
           onClick={canDrill ? () => setOpen((v) => !v) : undefined}
@@ -155,7 +168,7 @@ export function TafsilPanel({ location, open }: { location: string; open: boolea
             ↑ {ar ? (back.length > 1 ? "أصولُها الجامعة (تُفصِّلها هذه الآية)" : "أصلُها الجامع (تُفصِّلها هذه الآية)") : "its أصل (it elaborates)"}
           </div>
           {back.map((l) => (
-            <VerseLine key={l.loc} loc={l.loc} texts={texts} rel={l.rel} />
+            <VerseLine key={l.loc} loc={l.loc} texts={texts} rel={l.rel} showRole />
           ))}
         </div>
       )}

@@ -10,6 +10,7 @@ import {
   REL_INFO,
   elaborates,
   indegreeOf,
+  isRootPrinciple,
   principleOf,
   tafsilOf,
   useJawami,
@@ -23,11 +24,16 @@ import { useSettings } from "../settings";
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
-function Verse({ loc, texts, rel }: { loc: string; texts: Map<string, AyahDoc>; rel?: Rel }) {
+function Verse({ loc, texts, rel, showRole }: { loc: string; texts: Map<string, AyahDoc>; rel?: Rel; showRole?: boolean }) {
+  const ar = getUILang() === "ar";
+  const isRoot = showRole && isRootPrinciple(loc);
   return (
     <Link to={`/read/${loc.split(":")[0]}/${loc.split(":")[1]}`} className="jw-verse">
       {rel && <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />}
       <span className="jw-verse-ref">{arName(loc)}</span>
+      {showRole && (isRoot
+        ? <span className="jw-roottag" title={ar ? "أصلٌ محكمة — لا أصلَ فوقه" : "muḥkam root — nothing above it"}>★ {ar ? "محكمة" : "root"}</span>
+        : <span className="jw-uptag" title={ar ? "فوقها أصلٌ آخر — انقُرْها لتصعد" : "has an أصل above — tap to go up"}>↑ {ar ? "متفرّع" : "branch"}</span>)}
       <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
     </Link>
   );
@@ -83,7 +89,7 @@ export default function TafsilAside({ location }: { location: string | null }) {
               ↑ {ar ? (back.length > 1 ? "أصولُها الجامعة (تُفصِّلها هذه الآية)" : "أصلُها الجامع (تُفصِّلها هذه الآية)") : "its أصل (it elaborates)"}
             </div>
             {back.map((l) => (
-              <Verse key={l.loc} loc={l.loc} texts={texts} rel={l.rel} />
+              <Verse key={l.loc} loc={l.loc} texts={texts} rel={l.rel} showRole />
             ))}
           </div>
         )}
