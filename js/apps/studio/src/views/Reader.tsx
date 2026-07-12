@@ -291,10 +291,12 @@ export default function Reader() {
   const [selected, setSelected] = useState<WordDoc | null>(null);
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
-  const [openTafsil, setOpenTafsil] = useState<string | null>(null);
-  const [openEraab, setOpenEraab] = useState<string | null>(null); // آيات mode: which verse's إعراب panel is open
-  const [openSimilar, setOpenSimilar] = useState<string | null>(null); // آيات mode: which verse's «مثلها» panel is open
-  const [openTadabbur, setOpenTadabbur] = useState<string | null>(null); // آيات mode: which verse's «تدبّر» panel is open
+  // ONE study panel open at a time (إعراب · تفصيل · مثلها · تدبّر) — no wall of
+  // stacked panels around a single ayah. Key = "kind:surah:ayah".
+  const [openPanel, setOpenPanel] = useState<string | null>(null);
+  const panelOpen = (kind: string, loc: string) => openPanel === `${kind}:${loc}`;
+  const togglePanel = (kind: string, loc: string) =>
+    setOpenPanel((cur) => (cur === `${kind}:${loc}` ? null : `${kind}:${loc}`));
   const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
@@ -744,29 +746,23 @@ export default function Reader() {
                   <AudioButton ayahId={ayahIdOf(ayah)} />
                   {/* study layers */}
                   <EraabChip
-                    open={openEraab === ayah.location}
-                    onToggle={() =>
-                      setOpenEraab((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
+                    open={panelOpen("eraab", ayah.location)}
+                    onToggle={() => togglePanel("eraab", ayah.location)}
                   />
                   <TafsilChip
                     location={ayah.location}
-                    open={openTafsil === ayah.location}
-                    onToggle={() =>
-                      setOpenTafsil((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
+                    open={panelOpen("tafsil", ayah.location)}
+                    onToggle={() => togglePanel("tafsil", ayah.location)}
                   />
                   <SimilarAyahs
                     ayahId={ayahIdOf(ayah)}
                     location={ayah.location}
-                    open={openSimilar === ayah.location}
-                    onToggle={() => setOpenSimilar((c) => (c === ayah.location ? null : ayah.location))}
+                    open={panelOpen("similar", ayah.location)}
+                    onToggle={() => togglePanel("similar", ayah.location)}
                   />
                   <TadabburChip
-                    open={openTadabbur === ayah.location}
-                    onToggle={() =>
-                      setOpenTadabbur((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
+                    open={panelOpen("tadabbur", ayah.location)}
+                    onToggle={() => togglePanel("tadabbur", ayah.location)}
                   />
                   {/* save */}
                   <button
@@ -789,10 +785,10 @@ export default function Reader() {
                   onSelect={(w: WordDoc) => setSelected(w)}
                 />
                 <Translations ayah={ayah} />
-                <TafsilPanel location={ayah.location} open={openTafsil === ayah.location} />
-                <EraabPanel location={ayah.location} open={openEraab === ayah.location} />
-                <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={openTadabbur === ayah.location} />
-                {openSimilar === ayah.location && (
+                <TafsilPanel location={ayah.location} open={panelOpen("tafsil", ayah.location)} />
+                <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
+                <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
+                {panelOpen("similar", ayah.location) && (
                   <SimilarAyahsPanel ayahId={ayahIdOf(ayah)} location={ayah.location} />
                 )}
               </article>
