@@ -24,6 +24,7 @@ import type { AyahDoc } from "../types";
 import { getUILang, num } from "../i18n";
 import { useSettings } from "../settings";
 import MushafLink from "./MushafLink";
+import MuhkamaLine from "./MuhkamaLine";
 
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -162,6 +163,7 @@ export function TafsilPanel({ location, open }: { location: string; open: boolea
           {p.grade ? ` · ${p.grade}` : ""}
         </div>
       )}
+      <MuhkamaLine location={location} />
       {back.length > 0 && (
         <div className="jw-relgroup jw-asl">
           <div className="jw-relhead jw-aslhead">

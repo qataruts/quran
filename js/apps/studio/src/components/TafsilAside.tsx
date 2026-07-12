@@ -20,6 +20,7 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
 import { getUILang, num } from "../i18n";
 import { useSettings } from "../settings";
+import MuhkamaLine from "./MuhkamaLine";
 
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -81,6 +82,7 @@ export default function TafsilAside({ location }: { location: string | null }) {
           {fwd.length ? ` · ${num(fwd.length)} ${ar ? "تفصيل" : "tafsil"}` : ""}
         </div>
       )}
+      <MuhkamaLine location={location} />
       <div className="jw-panel" style={{ background: "transparent", border: "none", padding: 0 }}>
         {/* أصلها first — the جامعة(s) this verse is a تفصيل of (what it «تُفصِّل») */}
         {back.length > 0 && (

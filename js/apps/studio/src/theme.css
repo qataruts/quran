@@ -974,12 +974,25 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .jw-relhead { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
 .jw-reldot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex: none; }
 .jw-back { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--line); }
-/* أصلها — set apart as a distinct (gold) block so the verse's origin is easy to find */
-.jw-asl {
-  margin: 0 0 12px; padding: 8px 10px;
+/* تندرجُ تحت — the headline answer: which محكمات this verse belongs to (gold) */
+.mk-line {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: 0 0 12px; padding: 9px 11px;
   background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 10px;
 }
-.jw-aslhead { color: var(--gold); }
+.mk-line-lbl { color: var(--gold); font-weight: 700; font-size: 12.5px; }
+.mk-line-chip {
+  padding: 2px 11px; border-radius: 999px; background: var(--panel);
+  border: 1px solid var(--line); color: var(--accent); text-decoration: none; font-size: 15px;
+}
+.mk-line-chip:hover { border-color: var(--gold); background: var(--panel-2); }
+.mk-line-root { color: var(--gold); font-weight: 700; }
+/* أصلها — the raw direct parents (secondary now): a subtle bordered block */
+.jw-asl {
+  margin: 0 0 12px; padding: 8px 10px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+}
+.jw-aslhead { color: var(--muted); }
 .jw-verse {
   display: flex; align-items: baseline; gap: 10px; padding: 5px 8px; border-radius: 8px;
   color: var(--ink); text-decoration: none;
