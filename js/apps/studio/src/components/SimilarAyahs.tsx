@@ -32,10 +32,24 @@ let pulseAvailable = (() => {
  * count and expands into a shared panel (also reused by the صفحات popup). It
  * hides itself when an ayah has no close neighbours — never a dead-end.
  */
-export default function SimilarAyahs({ ayahId, location }: { ayahId: number; location: string }) {
+export default function SimilarAyahs({
+  ayahId,
+  location,
+  open: openProp,
+  onToggle,
+}: {
+  ayahId: number;
+  location: string;
+  /** controlled mode (reader): the panel is rendered by the parent BELOW the
+   *  verse, so it never sits inside the toolbar's flex row. */
+  open?: boolean;
+  onToggle?: () => void;
+}) {
   useUILang();
   const { layers } = useSettings();
-  const [open, setOpen] = useState(false);
+  const controlled = openProp !== undefined;
+  const [openState, setOpenState] = useState(false);
+  const open = controlled ? openProp : openState;
   const [count, setCount] = useState<number | null>(null);
   const [pulse, setPulse] = useState(false);
 
@@ -68,14 +82,14 @@ export default function SimilarAyahs({ ayahId, location }: { ayahId: number; loc
     <>
       <button
         className={`chip similar${open ? " open" : ""}${pulse ? " similar-cta-pulse" : ""}`}
-        onClick={() => setOpen(!open)}
+        onClick={() => (controlled ? onToggle?.() : setOpenState((v) => !v))}
         style={{ cursor: "pointer" }}
         title={t("similar.title")}
       >
         <span className="ai-spark" aria-hidden /> {t("similar.chip")}
-        {count != null && count > 0 && <span className="count-badge">{num(count)}</span>}
+        {count != null && count > 0 && <> {num(count)}</>}
       </button>
-      {open && <SimilarAyahsPanel ayahId={ayahId} location={location} />}
+      {!controlled && open && <SimilarAyahsPanel ayahId={ayahId} location={location} />}
     </>
   );
 }

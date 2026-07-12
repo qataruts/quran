@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { addAyahs, createCollection, useCollections } from "../store/collections";
 import { num, t, useUILang } from "../i18n";
+import { useSettings } from "../settings";
 
 /**
  * "Collect" button: adds ayah locations ("s:a") to a chosen (or new)
@@ -18,6 +19,7 @@ export default function CollectButton({
   label?: string;
 }) {
   useUILang();
+  const { layers } = useSettings();
   const collections = useCollections();
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState<string | null>(null);
@@ -63,6 +65,8 @@ export default function CollectButton({
     setDone(id);
     setTimeout(() => setDone(null), 1600);
   };
+
+  if (!layers.collect) return null; // off by default; enable it in ⚙ settings
 
   return (
     <>

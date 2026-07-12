@@ -25,6 +25,7 @@ export interface Settings {
     jawami: boolean; // محكم→تفصيل chip in the reader
     roots: boolean; // root chip in the word inspector
     similar: boolean; // «مثلها» semantic-neighbours chip
+    collect: boolean; // the ⊕ "add to a collection" button (off by default)
   };
 }
 
@@ -39,7 +40,7 @@ const DEFAULTS: Settings = {
   speed: 1,
   reciter: "husary",
   tajwid: false,
-  layers: { jawami: true, roots: true, similar: true },
+  layers: { jawami: true, roots: true, similar: true, collect: false },
 };
 
 function load(): Settings {

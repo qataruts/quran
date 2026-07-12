@@ -229,6 +229,13 @@ export default function SettingsPanel() {
               onChange={(e) => setSettings({ layers: { ...s.layers, roots: e.target.checked } })}
             />
           </Row>
+          <Row label={ar ? "زرّ الإضافة للمجموعات ⊕" : "Add-to-collection ⊕"}>
+            <input
+              type="checkbox"
+              checked={s.layers.collect}
+              onChange={(e) => setSettings({ layers: { ...s.layers, collect: e.target.checked } })}
+            />
+          </Row>
         </div>
       )}
     </div>
