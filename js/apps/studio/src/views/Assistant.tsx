@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { getUILang, num, useUILang } from "../i18n";
 import {
   addMessage, chatMaterial, createChat, deleteChat, getChat, patchMessage, renameChat, useChats,
-  type ChatMsg,
+  type ChatAyah, type ChatMsg,
 } from "../chat";
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { surahNameAr } from "../db";
@@ -136,21 +136,32 @@ export default function Assistant() {
         const r = await toolRootInfo(plan.query);
         patch.roots = r.roots; patch.ayahs = r.ayahs;
         if (!r.roots.length) patch.text = (plan.reply || "") + (ar ? " (لم أجد هذا الجذر.)" : "");
-      } else if (plan.action === "compose") {
+      } else if (plan.action === "compose" || plan.action === "search_compose") {
         const cur2 = getChat(cid)!;
-        const m2 = chatMaterial(cur2);
-        if (!m2.ayahs.length) {
-          patch.text = ar ? "لا توجد آياتٌ مجموعةٌ بعدُ لأبني عليها — اطلبْ أوّلًا آياتٍ في الموضوع، ثم الصياغة." : "No verses gathered yet — search first, then compose.";
+        const prior = chatMaterial(cur2);
+        // gather now if asked in one message (search_compose), or if nothing's gathered yet
+        let fresh: ChatAyah[] = [];
+        const q = plan.query || plan.subject || "";
+        if ((plan.action === "search_compose" || prior.ayahs.length === 0) && q) {
+          fresh = await toolSearchMeaning(q);
+          if (fresh.length) patch.ayahs = fresh;
+        }
+        // union of freshly-found + already-gathered verses (dedupe by ref)
+        const seen = new Set<string>();
+        const ayahs: ChatAyah[] = [];
+        for (const a of [...fresh, ...prior.ayahs]) if (!seen.has(a.ref)) { seen.add(a.ref); ayahs.push(a); }
+        if (!ayahs.length) {
+          patch.text = ar ? "لم أجدْ آياتٍ في هذا الموضوع لأبني عليها — جرّبْ صياغةً أخرى للطلب، أو ابحثْ أوّلًا ثمّ اطلبِ الكتابة." : "No verses found to build on — try rephrasing, or search first then compose.";
         } else {
           // the most recent draft in this chat — so «وسّع / نقّح» continues it, not restarts
           const prev = [...cur2.messages].reverse().find((mm) => mm.draft)?.draft || "";
           const composed = await postJson("/api/compose", {
             task: plan.task || "post", subject: plan.subject || text, length: plan.length || "long",
-            ayahs: m2.ayahs.slice(0, 16).map((a) => {
+            ayahs: ayahs.slice(0, 16).map((a) => {
               const [s, n] = a.ref.split(":");
               return { ref: `${surahNameAr(Number(s))} ${n}`, text: a.text };
             }),
-            roots: m2.roots.slice(0, 12).map((r) => ({ root: r.root, gloss: r.gloss })),
+            roots: prior.roots.slice(0, 12).map((r) => ({ root: r.root, gloss: r.gloss })),
             instruction: text, previous: prev,
           });
           patch.text = plan.reply || (ar ? "إليك مسوّدةً تبني عليها:" : "A draft to build on:");

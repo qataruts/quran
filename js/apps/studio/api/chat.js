@@ -16,7 +16,7 @@ const PLAN_SCHEMA = {
   type: "object",
   properties: {
     reply: { type: "string" },
-    action: { type: "string", enum: ["search_meaning", "search_root", "root_info", "similar_roots", "compose", "none"] },
+    action: { type: "string", enum: ["search_meaning", "search_root", "root_info", "similar_roots", "compose", "search_compose", "none"] },
     query: { type: "string" },
     task: { type: "string", enum: ["khutba", "post", "lecture", "summary"] },
     subject: { type: "string" },
@@ -58,7 +58,8 @@ export default async function handler(req) {
 - search_root: ابحث عن جذرٍ أو كلمة (query = الكلمة/الجذر).
 - root_info: معنى جذرٍ ومشتقّاته ومواضعه (query = الجذر).
 - similar_roots: الجذور القريبة معنًى (query = الجذر).
-- compose: حين يطلب المستخدم صياغةَ خطبةٍ (khutba) أو منشورٍ (post) أو محاضرةٍ (lecture) أو تلخيصٍ (summary) ممّا جُمِع — املأ task و subject و length. اجعل length=long للخطبةِ والمحاضرةِ والمقالِ المطوّل، وmedium للمنشور، إلّا أن يطلبَ إيجازًا أو إطالةً صراحةً. وإن طلب توسيعَ المسوّدةِ السابقةِ أو تنقيحَها أو إضافةَ محورٍ إليها فاختَرْ compose أيضًا (سيُبنى على المسوّدة السابقة).
+- compose: حين يطلب المستخدم صياغةً ممّا جُمِع سابقًا — املأ task و subject و length. حدِّدْ task بدقّةٍ بحسب طلبه: «مقال/مقالة/منشور/موضوع» → post، «خطبة/جمعة» → khutba، «محاضرة/درس» → lecture، «تلخيص/خلاصة» → summary. اجعل length=long للخطبةِ والمحاضرةِ والمقالِ المطوّل، وmedium للمنشورِ القصير، إلّا أن يطلبَ إيجازًا أو إطالةً صراحةً. وإن طلب توسيعَ المسوّدةِ السابقةِ أو تنقيحَها أو إضافةَ محورٍ إليها فاختَرْ compose أيضًا (سيُبنى على المسوّدة السابقة).
+- search_compose: حين يطلبُ في رسالةٍ واحدةٍ أن تجمعَ آياتٍ في موضوعٍ ثمّ تكتبَ منها — املأ query (وصفًا غنيًّا للمعنى كما في search_meaning) وtask (بالتحديد نفسه أعلاه) وsubject وlength. يُبحَثُ أوّلًا ثمّ يُصاغُ من الآيات المُلتقَطة. آثِرْ هذا كلّما ذُكِرَ الجمعُ والكتابةُ معًا («اجمع آياتٍ عن كذا ثمّ اكتب…»، «هات آياتٍ في كذا واكتب منها مقالًا»).
 - none: حين تُجيب من المادّة الحاضرة أو يكون الكلام عامًّا؛ ضَعِ الجواب في reply.
 
 القيود: لا تُدخِل تفسيرًا بالرأي، ولا حديثًا، ولا حكمًا فقهيًّا، ولا معلومةً من خارج بيانات القرآن التي بين يديك. تعامَلْ مع القرآن بقدسيّة.
