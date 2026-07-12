@@ -67,8 +67,8 @@ export default function About() {
           <h2 className="ab-h2">{ar ? "الغاية" : "The aim"}</h2>
           <p style={{ marginTop: 0 }}>
             {ar
-              ? "أن نفتح بنيةَ القرآن الداخلية للعين: كيف تتشابك آياتُه وجذورُه ومعانيه في نسيجٍ واحدٍ يُقلَّب بيسرٍ وأمانة. ليست الغايةُ تفسيرًا نُنشئه، بل عدسةٌ حاسوبيةٌ على النصّ نفسه تُعين على التأمّل والبحث، ويبقى الحكمُ للقارئ."
-              : "To open the Qur'an's inner structure to the eye: how its verses, roots and meanings interlace into one fabric, turned over easily and faithfully. The aim is not an interpretation we author, but a computational lens on the text itself that aids reflection and research — and the judgment stays with the reader."}
+              ? "أن نُبرِزَ ترابُطَ القرآن ونظمَه: كيف تتناسب آياتُه وتتشابك جذورُه ومعانيه في نسيجٍ واحدٍ يُتأمَّل بيسرٍ وأمانة. ليست الغايةُ تفسيرًا نُنشئه، بل أداةٌ حاسوبيةٌ تُقرِّب النظرَ في النصّ نفسه وتُعين على التأمّل والبحث، ويبقى الحكمُ للقارئ."
+              : "To bring out the Qur'an's coherence and order: how its verses answer one another and its roots and meanings interlace into one fabric, contemplated easily and faithfully. The aim is not an interpretation we author, but a computational tool for looking closely into the text itself, aiding reflection and research; the judgment stays with the reader."}
           </p>
           <h3 className="ab-h3">{ar ? "لمن؟" : "For whom?"}</h3>
           <div className="ab-who">
