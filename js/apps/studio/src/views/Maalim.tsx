@@ -14,6 +14,9 @@ import type { AyahDoc, RootDoc, SurahDoc } from "../types";
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 // the 29 suras opened by the disconnected letters (a known, uncontroversial set)
 const MUQATTA_SURAHS = [2, 3, 7, 10, 11, 12, 13, 14, 15, 19, 20, 26, 27, 28, 29, 30, 31, 32, 36, 38, 40, 41, 42, 43, 44, 45, 46, 50, 68];
+// the disconnected-letter opening ayahs — usually ayah 1, but الشورى (42) splits
+// them across 42:1 «حم» and 42:2 «عسق», so exclude by exact ayah, not «ayahNo===1».
+const MUQATTA_AYAHS = new Set([...MUQATTA_SURAHS.map((s) => `${s}:1`), "42:2"]);
 
 /** a landmark card: a title, a one-line note, and a body (list / facts). */
 function Card({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
@@ -132,7 +135,7 @@ export default function Maalim() {
           <Card title={ar ? "أقصر الآيات" : "Shortest verses"} note={ar ? "بعدد الكلمات (عدا الحروف المقطّعة)" : "by word count (excl. the disconnected letters)"}>
             <VerseList
               items={m.byWords
-                .filter((a) => !(a.ayahNo === 1 && MUQATTA_SURAHS.includes(a.surahNo)))
+                .filter((a) => !MUQATTA_AYAHS.has(`${a.surahNo}:${a.ayahNo}`))
                 .slice(-6)
                 .reverse()
                 .map((a) => ({ loc: `${a.surahNo}:${a.ayahNo}`, v: a.wordCount, text: a.textUthmani }))}
@@ -145,17 +148,9 @@ export default function Maalim() {
               {m.sajda.map((a) => (
                 <li key={a.surahNo + ":" + a.ayahNo}>
                   <Link to={readPathOf(`${a.surahNo}:${a.ayahNo}`)} className="maalim-ref">{arName(`${a.surahNo}:${a.ayahNo}`)}</Link>
-                  {a.sajdaType && (
-                    <span className="maalim-val">
-                      {ar
-                        ? a.sajdaType === "obligatory"
-                          ? "سجدة عزيمة"
-                          : a.sajdaType === "recommended"
-                            ? "سجدة مستحبّة"
-                            : a.sajdaType
-                        : a.sajdaType}
-                    </span>
-                  )}
+                  {/* the ۩ mark is in the mushaf itself (positional); the
+                      عزيمة/مستحبّة distinction is external jurisprudence — omitted */}
+                  <span className="maalim-val">{ar ? "۩ سجدة" : "۩ sajda"}</span>
                 </li>
               ))}
             </ol>
