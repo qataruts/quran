@@ -22,7 +22,7 @@ export interface VerseClass {
   sig: Signals;
 }
 interface Payload {
-  meta: { verses: number; themes: number; weights: Record<string, number> };
+  meta: { verses: number; themes: number; cfg: Record<string, unknown> };
   verses: Record<string, VerseClass>;
 }
 
@@ -104,6 +104,18 @@ export function kulliyatList(): { loc: string; theme: number; jamiya: number; si
   const out: { loc: string; theme: number; jamiya: number; size: number }[] = [];
   for (const [loc, v] of Object.entries(data.verses)) if (v.tier === "كلّية") out.push({ loc, theme: v.theme, jamiya: v.jamiya, size: sizes.get(v.theme) ?? 0 });
   return out.sort((a, b) => b.jamiya - a.jamiya);
+}
+/** Every classified verse loc, sorted by جامعية (desc) — for whole-Qur'an search. */
+export function allVerseLocs(): string[] {
+  if (!data) return [];
+  return Object.keys(data.verses).sort((a, b) => data!.verses[b].jamiya - data!.verses[a].jamiya);
+}
+/** All locs of a given tier, sorted by جامعية (desc). */
+export function tierList(tier: Tier): string[] {
+  if (!data) return [];
+  const out: string[] = [];
+  for (const [loc, v] of Object.entries(data.verses)) if (v.tier === tier) out.push(loc);
+  return out.sort((a, b) => (data!.verses[b].jamiya) - (data!.verses[a].jamiya));
 }
 /** Tier counts across the whole Qur'an. */
 export function tierCounts(): { kulliya: number; jamia: number; tafsil: number } {

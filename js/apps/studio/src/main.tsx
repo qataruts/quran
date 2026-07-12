@@ -146,9 +146,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
     ar: "اللغة والجذور", en: "Language & roots",
     items: [
       ["/roots", "الجذور", "Roots"],
-      ["/learn", "مسار الجذور", "Learn roots"],
       ["/journey", "رحلة الجذر", "Root journey"],
-      ["/eraab", "تدريب الإعراب", "Grammar drill"],
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
       ["/mujam", "معجم القرآن", "Dictionary"],

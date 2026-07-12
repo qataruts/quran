@@ -19,11 +19,22 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
 const PUB = path.resolve(HERE, "../apps/studio/public");
 
-// ---------- tunables (stage 2) ----------
-const WEIGHTS = { struct: 0.28, cent: 0.24, norm: 0.18, particLow: 0.16, breadth: 0.14 };
-const THEMES = 90;                 // number of semantic clusters (finer = tighter themes)
-const JAMIA_FRACTION = 0.15;       // top 15% of a theme = جوامع, rest = تفصيل
-const GLOBAL_KULLIYA_BAR = 0.90;   // a theme-head is a كلّية ONLY if its جامعية clears this global percentile
+// ========================================================================
+//  ALL TUNABLES IN ONE PLACE — nothing is hardcoded below this block.
+//  Tweak, re-run, find the balance. (weights + bars = the fast stage.)
+// ========================================================================
+const CFG = {
+  // the 5 signals — how much each counts toward the جامعية score (sum ≈ 1)
+  weights: { struct: 0.28, cent: 0.24, norm: 0.18, particLow: 0.16, breadth: 0.14 },
+  themes: 90,          // number of semantic clusters (organisation + the tree)
+  kulliyaBar: 0.985,   // global جامعية percentile → كلّيّات (top ~1.5%)
+  jamiaBar: 0.85,      // → جوامع (down to top ~15%); the rest = تفصيل
+  narrative: 2,        // weight of narrative/dialogue markers inside particularity
+  // (1) structural universality — weight of each universal-wording marker
+  struct: { total: 4, tawhid: 3, distributive: 3, subject: 3, quantifier: 2, cosmic: 2, law: 2, relative: 0.5 },
+  // (3) establishing force — weight of each normative marker
+  norm: { impv: 2, pro: 2, res: 1.5, exp: 1, cert: 1 },
+};
 
 // ---------- load ----------
 const db = new DatabaseSync(`${ROOT}/quran-kg.db`, { readOnly: true });
@@ -79,28 +90,33 @@ for (let u = 0; u < N; u++) {
 // structural universality (text markers)
 const norm = (t) => (" " + (t || "") + " ").replace(/[ً-ْٰ]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه");
 function structural(text) {
-  const t = norm(text), has = (re) => (t.match(re) || []).length; let s = 0;
-  s += 4 * has(/ كل شيء | بكل شيء | على كل شيء /g);
-  s += 3 * has(/ لا اله الا | ليس كمثله /g);
-  s += 3 * has(/ كل نفس | كل امه | كل انسان | لكل /g);
-  s += 3 * has(/ الناس | الانسان | العالمين | للعالمين /g);
-  s += 2 * has(/ كل | جميع | كلما /g);
-  s += 2 * has(/ السماوات والارض | ما في السماوات | له ملك /g);
-  s += 2 * has(/ ان الله | ان ربك | كتب ربكم | ان في /g);
-  s += 0.5 * has(/ الذين | الذي | التي /g);
-  return s;
+  const t = norm(text), has = (re) => (t.match(re) || []).length, w = CFG.struct;
+  return w.total * has(/ كل شيء | بكل شيء | على كل شيء /g)
+    + w.tawhid * has(/ لا اله الا | ليس كمثله /g)
+    + w.distributive * has(/ كل نفس | كل امه | كل انسان | لكل /g)
+    + w.subject * has(/ الناس | الانسان | العالمين | للعالمين /g)
+    + w.quantifier * has(/ كل | جميع | كلما /g)
+    + w.cosmic * has(/ السماوات والارض | ما في السماوات | له ملك /g)
+    + w.law * has(/ ان الله | ان ربك | كتب ربكم | ان في /g)
+    + w.relative * has(/ الذين | الذي | التي /g);
+}
+// narrative/dialogue markers — past-tense speech (قال/قالوا…, NOT the universal «قل»)
+// marks a verse as story/context, which is a form of particularity (تخصيص).
+function narrative(text) {
+  const t = norm(text), has = (re) => (t.match(re) || []).length;
+  return has(/ قال | قالوا | قالت | قالا | قالتا | قلنا | فقال | فقالوا | يقول | يقولون /g);
 }
 
 // ---------- stage 1: raw signals ----------
 const rows = ayahs.map((a, i) => {
-  const p = part.get(a.ayah_id) || {};
-  const norml = 2 * (impv.get(a.ayah_id) || 0) + 2 * (p.PRO || 0) + 1.5 * (p.RES || 0) + 1 * ((p.EXP || 0) + (p.EXL || 0)) + 1 * (p.CERT || 0);
+  const p = part.get(a.ayah_id) || {}, w = CFG.norm;
+  const norml = w.impv * (impv.get(a.ayah_id) || 0) + w.pro * (p.PRO || 0) + w.res * (p.RES || 0) + w.exp * ((p.EXP || 0) + (p.EXL || 0)) + w.cert * (p.CERT || 0);
   return {
     a, i,
     struct: structural(a.text_clean),
     cent: indeg[i],
     norm: norml,
-    partic: (pnPer.get(a.ayah_id) || 0) / Math.max(1, a.word_count),
+    partic: ((pnPer.get(a.ayah_id) || 0) + CFG.narrative * narrative(a.text_clean)) / Math.max(1, a.word_count),
     breadth: rootsPer.get(a.ayah_id)?.size || 0,
   };
 });
@@ -113,47 +129,47 @@ function pct(key) {
 // ---------- stage 1: themes (weight-independent, farthest-point sampling) ----------
 const seeds = [idIndex.get(db.prepare("SELECT ayah_id FROM ayah WHERE location='2:255'").get().ayah_id)]; // آية الكرسي as first anchor
 const minD = new Float32Array(N).fill(2);
-for (let s = 0; s < THEMES; s++) {
+for (let s = 0; s < CFG.themes; s++) {
   const seed = seeds[s];
   for (let j = 0; j < N; j++) { const d = 1 - cos(seed, j); if (d < minD[j]) minD[j] = d; }
-  if (s + 1 < THEMES) { let far = 0, fd = -1; for (let j = 0; j < N; j++) if (minD[j] > fd) { fd = minD[j]; far = j; } seeds.push(far); }
+  if (s + 1 < CFG.themes) { let far = 0, fd = -1; for (let j = 0; j < N; j++) if (minD[j] > fd) { fd = minD[j]; far = j; } seeds.push(far); }
 }
 const cluster = new Int16Array(N);
 for (let j = 0; j < N; j++) { let best = 0, bs = -2; for (let s = 0; s < seeds.length; s++) { const c = cos(seeds[s], j); if (c > bs) { bs = c; best = s; } } cluster[j] = best; }
 
 // ---------- stage 2: جامعية + tiers ----------
-for (const r of rows) r.jamiya = WEIGHTS.struct * r.structP + WEIGHTS.cent * r.centP + WEIGHTS.norm * r.normP + WEIGHTS.particLow * (1 - r.particP) + WEIGHTS.breadth * r.breadthP;
-// global جامعية percentile — the كلّية bar is read against ALL verses, not just the theme
+for (const r of rows) r.jamiya = CFG.weights.struct * r.structP + CFG.weights.cent * r.centP + CFG.weights.norm * r.normP + CFG.weights.particLow * (1 - r.particP) + CFG.weights.breadth * r.breadthP;
+// tiers are GLOBAL — a verse's rank is read against the whole Qur'an, not its theme,
+// so the greatest verses are كلّيّات wherever they fall (a rich sūra gets several).
 const gp = new Map();
 [...rows].sort((x, y) => x.jamiya - y.jamiya).forEach((r, i) => gp.set(r.i, i / (N - 1)));
+const tier = new Map();
+for (const r of rows) {
+  const p = gp.get(r.i);
+  tier.set(r.i, p >= CFG.kulliyaBar ? "كلّية" : p >= CFG.jamiaBar ? "جامعة" : "تفصيل");
+}
 const byCluster = Array.from({ length: seeds.length }, () => []);
 for (const r of rows) byCluster[cluster[r.i]].push(r);
-const tier = new Map();
-for (const members of byCluster) {
-  members.sort((x, y) => y.jamiya - x.jamiya);
-  const nJam = Math.max(1, Math.round(members.length * JAMIA_FRACTION));
-  members.forEach((r, rank) => {
-    // كلّية = the theme's head AND globally among the most جامعة; else a strong verse is جامعة
-    const t = (rank === 0 && gp.get(r.i) >= GLOBAL_KULLIYA_BAR) ? "كلّية"
-      : (rank < nJam) ? "جامعة" : "تفصيل";
-    tier.set(r.i, t);
-  });
-}
 
-// edges: nearest higher-tier verse in the same theme
+// edges: nearest higher-tier verse in its theme; if the theme has none higher,
+// fall back to the nearest كلّية anywhere — so every verse reaches a كلّية (no orphans).
 const order = { "كلّية": 0, "جامعة": 1, "تفصيل": 2 };
+const kulliyat = rows.filter((r) => tier.get(r.i) === "كلّية");
 const parent = new Map();
-for (const members of byCluster) {
-  for (const r of members) {
-    if (tier.get(r.i) === "كلّية") continue;
-    let best = null, bs = -2;
-    for (const o of members) if (o !== r && order[tier.get(o.i)] < order[tier.get(r.i)]) { const c = cos(r.i, o.i); if (c > bs) { bs = c; best = o; } }
-    if (best) parent.set(r.i, best.a.location);
-  }
+for (const r of rows) {
+  const rt = tier.get(r.i);
+  if (rt === "كلّية") continue;
+  const members = byCluster[cluster[r.i]];
+  const want = rt === "تفصيل" ? "جامعة" : "كلّية"; // attach to the tier immediately above (layered tree)
+  let best = null, bs = -2;
+  for (const o of members) if (tier.get(o.i) === want) { const c = cos(r.i, o.i); if (c > bs) { bs = c; best = o; } }
+  if (!best) for (const o of members) if (o !== r && order[tier.get(o.i)] < order[rt]) { const c = cos(r.i, o.i); if (c > bs) { bs = c; best = o; } }
+  if (!best) for (const o of kulliyat) { const c = cos(r.i, o.i); if (c > bs) { bs = c; best = o; } }
+  if (best) parent.set(r.i, best.a.location);
 }
 
 // ---------- output + report ----------
-const out = { meta: { verses: N, themes: seeds.length, weights: WEIGHTS }, verses: {} };
+const out = { meta: { verses: N, themes: seeds.length, cfg: CFG }, verses: {} };
 for (const r of rows) out.verses[r.a.location] = {
   tier: tier.get(r.i), jamiya: Math.round(r.jamiya * 1000) / 1000, theme: cluster[r.i], parent: parent.get(r.i) || null,
   sig: { struct: +r.structP.toFixed(2), cent: +r.centP.toFixed(2), norm: +r.normP.toFixed(2), particLow: +(1 - r.particP).toFixed(2), breadth: +r.breadthP.toFixed(2) },
@@ -163,17 +179,13 @@ fs.writeFileSync(`${PUB}/kulliyat.json`, JSON.stringify(out));
 const counts = { "كلّية": 0, "جامعة": 0, "تفصيل": 0 };
 for (const t of tier.values()) counts[t]++;
 console.log(`verses ${N} · themes ${seeds.length} · كلّيات ${counts["كلّية"]} · جوامع ${counts["جامعة"]} · تفصيل ${counts["تفصيل"]}  (100% covered)`);
-console.log("top كلّيات (theme heads), by جامعية:");
+console.log("top كلّيات (globally most جامعة):");
 [...rows].filter((r) => tier.get(r.i) === "كلّية").sort((a, b) => b.jamiya - a.jamiya).slice(0, 12)
-  .forEach((r) => console.log(`   ${nm(r.a).padEnd(13)} ج=${r.jamiya.toFixed(2)}  ${r.a.text_clean.slice(0, 60)}`));
+  .forEach((r) => console.log(`   ${nm(r.a).padEnd(13)} ج=${r.jamiya.toFixed(2)}  ${r.a.text_clean.slice(0, 58)}`));
 
-// one theme end-to-end
-const bigTheme = byCluster.map((m, s) => [s, m.length]).sort((a, b) => b[1] - a[1])[3][0];
-const T = byCluster[bigTheme];
-console.log(`\n=== one theme (#${bigTheme}, ${T.length} verses) ===`);
-const kull = T.find((r) => tier.get(r.i) === "كلّية");
-console.log(`كلّية:  ${nm(kull.a)}  ${kull.a.text_clean.slice(0, 66)}`);
-console.log("جوامع:");
-T.filter((r) => tier.get(r.i) === "جامعة").slice(0, 6).forEach((r) => console.log(`   ${nm(r.a).padEnd(13)} ← ${r.a.text_clean.slice(0, 56)}`));
-console.log("تفصيل (sample):");
-T.filter((r) => tier.get(r.i) === "تفصيل").slice(0, 5).forEach((r) => console.log(`   ${nm(r.a).padEnd(13)} → ${(parent.get(r.i) || "").padEnd(8)}  ${r.a.text_clean.slice(0, 46)}`));
+// the two checks the owner raised
+console.log("\nالبقرة — كلّيّاتها (يجب ألّا تكون فارغة):");
+[...rows].filter((r) => r.a.surah_no === 2 && tier.get(r.i) === "كلّية").sort((a, b) => b.jamiya - a.jamiya)
+  .forEach((r) => console.log(`   ${nm(r.a).padEnd(11)} ج=${r.jamiya.toFixed(2)}  ${r.a.text_clean.slice(0, 50)}`));
+const nl = rows[idIndex.get(db.prepare("SELECT ayah_id FROM ayah WHERE location='27:41'").get().ayah_id)];
+console.log(`\nالنمل ٤١ «قال نكّروا…» → ${tier.get(nl.i)}  ج=${nl.jamiya.toFixed(2)}  (قلّة التخصيص = ${(1 - nl.particP).toFixed(2)})`);
