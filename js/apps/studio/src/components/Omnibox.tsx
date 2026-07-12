@@ -84,6 +84,9 @@ export default function Omnibox() {
       >
         <div
           className="card"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("omni.trigger")}
           onClick={(e) => e.stopPropagation()}
           style={{ width: "min(620px, 92vw)", padding: 10 }}
         >
@@ -92,6 +95,7 @@ export default function Omnibox() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("omni.placeholder")}
+            aria-label={t("omni.placeholder")}
             style={{ width: "100%", fontSize: 17, padding: "12px 14px" }}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") {

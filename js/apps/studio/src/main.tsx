@@ -113,6 +113,7 @@ function ThemeToggle() {
     <button
       onClick={() => setSettings({ theme: isDark ? "light" : "dark" })}
       title={getUILang() === "ar" ? "فاتح/داكن" : "Light/Dark"}
+      aria-label={getUILang() === "ar" ? (isDark ? "الوضع الفاتح" : "الوضع الداكن") : isDark ? "Light mode" : "Dark mode"}
     >
       {isDark ? "☀" : "☾"}
     </button>
