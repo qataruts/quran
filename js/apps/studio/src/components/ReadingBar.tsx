@@ -174,7 +174,7 @@ export default function ReadingBar({
       {btn(isPlaying ? `◼ ${t("stop")}` : `▶ ${t("read.playHere")}`, playHere, t("read.playHere"), true)}
       {btn(nextArrow, () => onNavigate(1), t("read.nextAyah"))}
       {/* repeat count */}
-      <span className="chip" style={{ gap: 4 }}>
+      <span className="chip rd-repeat" style={{ gap: 4 }}>
         🔁
         <select
           value={repeat}
@@ -191,7 +191,7 @@ export default function ReadingBar({
       </span>
       {/* continue toggle */}
       <button
-        className="chip"
+        className="chip rd-continue"
         onClick={() => setContinueAfter(!continueAfter)}
         title={t("read.continue")}
         style={{

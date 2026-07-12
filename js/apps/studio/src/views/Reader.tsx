@@ -560,11 +560,22 @@ export default function Reader() {
       ))}
     </span>
   );
+
+  // mobile: lock the page scroll behind the bottom sheet so it feels like a
+  // native modal (the sheet itself scrolls internally).
+  useEffect(() => {
+    if (!narrow) return;
+    const el = mainRef.current;
+    const open = !!(selected || selectedLoc);
+    if (el) el.style.overflowY = open ? "hidden" : "";
+    return () => { if (el) el.style.overflowY = ""; };
+  }, [narrow, selected, selectedLoc]);
+
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
 
-      <main ref={mainRef} className="page" style={{ flex: 1, minWidth: 0 }}>
+      <main ref={mainRef} className="page reader-main" style={{ flex: 1, minWidth: 0 }}>
         {/* Mobile: ONE sticky header — surah picker (carries the name), the
             on-page search, a compact ▶, and the mode toggle. Stays under the
             app header so you switch surah / jump / change view without scrolling
@@ -812,44 +823,24 @@ export default function Reader() {
       />
 
       {narrow && (selected || selectedLoc) && (
-        <div
-          className="card"
-          style={{
-            position: "fixed",
-            insetInline: 12,
-            bottom: 12,
-            maxHeight: "55vh",
-            overflowY: "auto",
-            zIndex: 20,
-          }}
-        >
-          <div
-            style={{
-              position: "sticky",
-              top: 0,
-              display: "flex",
-              justifyContent: "flex-end",
-              background: "var(--panel)",
-              zIndex: 2,
-              margin: "-2px 0 4px",
-              paddingBottom: 6,
-              borderBottom: "1px solid var(--line)",
-            }}
-          >
+        <>
+          <div className="sheet-backdrop" onClick={() => { setSelected(null); setSelectedAyah(null); }} />
+          <div className="word-sheet card" role="dialog" aria-modal="true">
+            <div className="word-sheet-grip" aria-hidden />
             <button
-              onClick={() => {
-                setSelected(null);
-                setSelectedAyah(null);
-              }}
-              aria-label="close"
+              className="word-sheet-close"
+              onClick={() => { setSelected(null); setSelectedAyah(null); }}
+              aria-label={ar ? "إغلاق" : "close"}
             >
               ✕
             </button>
+            <div className="word-sheet-body">
+              <VerseContext location={selectedLoc} />
+              <TafsilAside location={selectedLoc} />
+              {selected && <Inspector word={selected} />}
+            </div>
           </div>
-          <VerseContext location={selectedLoc} />
-          <TafsilAside location={selectedLoc} />
-          {selected && <Inspector word={selected} />}
-        </div>
+        </>
       )}
     </div>
   );

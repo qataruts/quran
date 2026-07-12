@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { getSettings } from "../settings";
+import { useReading } from "../reading";
 
 /**
  * Recitation playback — Shaykh Mahmoud Khalil al-Husary (murattal), 64 kbps,
@@ -266,7 +267,10 @@ export default function AudioButton({ ayahId, preview: isPreview = false }: { ay
 export function NowPlayingBar() {
   useUILang();
   const id = usePlayingId();
-  if (id === 0) return null;
+  const { selected } = useReading();
+  // when an ayah is selected the reading dock is shown and carries its own
+  // transport — don't stack a second fixed bar over it (they used to collide).
+  if (id === 0 || selected) return null;
   const loc = currentLocation;
   return (
     <div
