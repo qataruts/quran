@@ -211,7 +211,7 @@ export default defineConfig({
         // json is precached (jawami.json, the محكم→تفصيل network — small, core);
         // layout.json stays runtime-cached via its globIgnore below.
         globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm,json}"],
-        globIgnores: ["**/quran-app.db", "**/*.bin", "**/mushaf/fonts/**", "**/mushaf/layout.json"],
+        globIgnores: ["**/quran-app.db", "**/*.bin"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -221,16 +221,6 @@ export default defineConfig({
             options: {
               cacheName: "qkg-data",
               expiration: { maxEntries: 6 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            // QCF mushaf fonts + layout — cache pages as they are viewed
-            urlPattern: /\/mushaf\/(fonts\/.*\.woff2|layout\.json)(\?.*)?$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "qkg-mushaf",
-              expiration: { maxEntries: 650, maxAgeSeconds: 60 * 60 * 24 * 180 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

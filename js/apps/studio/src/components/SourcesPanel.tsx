@@ -39,8 +39,8 @@ export const SOURCES: { url: string; ar: string; en: string }[] = [
   },
   {
     url: "https://qul.tarteel.ai",
-    ar: "مصحف المدينة وخطوط KFGQPC/QCF — مجمع الملك فهد، عبر Quran.com وQUL",
-    en: "Madina muṣḥaf + KFGQPC/QCF fonts — King Fahd Complex, via Quran.com & QUL",
+    ar: "نصّ مصحف المدينة وخطّ KFGQPC حفص — مجمع الملك فهد، عبر Quran.com وQUL",
+    en: "Madina muṣḥaf text + KFGQPC Ḥafṣ font — King Fahd Complex, via Quran.com & QUL",
   },
   {
     url: "https://ai.google.dev",

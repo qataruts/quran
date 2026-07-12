@@ -28,5 +28,5 @@ archive/
 # os
 .DS_Store
 
-# QCF mushaf fonts (94MB) — fetched at build via fetch-mushaf-fonts.mjs
-js/apps/studio/public/mushaf/fonts/
+# local embedding cache for export-lexnet.mjs (regenerable)
+.lexnet-vecs.bin

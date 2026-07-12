@@ -32,12 +32,4 @@ if (fs.existsSync(emb)) {
 } else {
   console.warn("quran-embeddings.bin missing — Meaning search disabled (run export-embeddings.mjs)");
 }
-// QCF Madina mushaf fonts — fetch to public/mushaf/fonts if missing (self-host)
-const fontsDir = path.join(PUB, "mushaf", "fonts");
-const have = fs.existsSync(fontsDir) ? fs.readdirSync(fontsDir).filter((f) => f.endsWith(".woff2")).length : 0;
-if (have < 604) {
-  console.log(`fetching QCF fonts (${have}/604 present)…`);
-  const { execSync } = await import("node:child_process");
-  try { execSync("node ../../scripts/fetch-mushaf-fonts.mjs", { stdio: "inherit" }); } catch { console.warn("font fetch failed — Madina mushaf view will be unavailable"); }
-}
 console.log("assets copied to public/");
