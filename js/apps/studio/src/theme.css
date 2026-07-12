@@ -987,6 +987,26 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 }
 .mk-line-chip:hover { border-color: var(--gold); background: var(--panel-2); }
 .mk-line-root { color: var(--gold); font-weight: 700; }
+
+/* الكلّيّات view */
+.kl-layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+.kl-list { display: flex; flex-direction: column; gap: 6px; max-height: 80vh; overflow-y: auto; position: sticky; top: 8px; }
+.kl-headbtn { text-align: start; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: baseline; }
+.kl-headbtn.on { border-color: var(--gold); background: var(--gold-soft); }
+.kl-head-ref { color: var(--accent); font-weight: 700; font-size: 13px; }
+.kl-head-size { font-size: 11px; }
+.kl-head-text { grid-column: 1 / -1; font-family: var(--font-quran); font-size: 15px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kl-theme { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.kl-tier { font-weight: 700; font-size: 14px; margin-bottom: 7px; }
+.kl-tier.gold { color: var(--gold); }
+.kl-verse { display: flex; align-items: baseline; gap: 10px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink); text-decoration: none; margin-bottom: 6px; }
+.kl-verse:hover { border-color: var(--accent); background: var(--accent-soft); }
+.kl-verse.k { border-color: var(--gold); background: var(--gold-soft); padding: 13px; }
+.kl-verse.j { border-inline-start: 3px solid var(--accent); }
+.kl-verse-ref { color: var(--accent); font-weight: 700; font-size: 13px; white-space: nowrap; min-width: 74px; }
+.kl-verse-text { flex: 1; min-width: 0; font-family: var(--font-quran); direction: rtl; text-align: right; font-size: 17px; line-height: 1.85; color: var(--ink-2); }
+.kl-verse.k .kl-verse-text { font-size: 20px; color: var(--ink); }
+@media (max-width: 820px) { .kl-layout { grid-template-columns: 1fr; } .kl-list { max-height: 42vh; position: static; } }
 /* أصلها — the raw direct parents (secondary now): a subtle bordered block */
 .jw-asl {
   margin: 0 0 12px; padding: 8px 10px;

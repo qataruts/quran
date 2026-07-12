@@ -6,6 +6,7 @@ quran-app.db
 
 # generated graph exports
 graph/
+docs/
 
 # node
 node_modules/

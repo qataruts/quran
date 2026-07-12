@@ -17,6 +17,7 @@ const Today = lazy(() => import("./views/Today"));
 import Jawami from "./views/Jawami";
 const Gaps = lazy(() => import("./views/Gaps"));
 const Muhkamat = lazy(() => import("./views/Muhkamat"));
+const Kulliyat = lazy(() => import("./views/Kulliyat"));
 const Lexicon = lazy(() => import("./views/Lexicon"));
 const Wujuh = lazy(() => import("./views/Wujuh"));
 const Furuq = lazy(() => import("./views/Furuq"));
@@ -157,7 +158,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "البنية والتدبّر", en: "Structure",
     items: [
-      ["/muhkamat", "المحكمات", "Muḥkamāt"],
+      ["/kulliyat", "الكلّيّات", "Kulliyyāt"],
       ["/furuq", "فروق التنزيل", "Furūq"],
       ["/mawdui", "المواضيع", "Topics"],
       ["/amthal", "الأمثال", "Parables"],
@@ -351,6 +352,7 @@ function App() {
           <Route path="/gaps" element={<Gaps />} />
           <Route path="/muhkamat" element={<Muhkamat />} />
           <Route path="/muhkamat/:k" element={<Muhkamat />} />
+          <Route path="/kulliyat" element={<Kulliyat />} />
           <Route path="/graph" element={<Graph />} />
           <Route path="/graph/:s/:a" element={<Graph />} />
           <Route path="/fabric" element={<RootsGraph />} />
