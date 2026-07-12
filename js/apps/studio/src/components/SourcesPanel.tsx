@@ -23,6 +23,11 @@ export const SOURCES: { url: string; ar: string; en: string }[] = [
     en: "Lexicons: Mufradāt · Maqāyīs · Ṣiḥāḥ · Lisān al-ʿArab",
   },
   {
+    url: "https://qbook.kfgqpc.org",
+    ar: "الإعراب: المجتبى من مشكل إعراب القرآن — أ.د. أحمد الخراط، نشر مجمع الملك فهد",
+    en: "Iʿrāb (grammar): al-Mujtabā min Mushkil Iʿrāb al-Qurʾān — A. al-Kharrāṭ, King Fahd Complex",
+  },
+  {
     url: "https://tanzil.net/trans/",
     ar: "الترجمات: صحيح إنترناشونال (EN) · حميد الله (FR) · ديانت (TR) — تنزيل",
     en: "Translations: Saheeh Intl (EN) · Hamidullah (FR) · Diyanet (TR) — Tanzil",

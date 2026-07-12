@@ -87,7 +87,6 @@ export default function SimilarAyahs({
         title={t("similar.title")}
       >
         <span className="ai-spark" aria-hidden /> {t("similar.chip")}
-        {count != null && count > 0 && <> {num(count)}</>}
       </button>
       {!controlled && open && <SimilarAyahsPanel ayahId={ayahId} location={location} />}
     </>

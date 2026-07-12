@@ -166,8 +166,7 @@ export default function ReadingBar({
           title={t("similar.title")}
           style={{ cursor: "pointer", fontSize: 15 }}
         >
-          ✦ {t("similar.chip")}
-          <span className="count-badge">{num(simCount)}</span>
+          <span className="ai-spark" aria-hidden /> {t("similar.chip")}
         </button>
       )}
       <span style={{ flex: 1 }} />
