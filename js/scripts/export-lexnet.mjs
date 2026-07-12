@@ -46,7 +46,22 @@ const rows = db.prepare("SELECT root, occurrences, data FROM roots").all();
 const deNoise = (s) =>
   s.replace(/\[[^\]]*\]/g, " ").replace(/[﴿﴾]/g, " ").replace(/\s+/g, " ").trim();
 
-const CONTRAST = /(?:وال?فرق بين|ال?فرق بينهما|أخصّ?\b|أعمّ?\s+من|أبلغ\s+من|بخلاف|نظير|يقارب|قريب من)/;
+// clean الراغب prose before quoting it: drop editorial footnotes [[...]], single
+// [...] citations, the digitisation's | paragraph markers, and Qur'an brackets —
+// so we never present garbled/spliced text as al-Rāghib's own words.
+const cleanRaghib = (s) =>
+  s
+    .replace(/\[\[[\s\S]*?\]\]/g, " ")
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/\|/g, " ")
+    .replace(/[﴿﴾]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+// a citable distinction must OPEN with one of these (not merely contain «بخلاف»
+// mid-thought, which produced fragments).
+const CONTRAST_OK = /(?:وال?فرق بين|ال?فرق بينهما|والفرق أنّ|أخصّ من|أعمّ من|أبلغ من)/;
+// anaphoric / obviously-mid-sentence openers to reject.
+const FRAGMENT_START = /^(?:و?هو |و?هذا |و?ذلك |أي|نحو|قال|وقال|وقيل|فقال|كقول|والثاني|والثالث|-|—)/;
 
 const roots = [];
 for (const { root, occurrences, data } of rows) {
@@ -60,8 +75,14 @@ for (const { root, occurrences, data } of rows) {
   const embedText = `${root}\n${deNoise(maq).slice(0, 600)}\n${deNoise(raq).slice(0, 900)}`.slice(0, 1500);
   // explicit distinctions الراغب writes himself (verbatim sentence extraction)
   const contrast = [];
-  for (const sent of raq.split(/(?<=[.،؛\n])\s+/)) {
-    if (CONTRAST.test(sent) && sent.length < 320) contrast.push(sent.trim());
+  for (const sent of cleanRaghib(raq).split(/(?<=[.،؛])\s+/)) {
+    const t = sent.trim();
+    if (t.length < 18 || t.length > 300) continue;
+    if (!CONTRAST_OK.test(t)) continue;      // a real distinction opener
+    if (FRAGMENT_START.test(t)) continue;    // not an anaphoric mid-sentence piece
+    if (/[[\]|]|ص\s*\d|\d\s*\/\s*\d/.test(t)) continue; // any leftover citation/marker
+    if (!/[.،؛]$/.test(t)) continue;         // must end cleanly (not truncated)
+    contrast.push(t);
     if (contrast.length >= 3) break;
   }
   roots.push({ root, occ: occurrences, embedText, contrast });
