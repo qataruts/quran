@@ -1,10 +1,10 @@
 /**
- * BookmarksPanel — the ★ top-bar popover: khatma reading progress + the list
- * of bookmarked ayahs (jump / remove). All localStorage, reactive.
+ * BookmarksPanel — the ★ top-bar popover: the list of bookmarked ayahs
+ * (jump / remove). All localStorage, reactive.
  */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { resetProgress, toggleBookmark, useBookmarks, useProgress } from "../bookmarks";
+import { toggleBookmark, useBookmarks } from "../bookmarks";
 import { surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
 
@@ -12,7 +12,6 @@ const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num
 
 export default function BookmarksPanel() {
   const marks = useBookmarks();
-  const { reached, total, pct } = useProgress();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const ar = getUILang() === "ar";
@@ -33,30 +32,12 @@ export default function BookmarksPanel() {
 
   return (
     <div className="set-wrap" ref={ref}>
-      <button onClick={() => setOpen(!open)} title={ar ? "العلامات والتقدّم" : "Bookmarks & progress"} aria-label="bookmarks">
+      <button onClick={() => setOpen(!open)} title={ar ? "العلامات المرجعية" : "Bookmarks"} aria-label="bookmarks">
         ★{marks.length > 0 && <sup style={{ fontSize: 9 }}> {num(marks.length)}</sup>}
       </button>
       {open && (
         <div className="set-panel card">
-          <div className="set-head">{ar ? "تقدّم الختمة" : "Khatma progress"}</div>
-          <div className="bm-progress">
-            <div className="bm-bar">
-              <div style={{ width: `${pct}%` }} />
-            </div>
-            <div className="muted" style={{ marginTop: 4 }}>
-              {num(pct)}٪ · {ar ? "بلغت" : "reached"} {num(reached)} / {num(total)}
-              {reached > 0 && (
-                <button
-                  onClick={resetProgress}
-                  style={{ border: "none", background: "none", color: "var(--muted)", padding: "0 6px", fontSize: 12 }}
-                >
-                  ↺ {ar ? "تصفير" : "reset"}
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="set-group">{ar ? "العلامات المرجعية" : "Bookmarks"}</div>
+          <div className="set-head">{ar ? "العلامات المرجعية" : "Bookmarks"}</div>
           {marks.length === 0 ? (
             <div className="muted" style={{ padding: "6px 0" }}>
               {ar ? "اضغط ☆ بجانب أي آية لحفظها هنا" : "tap ☆ on any ayah to save it here"}
