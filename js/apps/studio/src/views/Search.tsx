@@ -436,7 +436,9 @@ export default function Search() {
 
   const ar = getUILang() === "ar";
   const criterion = mode === "meaning" ? `معنى: ${q}` : mode === "links" ? `ارتباطات: ${q}` : q;
-  const shown = hits ? hits.slice(0, DISPLAY_CAP) : [];
+  const [visible, setVisible] = useState(DISPLAY_CAP);
+  useEffect(() => setVisible(DISPLAY_CAP), [hits]); // reset paging on a new result set
+  const shown = hits ? hits.slice(0, visible) : [];
   const examples = mode === "meaning" ? (ar ? MEANING_EXAMPLES_AR : MEANING_EXAMPLES_EN) : TEXT_EXAMPLES;
 
   /** Clear results and return to the empty state (keeps the current mode). */
@@ -598,9 +600,9 @@ export default function Search() {
               <strong>
                 {num(hits.length)} {mode === "meaning" ? t("meaning.results") : t("search.results")}
               </strong>
-              {hits.length > DISPLAY_CAP && (
+              {hits.length > shown.length && (
                 <span className="muted">
-                  {t("showing")} {num(DISPLAY_CAP)}
+                  {t("showing")} {num(shown.length)}
                 </span>
               )}
               <span style={{ flex: 1 }} />
@@ -615,6 +617,13 @@ export default function Search() {
                 <ResultRow key={h.ayah.location} hit={h} criterion={criterion} query={q} />
               ))}
             </div>
+            {hits.length > visible && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
+                <button className="chip" onClick={() => setVisible((v) => v + DISPLAY_CAP)}>
+                  {ar ? `عرض ${num(Math.min(DISPLAY_CAP, hits.length - visible))} أكثر ▾` : `Show ${num(Math.min(DISPLAY_CAP, hits.length - visible))} more ▾`}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

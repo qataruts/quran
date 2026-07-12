@@ -30,7 +30,7 @@ import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
 
-const AYAH_CAP = 150;
+const AYAH_STEP = 100; // occurrences revealed initially and per «المزيد» click
 
 /** Does this whitespace token carry an Arabic letter (vs a lone waqf mark)? */
 const HAS_LETTER = /[ء-يٱ-ۓە]/;
@@ -351,7 +351,10 @@ function RootDetail({ root }: { root: string }) {
     return [...map.entries()];
   }, [displayWords]);
 
-  const shown = useMemo(() => (groups ? groups.slice(0, AYAH_CAP) : []), [groups]);
+  // «المزيد»-style pagination: reveal AYAH_STEP occurrences at a time
+  const [visible, setVisible] = useState(AYAH_STEP);
+  useEffect(() => setVisible(AYAH_STEP), [selectedLemma]); // reset when the lemma filter changes
+  const shown = useMemo(() => (groups ? groups.slice(0, visible) : []), [groups, visible]);
 
   // Fetch the full ayah docs for the shown occurrences (batched, cached).
   const shownKey = shown.map(([loc]) => loc).join("|");
@@ -531,8 +534,8 @@ function RootDetail({ root }: { root: string }) {
           ) : (
             <>
               <p className="muted" style={{ marginTop: 0 }}>
-                {groups.length > AYAH_CAP
-                  ? `${t("showing")} ${num(AYAH_CAP)} ${t("of")} ${num(groups.length)}`
+                {groups.length > shown.length
+                  ? `${t("showing")} ${num(shown.length)} ${t("of")} ${num(groups.length)}`
                   : `${num(groups.length)} ${t("roots.inAyahs")}`}
               </p>
               <div>
@@ -582,6 +585,15 @@ function RootDetail({ root }: { root: string }) {
                   );
                 })}
               </div>
+              {groups.length > visible && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
+                  <button className="chip" onClick={() => setVisible((v) => v + AYAH_STEP)}>
+                    {getUILang() === "ar"
+                      ? `عرض ${num(Math.min(AYAH_STEP, groups.length - visible))} أكثر ▾`
+                      : `Show ${num(Math.min(AYAH_STEP, groups.length - visible))} more ▾`}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
