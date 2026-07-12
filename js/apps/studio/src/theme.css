@@ -1311,3 +1311,39 @@ table.data tr:hover td { background: var(--panel-2); }
 .gx-nb { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .gx-links { display: flex; gap: 6px; flex-wrap: wrap; }
 @media (max-width: 700px) { .gx-stage { height: calc(100vh - 250px); } }
+
+/* مسار الجذور — the spaced-repetition root-learning drill */
+.learn-wrap { max-width: 640px; margin: 0 auto; }
+.learn-head { text-align: center; margin-bottom: 20px; }
+.learn-title { font-family: var(--font-quran); color: var(--accent); font-size: 28px; margin: 0 0 6px; }
+.learn-lead { color: var(--muted); line-height: 1.85; margin: 0 auto 16px; max-width: 520px; font-size: 14.5px; }
+.learn-stats { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 9px; font-size: 14px; }
+.learn-stat b { color: var(--accent); font-size: 17px; }
+.learn-cover { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; max-width: 420px; margin: 0 auto; }
+.learn-cover > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 999px; transition: width 0.4s ease; }
+.learn-idle { text-align: center; padding: 30px 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.learn-begin { font-size: 16px; padding: 12px 30px; }
+.learn-reset { border: none; color: var(--muted); cursor: pointer; }
+.learn-progress { text-align: center; font-size: 13px; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.learn-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 26px 22px; box-shadow: 0 6px 24px -14px rgba(0,0,0,0.3); }
+.learn-front { text-align: center; padding: 14px 0 20px; }
+.learn-root { font-size: calc(58px * var(--quran-scale, 1)); color: var(--ink); line-height: 1.3; }
+.learn-occ { font-size: 13px; margin-top: 8px; }
+.learn-new { color: var(--gold); font-weight: 600; }
+.learn-reveal { display: block; width: 100%; padding: 13px; font-size: 16px; }
+.learn-back { margin: 4px 0 18px; }
+.learn-mean { margin-bottom: 12px; }
+.learn-mean-src { font-size: 12px; display: block; margin-bottom: 2px; }
+.learn-mean-text { margin: 0; line-height: 1.95; font-size: 15.5px; color: var(--ink); }
+.learn-deriv { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.learn-deriv-w { font-size: 16px; }
+.learn-see { display: inline-block; margin-top: 4px; }
+.learn-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+.lg { border: 1px solid var(--line); border-radius: 10px; padding: 11px 4px; cursor: pointer; font-size: 15px; font-weight: 600; background: var(--panel); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.lg:hover { border-color: currentColor; }
+.lg-again { color: #d9534f; }
+.lg-hard { color: #dd8c2a; }
+.lg-good { color: var(--accent); }
+.lg-easy { color: #3a86c8; }
+.learn-kbd { font-size: 10px; opacity: 0.55; font-weight: 400; }
+@media (max-width: 480px) { .learn-kbd { display: none; } .learn-root { font-size: calc(48px * var(--quran-scale, 1)); } }
