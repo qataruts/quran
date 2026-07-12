@@ -5,17 +5,27 @@ import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 
-/** Short content hash of the app database — busts the data cache on redeploy. */
+/** Short content hash of the app database + data sidecars — busts the data
+ *  cache on redeploy, so re-exporting neighbours/إعراب/أمثال is picked up too. */
 function dataVersion(): string {
+  const h = createHash("sha1");
+  let any = false;
   for (const p of ["./public/quran-app.db", "../../../quran-app.db", "../../../quran-app.db.gz"]) {
     const abs = resolve(__dirname, p);
     if (fs.existsSync(abs)) {
-      const h = createHash("sha1");
       h.update(fs.readFileSync(abs));
-      return h.digest("hex").slice(0, 10);
+      any = true;
+      break;
     }
   }
-  return "dev";
+  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json"]) {
+    const abs = resolve(__dirname, p);
+    if (fs.existsSync(abs)) {
+      h.update(fs.readFileSync(abs));
+      any = true;
+    }
+  }
+  return any ? h.digest("hex").slice(0, 10) : "dev";
 }
 
 /**

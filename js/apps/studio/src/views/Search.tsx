@@ -16,6 +16,7 @@ import AyahRef from "../components/AyahRef";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
 import { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import { TadabburPanel } from "../components/TadabburChip";
+import { highlightVerse } from "../highlight";
 import { similarOf } from "../similar";
 import { getAyahByGlobalNo, getAyahByLocation, searchAyahs, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
@@ -86,7 +87,7 @@ interface Hit {
  *  Tapping the verse opens its «آيات ذات صلة» (semantic neighbours) inline;
  *  the مصحف opens only via the explicit button — so a result is a place to
  *  explore, not a trapdoor into the reader. */
-function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
+function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; query: string }) {
   useUILang();
   const navigate = useNavigate();
   const { ayah, score } = hit;
@@ -145,7 +146,7 @@ function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
         title={hasRelated ? (ar ? "آياتٌ ذات صلة" : "related verses") : t("nav.reader")}
         onClick={onVerseTap}
       >
-        {ayah.textUthmani}
+        {highlightVerse(ayah.textUthmani, query)}
       </div>
       {hasRelated && (
         <button
@@ -611,7 +612,7 @@ export default function Search() {
             </div>
             <div className="card" style={{ paddingTop: 4, paddingBottom: 4 }}>
               {shown.map((h) => (
-                <ResultRow key={h.ayah.location} hit={h} criterion={criterion} />
+                <ResultRow key={h.ayah.location} hit={h} criterion={criterion} query={q} />
               ))}
             </div>
           </>

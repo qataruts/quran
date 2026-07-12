@@ -718,11 +718,9 @@ export default function Reader() {
                   )}
                   {/* listen */}
                   <button
-                    className="chip"
+                    className={`chip${selectedLoc === ayah.location ? " on" : ""}`}
                     onClick={() => setSelectedAyah(ayah.location)}
                     title={t("read.playHere")}
-                    style={{ border: "none", cursor: "pointer",
-                      ...(selectedLoc === ayah.location ? { background: "var(--accent-soft)", color: "var(--accent)" } : {}) }}
                   >▶</button>
                   <AudioButton ayahId={ayahIdOf(ayah)} />
                   {/* study layers */}
@@ -753,16 +751,9 @@ export default function Reader() {
                   />
                   {/* save */}
                   <button
-                    className="chip"
+                    className={`chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
                     onClick={() => toggleBookmark(ayah.location)}
                     title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
-                    style={{
-                      border: "none",
-                      cursor: "pointer",
-                      ...(bookmarks.includes(ayah.location)
-                        ? { background: "var(--gold-soft)", color: "var(--gold)" }
-                        : {}),
-                    }}
                   >
                     {bookmarks.includes(ayah.location) ? "★" : "☆"}
                   </button>

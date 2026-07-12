@@ -10,6 +10,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
+import { highlightVerse } from "../highlight";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 interface AmthalData {
@@ -58,7 +59,7 @@ export default function Amthal() {
           {locs.map((loc) => (
             <Link key={loc} to={readPathOf(loc)} className="fr-card am-card">
               <span className="fr-ref am-ref">{arName(loc)}</span>
-              <span className="quran am-text">{texts.get(loc)?.textUthmani ?? loc}</span>
+              <span className="quran am-text">{highlightVerse(texts.get(loc)?.textUthmani ?? loc, q)}</span>
             </Link>
           ))}
         </div>

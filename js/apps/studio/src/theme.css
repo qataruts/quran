@@ -252,6 +252,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .page-search-clear { position: absolute; inset-inline-end: 9px; border: none; background: none; color: var(--muted); cursor: pointer; padding: 4px 8px; font-size: 13px; line-height: 1; }
 .page-search-clear:hover { color: var(--ink); }
 
+/* search-term highlight in verse results */
+mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padding: 0 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+
 /* البحث الدلالي — the mode toggle (بالمعنى · ارتباطات آية) */
 .sem-tabs { display: inline-flex; gap: 3px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; margin-top: 6px; }
 .sem-tab { border: none; background: transparent; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; border-radius: 999px; padding: 6px 18px; }
@@ -347,13 +350,14 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 .chip b { color: var(--accent); font-weight: 600; }
 .chip.link { cursor: pointer; background: var(--accent-soft); color: var(--accent); border: none; }
-.chip.link:hover { filter: brightness(1.05); }
 .chip.gold { background: var(--gold-soft); color: var(--gold); }
 
-/* «مثلها» flagship chip — gold, first-class, with a live neighbour count */
-/* «مثلها» blends in with the other chips (the ✦ spark marks it); only a subtle
-   highlight when open. */
-.chip.similar.open { background: var(--accent-soft); color: var(--accent); }
+/* Every interactive chip (a <button>) shares ONE hover and ONE active look, so
+   the whole toolbar feels consistent — no ad-hoc borders/brightness/colours. */
+button.chip { cursor: pointer; border: none; }
+button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var(--accent); filter: none; }
+.chip.on, .chip.on:hover, .chip.similar.open, .chip.similar.open:hover { background: var(--accent); color: #fff; }
+.chip.on b { color: #fff; }
 .chip.similar .count-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 16px; height: 16px; margin-inline-start: 4px; padding: 0 3px;
@@ -946,7 +950,6 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
   border-inline-start: 3px solid #9b72cb;
 }
 .tadabbur-text { white-space: pre-wrap; line-height: 2.1; font-size: 15.5px; color: var(--ink); }
-.tadabbur-chip.on { background: var(--accent-soft); color: var(--accent); }
 
 /* معالم القرآن — landmarks & statistics. CSS columns = masonry: cards pack
    tightly instead of leaving ragged gaps under short cards in a grid row. */
