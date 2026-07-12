@@ -245,7 +245,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 .page-search input {
   width: 100%; padding: 10px 40px; border: 1px solid var(--line); border-radius: 999px;
-  background: var(--panel); color: var(--ink); font-size: 15px; font-family: inherit;
+  background: var(--panel); color: var(--ink); font-family: inherit;
+  /* 16px min: below it, iOS Safari auto-zooms on focus and blows out the layout */
+  font-size: 16px;
 }
 .page-search input::-webkit-search-cancel-button { display: none; }
 .page-search input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }

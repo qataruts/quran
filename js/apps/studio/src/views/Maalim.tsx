@@ -41,7 +41,7 @@ function VerseList({ items, unit }: { items: { loc: string; v: number; text?: st
               {surahNameAr(Number(s))}{" "}
               <span className="muted" style={{ fontWeight: 400 }}>{ar ? `· الآية ${num(a)}` : `· v.${a}`}</span>
             </Link>
-            <span className="maalim-val">{num(v)} {unit}</span>
+            <span className="maalim-val">{ar ? `${unit} ${num(v)}` : `${num(v)} ${unit}`}</span>
             {text && <span className="maalim-vtext quran">{text}</span>}
           </li>
         );
@@ -126,7 +126,7 @@ export default function Maalim() {
 
         <div className="maalim-grid">
           <Card title={ar ? "أطول الآيات" : "Longest verses"} note={ar ? "بعدد الكلمات" : "by word count"}>
-            <VerseList items={m.byWords.slice(0, 6).map((a) => ({ loc: `${a.surahNo}:${a.ayahNo}`, v: a.wordCount }))} unit={ar ? "كلمة" : "words"} />
+            <VerseList items={m.byWords.slice(0, 6).map((a) => ({ loc: `${a.surahNo}:${a.ayahNo}`, v: a.wordCount }))} unit={ar ? "عدد الكلمات" : "words"} />
           </Card>
 
           <Card title={ar ? "أقصر الآيات" : "Shortest verses"} note={ar ? "بعدد الكلمات (عدا الحروف المقطّعة)" : "by word count (excl. the disconnected letters)"}>
@@ -136,7 +136,7 @@ export default function Maalim() {
                 .slice(-6)
                 .reverse()
                 .map((a) => ({ loc: `${a.surahNo}:${a.ayahNo}`, v: a.wordCount, text: a.textUthmani }))}
-              unit={ar ? "كلمة" : "words"}
+              unit={ar ? "عدد الكلمات" : "words"}
             />
           </Card>
 

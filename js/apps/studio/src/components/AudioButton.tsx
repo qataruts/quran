@@ -15,23 +15,49 @@ import { getSettings } from "../settings";
 const CDN_ROOT = "https://cdn.islamic.network/quran/audio";
 const LAST_AYAH = 6236;
 
-/** Reciters on the Islamic Network CDN — each pinned to a bitrate verified to
- *  return 200 (they differ per edition). The SW audio cache rule matches any
- *  edition/bitrate under this host, so all reciters cache offline. */
-export const RECITERS: Record<string, { ed: string; br: number; ar: string; en: string }> = {
+/** Reciters. Two verse-by-verse sources, both streamed straight from origin —
+ *  the browser handles HTTP Range; audio is not routed through the SW:
+ *   - islamic.network CDN — {ed, br}, indexed by global ayah 1..6236; each
+ *     bitrate is verified to return 200 (they differ per edition).
+ *   - everyayah.com — {everyayah}, files named سسسآآآ.mp3 (sura+ayah), for
+ *     reciters the CDN lacks (e.g. al-Ghāmidī). */
+export const RECITERS: Record<string, { ed?: string; br?: number; everyayah?: string; ar: string; en: string }> = {
   husary: { ed: "ar.husary", br: 64, ar: "محمود خليل الحصري", en: "al-Ḥuṣarī" },
-  alafasy: { ed: "ar.alafasy", br: 128, ar: "مشاري العفاسي", en: "Mishary Alafasy" },
-  abdulbasit: { ed: "ar.abdulbasitmurattal", br: 64, ar: "عبد الباسط عبد الصمد", en: "ʿAbd al-Bāsiṭ" },
+  husary_mujawwad: { ed: "ar.husarymujawwad", br: 128, ar: "الحصري (المجوّد)", en: "al-Ḥuṣarī (mujawwad)" },
   minshawi: { ed: "ar.minshawi", br: 128, ar: "محمد صديق المنشاوي", en: "al-Minshāwī" },
+  abdulbasit: { ed: "ar.abdulbasitmurattal", br: 64, ar: "عبد الباسط عبد الصمد", en: "ʿAbd al-Bāsiṭ" },
+  alafasy: { ed: "ar.alafasy", br: 128, ar: "مشاري العفاسي", en: "Mishary Alafasy" },
+  ghamdi: { everyayah: "Ghamadi_40kbps", ar: "سعد الغامدي", en: "al-Ghāmidī" },
   sudais: { ed: "ar.abdurrahmaansudais", br: 192, ar: "عبد الرحمن السديس", en: "as-Sudais" },
+  shuraim: { ed: "ar.saoodshuraym", br: 64, ar: "سعود الشريم", en: "ash-Shuraym" },
   muaiqly: { ed: "ar.mahermuaiqly", br: 128, ar: "ماهر المعيقلي", en: "al-Muʿayqilī" },
+  ajmi: { ed: "ar.ahmedajamy", br: 128, ar: "أحمد العجمي", en: "al-ʿAjmī" },
+  shatri: { ed: "ar.shaatree", br: 128, ar: "أبو بكر الشاطري", en: "ash-Shāṭirī" },
+  hudhaify: { ed: "ar.hudhaify", br: 128, ar: "علي الحذيفي", en: "al-Ḥudhayfī" },
+  hanirifai: { ed: "ar.hanirifai", br: 192, ar: "هاني الرفاعي", en: "Hāni ar-Rifāʿī" },
+  jibreel: { ed: "ar.muhammadjibreel", br: 128, ar: "محمد جبريل", en: "Muḥammad Jibrīl" },
+  basfar: { ed: "ar.abdullahbasfar", br: 64, ar: "عبد الله بصفر", en: "Abdullāh Baṣfar" },
+  ayyoub: { ed: "ar.muhammadayyoub", br: 128, ar: "محمد أيوب", en: "Muḥammad Ayyūb" },
 };
 
+// canonical Ḥafṣ ayah-count per sura — maps a global ayah id (1..6236) to
+// sura:ayah for everyayah's file names (also the numbering the CDN's global index uses).
+const AYAH_COUNTS = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+const SURAH_OFFSET = [0];
+for (let i = 0; i < AYAH_COUNTS.length; i++) SURAH_OFFSET.push(SURAH_OFFSET[i] + AYAH_COUNTS[i]);
+const pad3 = (n: number) => String(n).padStart(3, "0");
+
 const reciterOf = () => RECITERS[getSettings().reciter] ?? RECITERS.husary;
-const audioBase = () => {
+/** mp3 URL for a global ayah id (1..6236), per the current reciter's source. */
+function audioUrl(id: number): string {
   const r = reciterOf();
-  return `${CDN_ROOT}/${r.br}/${r.ed}`;
-};
+  if (r.everyayah) {
+    let s = 1;
+    while (s < 114 && id > SURAH_OFFSET[s]) s++;
+    return `https://everyayah.com/data/${r.everyayah}/${pad3(s)}${pad3(id - SURAH_OFFSET[s - 1])}.mp3`;
+  }
+  return `${CDN_ROOT}/${r.br}/${r.ed}/${id}.mp3`;
+}
 
 let player: HTMLAudioElement | null = null;
 let currentId = 0;
@@ -146,7 +172,7 @@ function start(id: number) {
   player.onerror = () => {
     if (currentId === id) stopAudio();
   };
-  player.src = `${audioBase()}/${id}.mp3`;
+  player.src = audioUrl(id);
   // loading a new src resets the rate to defaultPlaybackRate — set both
   player.defaultPlaybackRate = getSettings().speed;
   player.playbackRate = getSettings().speed;
