@@ -76,6 +76,17 @@ export default function TafsilAside({ location }: { location: string | null }) {
         </div>
       )}
       <div className="jw-panel" style={{ background: "transparent", border: "none", padding: 0 }}>
+        {/* أصلها first — the جامعة(s) this verse is a تفصيل of (what it «تُفصِّل») */}
+        {back.length > 0 && (
+          <div className="jw-relgroup jw-asl">
+            <div className="jw-relhead jw-aslhead">
+              ↑ {ar ? (back.length > 1 ? "أصولُها الجامعة (تُفصِّلها هذه الآية)" : "أصلُها الجامع (تُفصِّلها هذه الآية)") : "its أصل (it elaborates)"}
+            </div>
+            {back.map((l) => (
+              <Verse key={l.loc} loc={l.loc} texts={texts} rel={l.rel} />
+            ))}
+          </div>
+        )}
         {byRel.map(({ rel, items }) => (
           <div key={rel} className="jw-relgroup">
             <div className="jw-relhead" style={{ color: REL_INFO[rel].color }}>
@@ -87,14 +98,6 @@ export default function TafsilAside({ location }: { location: string | null }) {
             ))}
           </div>
         ))}
-        {back.length > 0 && (
-          <div className="jw-relgroup jw-back">
-            <div className="jw-relhead muted">{ar ? "تُفصِّل:" : "it elaborates:"}</div>
-            {back.map((l) => (
-              <Verse key={l.loc} loc={l.loc} texts={texts} rel={l.rel} />
-            ))}
-          </div>
-        )}
       </div>
       <div style={{ marginTop: 8 }}>
         <Link to="/jawami" className="chip link">
