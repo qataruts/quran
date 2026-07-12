@@ -1427,3 +1427,68 @@ table.data tr:hover td { background: var(--panel-2); }
 .drawer-group { display: flex; flex-direction: column; gap: 2px; }
 .drawer-group-h { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; padding: 12px 6px 4px; margin-top: 6px; border-top: 1px solid var(--line); }
 .drawer-nav > .drawer-group:first-of-type .drawer-group-h { margin-top: 2px; }
+
+/* المُعين — the research chat */
+.mu-page { display: flex; height: 100%; min-height: 0; overflow: hidden; }
+.mu-list { width: 244px; flex: none; border-inline-end: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; padding: 12px; overflow-y: auto; }
+.mu-new { width: 100%; margin-bottom: 12px; }
+.mu-chats { display: flex; flex-direction: column; gap: 2px; }
+.mu-chat { display: flex; align-items: center; border-radius: 8px; }
+.mu-chat.on { background: var(--accent-soft); }
+.mu-chat-t { flex: 1; padding: 9px 12px; color: var(--ink); text-decoration: none; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mu-chat.on .mu-chat-t { color: var(--accent); font-weight: 600; }
+.mu-chat-x { border: none; background: none; color: var(--muted); cursor: pointer; padding: 6px 9px; opacity: 0; font-size: 12px; }
+.mu-chat:hover .mu-chat-x { opacity: 1; }
+.mu-list-bg { display: none; }
+
+.mu-main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.mu-topbar { display: none; }
+.mu-thread { flex: 1; overflow-y: auto; padding: 22px 20px; }
+.mu-msg { max-width: 760px; margin: 0 auto 16px; }
+.mu-msg.user { text-align: end; }
+.mu-user { display: inline-block; background: var(--accent-soft); color: var(--ink); padding: 10px 14px; border-radius: 14px 14px 4px 14px; max-width: 85%; text-align: start; line-height: 1.7; }
+.mu-reply { line-height: 1.95; margin-bottom: 6px; }
+.mu-reply.err { color: #d9534f; }
+.mu-ayahs, .mu-roots { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.mu-ayah { display: block; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; }
+.mu-ayah:hover { border-color: var(--accent); }
+.mu-ayah-t { font-size: calc(21px * var(--quran-scale,1)); line-height: 2; color: var(--ink); display: block; }
+.mu-ayah-r { font-size: 12px; display: block; margin-top: 4px; }
+.mu-root { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; }
+.mu-root-w { font-size: 20px; color: var(--accent); text-decoration: none; }
+.mu-root-g { font-size: 14px; line-height: 1.85; color: var(--muted); margin-top: 5px; }
+.mu-draft { margin: 10px 0; background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 14px; padding: 16px; }
+.mu-draft-note { font-size: 12px; margin-bottom: 10px; }
+.mu-draft-body { white-space: pre-wrap; line-height: 2.05; font-size: 16px; color: var(--ink); }
+.mu-copy { margin-top: 12px; border: none; cursor: pointer; }
+.mu-typing { display: flex; gap: 5px; padding: 8px 0; }
+.mu-typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: mu-bounce 1.2s infinite; }
+.mu-typing span:nth-child(2) { animation-delay: 0.2s; }
+.mu-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes mu-bounce { 0%,60%,100% { opacity: 0.3; } 30% { opacity: 1; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .mu-typing span { animation: none; } }
+
+.mu-input { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); }
+.mu-input textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; font: inherit; font-size: 16px; background: var(--panel); color: var(--ink); max-height: 160px; line-height: 1.6; }
+.mu-input textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.mu-send { flex: none; align-self: flex-end; padding: 12px 22px; }
+.mu-foot { text-align: center; font-size: 11.5px; padding: 0 20px 10px; }
+
+.mu-empty { max-width: 620px; margin: 7vh auto 0; text-align: center; }
+.mu-empty-mark .ai-spark { width: 40px; height: 40px; }
+.mu-empty-h { font-family: var(--font-quran); color: var(--accent); font-size: 32px; margin: 8px 0 12px; }
+.mu-empty-lead { color: var(--muted); line-height: 1.95; margin: 0 auto 24px; max-width: 520px; }
+.mu-examples { display: grid; gap: 10px; max-width: 460px; margin: 0 auto; }
+.mu-ex { text-align: start; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); cursor: pointer; font-size: 15px; color: var(--ink); }
+.mu-ex:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+@media (max-width: 760px) {
+  .mu-list { position: fixed; top: 0; bottom: 0; inset-inline-start: -290px; width: 270px; z-index: 60; transition: inset-inline-start 0.22s ease; box-shadow: 0 0 40px rgb(0 0 0/0.2); }
+  .mu-list.open { inset-inline-start: 0; }
+  .mu-list-bg { display: block; position: fixed; inset: 0; background: rgb(0 0 0/0.35); z-index: 59; }
+  .mu-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .mu-list-btn { border: none; background: none; font-size: 20px; cursor: pointer; color: var(--accent); }
+  .mu-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mu-thread { padding: 14px 12px; }
+  .mu-input { padding: 10px 12px; }
+}

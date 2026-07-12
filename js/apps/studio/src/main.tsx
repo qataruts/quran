@@ -34,6 +34,7 @@ const Galaxy = lazy(() => import("./views/Galaxy"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const RootJourney = lazy(() => import("./views/RootJourney"));
+const Assistant = lazy(() => import("./views/Assistant"));
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -212,6 +213,9 @@ function Nav() {
       <NavLink to="/search" title={ar ? "البحث بالمعنى في القرآن كلّه" : "meaning-based search"}>
         <span className="ai-spark" aria-hidden /> {t("nav.search")}
       </NavLink>
+      <NavLink to="/assistant" title={ar ? "المُعين: مساعدُ بحثٍ وصياغةٍ من بيانات القرآن" : "research & drafting assistant"}>
+        <span className="ai-spark" aria-hidden /> {ar ? "المُعين" : "Assistant"}
+      </NavLink>
     </nav>
   );
 }
@@ -268,6 +272,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
           <NavLink to="/search"><span className="ai-spark" aria-hidden /> {ar ? "البحث الدلالي" : "Semantic search"}</NavLink>
+          <NavLink to="/assistant"><span className="ai-spark" aria-hidden /> {ar ? "المُعين" : "Assistant"}</NavLink>
           {NAV_GROUPS.map((g) => (
             <div key={g.ar} className="drawer-group">
               <div className="drawer-group-h">{ar ? g.ar : g.en}</div>
@@ -379,6 +384,8 @@ function App() {
           <Route path="/eraab" element={<EraabDrill />} />
           <Route path="/journey" element={<RootJourney />} />
           <Route path="/journey/:root" element={<RootJourney />} />
+          <Route path="/assistant" element={<Assistant />} />
+          <Route path="/assistant/:id" element={<Assistant />} />
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
