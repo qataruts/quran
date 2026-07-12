@@ -26,17 +26,26 @@ function Card({ title, note, children }: { title: string; note?: string; childre
   );
 }
 
-/** a ranked list of verses with a numeric value each. */
+/** a ranked list of verses with a numeric value each. The reference is written
+ *  as an explicit verse citation («العصر · الآية ١») so a one-word verse is
+ *  never misread as a one-word sura. */
 function VerseList({ items, unit }: { items: { loc: string; v: number; text?: string }[]; unit: string }) {
+  const ar = getUILang() === "ar";
   return (
     <ol className="maalim-list">
-      {items.map(({ loc, v, text }) => (
-        <li key={loc}>
-          <Link to={readPathOf(loc)} className="maalim-ref">{arName(loc)}</Link>
-          <span className="maalim-val">{num(v)} {unit}</span>
-          {text && <span className="maalim-vtext quran">{text}</span>}
-        </li>
-      ))}
+      {items.map(({ loc, v, text }) => {
+        const [s, a] = loc.split(":");
+        return (
+          <li key={loc}>
+            <Link to={readPathOf(loc)} className="maalim-ref">
+              {surahNameAr(Number(s))}{" "}
+              <span className="muted" style={{ fontWeight: 400 }}>{ar ? `· الآية ${num(a)}` : `· v.${a}`}</span>
+            </Link>
+            <span className="maalim-val">{num(v)} {unit}</span>
+            {text && <span className="maalim-vtext quran">{text}</span>}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -120,7 +129,7 @@ export default function Maalim() {
             <VerseList items={m.byWords.slice(0, 6).map((a) => ({ loc: `${a.surahNo}:${a.ayahNo}`, v: a.wordCount }))} unit={ar ? "كلمة" : "words"} />
           </Card>
 
-          <Card title={ar ? "أقصر الآيات" : "Shortest verses"} note={ar ? "بعدد الكلمات (عدا فواتح السور)" : "by word count"}>
+          <Card title={ar ? "أقصر الآيات" : "Shortest verses"} note={ar ? "بعدد الكلمات (عدا الحروف المقطّعة)" : "by word count (excl. the disconnected letters)"}>
             <VerseList
               items={m.byWords
                 .filter((a) => !(a.ayahNo === 1 && MUQATTA_SURAHS.includes(a.surahNo)))

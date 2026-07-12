@@ -232,20 +232,14 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          {
-            // recitation audio — cache what was listened to.
-            // rangeRequests: iOS <audio> streams via HTTP Range; without the
-            // RangeRequestsPlugin the SW serves a cached full 200 and Safari
-            // refuses to play it (needs 206). This is *the* iPhone-audio fix.
-            urlPattern: /^https:\/\/cdn\.islamic\.network\/quran\/audio\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "qkg-audio",
-              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 90 },
-              cacheableResponse: { statuses: [0, 200] },
-              rangeRequests: true,
-            },
-          },
+          // NOTE: recitation audio is deliberately NOT cached by the service
+          // worker. The CDN (cdn.islamic.network) sends no CORS header, so the
+          // <audio> element receives *opaque* responses (status 0). Workbox can
+          // cache those, but the RangeRequestsPlugin cannot slice an opaque body
+          // — so iOS Safari (which streams <audio> via HTTP Range) received a
+          // broken 206 and refused to play. Leaving audio unintercepted lets the
+          // browser talk to the CDN directly, which natively supports Range
+          // (accept-ranges: bytes) and plays reliably on iPhone and Android.
         ],
       },
     }),

@@ -5,7 +5,7 @@
  * Qur'anic text and its morphology alone — نُفصِّل القرآنَ بالقرآن.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
@@ -71,9 +71,14 @@ const gpos = (loc: string) => {
 function Index({ texts }: { texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
   const jw = useJawami();
+  const navigate = useNavigate();
+  // the kind filter lives in the URL (/muhkamat/:k) so mobile «back» returns to
+  // the previous kind instead of leaving the page — each chip is a history step.
+  const { k } = useParams();
+  const kind = (() => { try { return k ? decodeURIComponent(k) : ""; } catch { return k ?? ""; } })();
+  const setKind = (name: string) => navigate(name ? `/muhkamat/${encodeURIComponent(name)}` : "/muhkamat");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"quran" | "tafsil">("quran"); // mushaf order by default
-  const [kind, setKind] = useState<string>(""); // filter by kind (نوع المحكمة)
   const [limit, setLimit] = useState(60);
   useEffect(() => setLimit(60), [q, sort, kind]);
 
