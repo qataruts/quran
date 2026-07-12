@@ -18,7 +18,7 @@ function dataVersion(): string {
       break;
     }
   }
-  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json", "./public/lexnet.json", "./public/morph-stats.json"]) {
+  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json", "./public/lexnet.json", "./public/morph-stats.json", "./public/network-3.json"]) {
     const abs = resolve(__dirname, p);
     if (fs.existsSync(abs)) {
       h.update(fs.readFileSync(abs));
@@ -203,9 +203,9 @@ export default defineConfig({
         theme_color: "#0b6e56",
         background_color: "#f7f4ee",
         icons: [
-          { src: "pwa-192.png", sizes: "192x192", type: "image/png" },
-          { src: "pwa-512.png", sizes: "512x512", type: "image/png" },
-          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          { src: "pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "pwa-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
         shortcuts: [
           { name: "المصحف", short_name: "المصحف", url: "/#/read" },

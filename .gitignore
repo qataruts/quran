@@ -30,3 +30,10 @@ archive/
 
 # local embedding cache for export-lexnet.mjs (regenerable)
 .lexnet-vecs.bin
+
+# internal pipeline byproducts — raw AI logs/dumps, regenerable from quran-kg.db,
+# not worth publishing (agent transcripts, batch payloads, debug dumps)
+data/passes/
+*-batches.json
+js/scripts/hub-variants/*.full.json
+js/scripts/hub-variants/*.debug.json

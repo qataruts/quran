@@ -29,6 +29,7 @@ import Mujam from "./views/Mujam";
 import Lisan from "./views/Lisan";
 import Sarf from "./views/Sarf";
 import About from "./views/About";
+import Galaxy from "./views/Galaxy";
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
@@ -161,6 +162,7 @@ function Nav() {
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/search"><span className="ai-spark" aria-hidden /> {t("nav.search")}</NavLink>
+      <NavLink to="/galaxy" title={ar ? "شبكة القرآن: توارد الجذور في الآيات، كوكباتٍ محسوبة" : "the roots co-occurrence galaxy"}>{ar ? "شبكة القرآن" : "Network"}</NavLink>
       <span className="nav-more">
         <button className={`nav-more-btn${moreActive ? " active" : ""}`} onClick={() => setMore((v) => !v)} aria-expanded={more}>
           {ar ? "المزيد" : "More"} <span style={{ fontSize: 10 }}>▾</span>
@@ -228,6 +230,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
+  ["/galaxy", "شبكة القرآن", "Network"],
   ["/search", "البحث الدلالي", "Semantic"],
   ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
@@ -314,6 +317,7 @@ function App() {
           <Route path="/mujam/:root" element={<Mujam />} />
           <Route path="/lisan" element={<Lisan />} />
           <Route path="/sarf" element={<Sarf />} />
+          <Route path="/galaxy" element={<Galaxy />} />
           <Route path="/about" element={<About />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
