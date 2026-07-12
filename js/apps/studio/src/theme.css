@@ -423,6 +423,10 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   background: var(--bg); color: var(--muted); cursor: pointer; font-size: 15px;
 }
 .word-sheet-body { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 2px 0 6px; }
+/* the tapped ayah, shown FIRST in the sheet, then the data below it */
+.ws-ayah { padding: 2px 0 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+.ws-ayah-ref { font-size: 12.5px; margin-bottom: 6px; }
+.ws-ayah-text.quran { font-size: calc(22px * var(--quran-scale, 1)); line-height: 2; text-align: center; }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes sheet-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .word-sheet, .sheet-backdrop { animation: none; } }

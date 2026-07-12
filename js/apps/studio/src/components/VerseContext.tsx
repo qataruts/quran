@@ -5,7 +5,7 @@
  * a verse and sees where it sits — no tafsīr.
  */
 import { Link } from "react-router-dom";
-import { getUILang, num, useUILang } from "../i18n";
+import { ayahsCount, getUILang, num, useUILang } from "../i18n";
 import { useVerseIndex, verseInfo } from "../mawdui";
 
 export default function VerseContext({ location }: { location: string | null }) {
@@ -49,7 +49,7 @@ export default function VerseContext({ location }: { location: string | null }) 
         <div className="vc-net">
           {info.tafsilDeg > 0 && (
             <Link to="/jawami" className="chip link">
-              {ar ? `تُفصِّلها ${num(info.tafsilDeg)} آية` : `${info.tafsilDeg} elaborate it`}
+              {ar ? `تُفصِّلها ${ayahsCount(info.tafsilDeg)}` : `${info.tafsilDeg} elaborate it`}
             </Link>
           )}
           {info.elaborates > 0 && (

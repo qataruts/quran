@@ -845,6 +845,18 @@ export default function Reader() {
               ✕
             </button>
             <div className="word-sheet-body">
+              {selectedLoc && !selected && (() => {
+                const [ss, aa] = selectedLoc.split(":").map(Number);
+                const ay = ayahs.find((a) => a.surahNo === ss && a.ayahNo === aa);
+                return ay ? (
+                  <div className="ws-ayah">
+                    <div className="ws-ayah-ref muted">{surahNameAr(ss)} · {ar ? `الآية ${num(aa)}` : `v.${aa}`}</div>
+                    <div className="quran ws-ayah-text">
+                      {ay.textUthmani}<span className="ayah-marker"> ﴿{num(aa)}﴾</span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
               <VerseContext location={selectedLoc} />
               <TafsilAside location={selectedLoc} />
               {selected && <Inspector word={selected} />}
