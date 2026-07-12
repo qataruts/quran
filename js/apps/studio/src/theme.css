@@ -1167,3 +1167,19 @@ table.data tr:hover td { background: var(--panel-2); }
   .lisan-grid { grid-template-columns: 1fr; }
   .lisan-word { font-size: 30px; }
 }
+
+/* ── الصرف والنحو بالأرقام (Sarf) — morphology census ──────────────────────── */
+.ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ms-section { margin: 0; }
+.ms-section.ms-wide { grid-column: 1 / -1; }
+.ms-title { margin: 0 0 2px; font-size: 16px; }
+.ms-note { margin: 0 0 12px; font-size: 12.5px; }
+.ms-bars { display: flex; flex-direction: column; gap: 9px; }
+.ms-bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.ms-bar-lbl { font-size: 13.5px; color: var(--ink); min-width: 68px; text-align: start; }
+.ms-bar-lbl.quran { font-family: var(--font-quran); font-size: 18px; min-width: 44px; }
+.ms-bar-track { height: 10px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+.ms-bar-fill { display: block; height: 100%; border-radius: 999px; min-width: 3px; }
+.ms-bar-n { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 78px; text-align: end; }
+.ms-pct { color: var(--gold); font-size: 11px; }
+@media (max-width: 760px) { .ms-grid { grid-template-columns: 1fr; } }

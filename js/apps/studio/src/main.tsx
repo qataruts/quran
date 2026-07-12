@@ -27,6 +27,7 @@ import RootsGraph from "./views/RootsGraph";
 import Maalim from "./views/Maalim";
 import Mujam from "./views/Mujam";
 import Lisan from "./views/Lisan";
+import Sarf from "./views/Sarf";
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
@@ -133,6 +134,7 @@ const MORE_LINKS: [string, string, string][] = [
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
   ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+  ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
 ];
@@ -225,6 +227,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
   ["/search", "البحث الدلالي", "Semantic"],
+  ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Stats"],
 ];
@@ -307,6 +310,7 @@ function App() {
           <Route path="/mujam" element={<Mujam />} />
           <Route path="/mujam/:root" element={<Mujam />} />
           <Route path="/lisan" element={<Lisan />} />
+          <Route path="/sarf" element={<Sarf />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
