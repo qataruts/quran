@@ -15,6 +15,7 @@ import Translations from "../components/Translations";
 import AyahRef from "../components/AyahRef";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
 import { SimilarAyahsPanel } from "../components/SimilarAyahs";
+import { TadabburPanel } from "../components/TadabburChip";
 import { similarOf } from "../similar";
 import { getAyahByGlobalNo, getAyahByLocation, searchAyahs, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
@@ -60,6 +61,7 @@ const LINKS_EXAMPLES: { label: string; loc: string }[] = [
 const MODE_LABELS: Record<Mode, [string, string]> = {
   meaning: ["بالمعنى", "By meaning"],
   links: ["ارتباطات آية", "Verse links"],
+  tadabbur: ["تدبّر آية", "Reflect"],
   text: ["بالنص", "By text"],
 };
 const toWestern = (s: string) => s.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
@@ -73,7 +75,7 @@ const parseLoc = (s: string): string | null => {
   return `${su}:${ay}`;
 };
 
-type Mode = "meaning" | "links" | "text";
+type Mode = "meaning" | "links" | "tadabbur" | "text";
 
 interface Hit {
   ayah: AyahDoc;
@@ -259,7 +261,8 @@ export default function Search() {
   // AI-computed semantic neighbours; ?m=text is plain FTS. (old ?m=1 / /meaning
   // links resolve to meaning too, since "1" is neither "text" nor "links".)
   const mParam = searchParams.get("m");
-  const mode: Mode = mParam === "text" ? "text" : mParam === "links" ? "links" : "meaning";
+  const mode: Mode =
+    mParam === "text" ? "text" : mParam === "links" ? "links" : mParam === "tadabbur" ? "tadabbur" : "meaning";
 
   const [input, setInput] = useState<string>(q);
   const [hits, setHits] = useState<Hit[] | null>(null);
@@ -384,12 +387,13 @@ export default function Search() {
   const runLinks = (text: string) => {
     const s = text.trim();
     lastPushed.current = s;
-    setSearchParams(s ? { q: s, m: "links" } : { m: "links" }, { replace: true });
+    const m = mode === "tadabbur" ? "tadabbur" : "links";
+    setSearchParams(s ? { q: s, m } : { m }, { replace: true });
   };
 
-  // LINKS mode: q → the verse whose AI-computed neighbours we show.
+  // LINKS/TADABBUR mode: q → the picked verse (neighbours or reflection).
   useEffect(() => {
-    if (mode !== "links") return;
+    if (mode !== "links" && mode !== "tadabbur") return;
     const id = ++seq.current;
     const arNow = getUILang() === "ar";
     if (!q) {
@@ -453,11 +457,11 @@ export default function Search() {
           <h1 className="jw-title">{ar ? "البحث الدلالي" : "Semantic search"}</h1>
           <p className="jw-lead">
             {ar
-              ? "ابحثْ في القرآن بالمعنى لا باللفظ، أو اعرضْ الآياتِ المرتبطةَ دلاليًّا بأيّ آية — بالذكاء الاصطناعيّ نسترجعُ آياتِ القرآن نفسها، ولا نُولّد. (تضمينات Gemini)"
-              : "Search the Qur'an by meaning, or see the verses semantically linked to any verse — AI-assisted retrieval of the Qur'an's own verses, not generation. (Gemini embeddings)"}
+              ? "ثلاثُ أدواتٍ بالذكاء الاصطناعيّ: ابحثْ بالمعنى لا باللفظ، أو اعرضْ الآياتِ المرتبطةَ دلاليًّا بآية، أو اطلبْ تدبُّرَ آيةٍ مؤسَّسًا على أدواتنا. نسترجعُ آياتِ القرآن نفسها، والتدبّرُ إعانةٌ لا تفسير."
+              : "Three AI tools: search by meaning, see the verses semantically linked to a verse, or ask for a grounded reflection on a verse. We return the Qur'an's own verses; reflection is assistance, not tafsir."}
           </p>
           <div className="sem-tabs">
-            {(["meaning", "links"] as Mode[]).map((m) => (
+            {(["meaning", "links", "tadabbur"] as Mode[]).map((m) => (
               <button key={m} className={`sem-tab${mode === m ? " on" : ""}`} onClick={() => setMode(m)}>
                 {ar ? MODE_LABELS[m][0] : MODE_LABELS[m][1]}
               </button>
@@ -465,7 +469,7 @@ export default function Search() {
           </div>
         </header>
 
-        {mode === "links" ? (
+        {mode === "links" || mode === "tadabbur" ? (
           <div className="inline-omni-wrap">
             <VersePicker onPick={(loc) => runLinks(loc)} />
             {!linkVerse && (
@@ -539,7 +543,7 @@ export default function Search() {
           </div>
         )}
 
-        {mode === "links" && linkVerse && (
+        {(mode === "links" || mode === "tadabbur") && linkVerse && (
           <div className="card" style={{ marginTop: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
               <AyahRef location={linkVerse.location} />
@@ -554,10 +558,18 @@ export default function Search() {
             </div>
             <div className="quran" style={{ fontSize: 22, lineHeight: 2 }}>{linkVerse.textUthmani}</div>
             <Translations ayah={linkVerse} />
-            <div style={{ margin: "12px 0 2px", fontWeight: 600 }}>
-              {ar ? "أقربُ آيات القرآن إليها معنًى:" : "the Qur'an's verses closest to it in meaning:"}
-            </div>
-            <SimilarAyahsPanel ayahId={ayahIdOf(linkVerse)} location={linkVerse.location} />
+            {mode === "links" ? (
+              <>
+                <div style={{ margin: "12px 0 2px", fontWeight: 600 }}>
+                  {ar ? "أقربُ آيات القرآن إليها معنًى:" : "the Qur'an's verses closest to it in meaning:"}
+                </div>
+                <SimilarAyahsPanel ayahId={ayahIdOf(linkVerse)} location={linkVerse.location} />
+              </>
+            ) : (
+              <div style={{ marginTop: 12 }}>
+                <TadabburPanel ayah={linkVerse} ayahId={ayahIdOf(linkVerse)} open />
+              </div>
+            )}
           </div>
         )}
 

@@ -703,14 +703,8 @@ export default function Reader() {
                     marginBottom: 4,
                   }}
                 >
+                  {/* locate */}
                   <AyahRef location={ayah.location} />
-                  <button
-                    className="chip"
-                    onClick={() => setSelectedAyah(ayah.location)}
-                    title={t("read.playHere")}
-                    style={{ border: "none", cursor: "pointer",
-                      ...(selectedLoc === ayah.location ? { background: "var(--accent-soft)", color: "var(--accent)" } : {}) }}
-                  >▶</button>
                   <span className="chip">
                     {t("reader.juz")} {num(ayah.juz)}
                   </span>
@@ -722,18 +716,42 @@ export default function Reader() {
                       ۩ {t("reader.sajda")}
                     </span>
                   )}
+                  {/* listen */}
+                  <button
+                    className="chip"
+                    onClick={() => setSelectedAyah(ayah.location)}
+                    title={t("read.playHere")}
+                    style={{ border: "none", cursor: "pointer",
+                      ...(selectedLoc === ayah.location ? { background: "var(--accent-soft)", color: "var(--accent)" } : {}) }}
+                  >▶</button>
                   <AudioButton ayahId={ayahIdOf(ayah)} />
+                  {/* study layers */}
+                  <EraabChip
+                    open={openEraab === ayah.location}
+                    onToggle={() =>
+                      setOpenEraab((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
+                  />
+                  <TafsilChip
+                    location={ayah.location}
+                    open={openTafsil === ayah.location}
+                    onToggle={() =>
+                      setOpenTafsil((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
+                  />
                   <SimilarAyahs
                     ayahId={ayahIdOf(ayah)}
                     location={ayah.location}
                     open={openSimilar === ayah.location}
                     onToggle={() => setOpenSimilar((c) => (c === ayah.location ? null : ayah.location))}
                   />
-                  <CollectButton
-                    locations={[ayah.location]}
-                    criterion={{ kind: "manual", value: ayah.location }}
-                    label="⊕"
+                  <TadabburChip
+                    open={openTadabbur === ayah.location}
+                    onToggle={() =>
+                      setOpenTadabbur((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
                   />
+                  {/* save */}
                   <button
                     className="chip"
                     onClick={() => toggleBookmark(ayah.location)}
@@ -748,24 +766,10 @@ export default function Reader() {
                   >
                     {bookmarks.includes(ayah.location) ? "★" : "☆"}
                   </button>
-                  <TafsilChip
-                    location={ayah.location}
-                    open={openTafsil === ayah.location}
-                    onToggle={() =>
-                      setOpenTafsil((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
-                  />
-                  <EraabChip
-                    open={openEraab === ayah.location}
-                    onToggle={() =>
-                      setOpenEraab((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
-                  />
-                  <TadabburChip
-                    open={openTadabbur === ayah.location}
-                    onToggle={() =>
-                      setOpenTadabbur((cur) => (cur === ayah.location ? null : ayah.location))
-                    }
+                  <CollectButton
+                    locations={[ayah.location]}
+                    criterion={{ kind: "manual", value: ayah.location }}
+                    label="⊕"
                   />
                 </div>
                 <AyahText
