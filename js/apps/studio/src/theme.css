@@ -1481,6 +1481,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-empty-mark .ai-spark { width: 40px; height: 40px; }
 .mu-empty-h { font-family: var(--font-quran); color: var(--accent); font-size: 32px; margin: 8px 0 12px; }
 .mu-empty-lead { color: var(--muted); line-height: 1.95; margin: 0 auto 24px; max-width: 520px; }
+.mu-how { list-style: none; margin: 0 auto 22px; padding: 0; max-width: 480px; display: grid; gap: 12px; text-align: start; }
+.mu-how li { display: flex; align-items: flex-start; gap: 12px; color: var(--ink); line-height: 1.7; }
+.mu-how-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; display: grid; place-items: center; font-size: 14px; margin-top: 1px; }
+.mu-ex-label { max-width: 460px; margin: 0 auto 8px; text-align: start; font-size: 13px; }
 .mu-examples { display: grid; gap: 10px; max-width: 460px; margin: 0 auto; }
 .mu-ex { text-align: start; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); cursor: pointer; font-size: 15px; color: var(--ink); }
 .mu-ex:hover { border-color: var(--accent); background: var(--accent-soft); }

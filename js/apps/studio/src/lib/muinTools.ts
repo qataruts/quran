@@ -14,11 +14,18 @@ const glossOf = (doc: RootDoc | null): string => {
 };
 
 /** Find verses by meaning (semantic embedding search, on-device). */
-export async function toolSearchMeaning(query: string, k = 8): Promise<ChatAyah[]> {
+export async function toolSearchMeaning(query: string, k = 12): Promise<ChatAyah[]> {
   await loadVectors();
-  const hits = (await meaningSearch(query, Math.max(k, 12))).slice().sort((a, b) => b.score - a.score).slice(0, k);
+  const ranked = (await meaningSearch(query, 30)).slice().sort((a, b) => b.score - a.score);
+  if (!ranked.length) return [];
+  // Trim the weak tail so a draft rests on verses that genuinely cohere: keep those
+  // within a band of the best hit and above a soft floor — but always keep enough to
+  // build on. This is what stops surface-similar noise from poisoning the composition.
+  const top = ranked[0].score;
+  const gated = ranked.filter((h) => h.score >= top - 0.15 && h.score >= 0.5);
+  const chosen = (gated.length >= 5 ? gated : ranked.slice(0, 6)).slice(0, k);
   const out: ChatAyah[] = [];
-  for (const h of hits) {
+  for (const h of chosen) {
     const a = await getAyahByGlobalNo(h.ayahId);
     if (a) out.push({ ref: a.location, text: a.textUthmani || a.textClean, score: Math.round(h.score * 100) / 100 });
   }

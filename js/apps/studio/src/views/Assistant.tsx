@@ -15,6 +15,7 @@ import {
   type ChatMsg,
 } from "../chat";
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
+import { surahNameAr } from "../db";
 
 async function postJson(url: string, body: unknown): Promise<any> {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -69,7 +70,7 @@ function Bubble({ m }: { m: ChatMsg }) {
               )}
               {m.draft && (
                 <div className="mu-draft">
-                  <div className="mu-draft-note muted">{ar ? "مسوّدةٌ محسوبةٌ من الآيات أعلاه — راجِعْها؛ ليست تفسيرًا ولا فتوى." : "A computed draft from the verses above — review it; not tafsir or a ruling."}</div>
+                  <div className="mu-draft-note muted">{ar ? "مسوّدةٌ محسوبةٌ من الآيات أعلاه — راجِعْها." : "A computed draft from the verses above — review it."}</div>
                   <div className="mu-draft-body">{m.draft}</div>
                   <button className="chip mu-copy" onClick={copy}>{ar ? "نسخ" : "copy"} ⧉</button>
                 </div>
@@ -136,14 +137,21 @@ export default function Assistant() {
         patch.roots = r.roots; patch.ayahs = r.ayahs;
         if (!r.roots.length) patch.text = (plan.reply || "") + (ar ? " (لم أجد هذا الجذر.)" : "");
       } else if (plan.action === "compose") {
-        const m2 = chatMaterial(getChat(cid)!);
+        const cur2 = getChat(cid)!;
+        const m2 = chatMaterial(cur2);
         if (!m2.ayahs.length) {
           patch.text = ar ? "لا توجد آياتٌ مجموعةٌ بعدُ لأبني عليها — اطلبْ أوّلًا آياتٍ في الموضوع، ثم الصياغة." : "No verses gathered yet — search first, then compose.";
         } else {
+          // the most recent draft in this chat — so «وسّع / نقّح» continues it, not restarts
+          const prev = [...cur2.messages].reverse().find((mm) => mm.draft)?.draft || "";
           const composed = await postJson("/api/compose", {
-            task: plan.task || "post", subject: plan.subject || text, length: plan.length || "medium",
-            ayahs: m2.ayahs.slice(0, 14).map((a) => ({ ref: a.ref, text: a.text })),
+            task: plan.task || "post", subject: plan.subject || text, length: plan.length || "long",
+            ayahs: m2.ayahs.slice(0, 16).map((a) => {
+              const [s, n] = a.ref.split(":");
+              return { ref: `${surahNameAr(Number(s))} ${n}`, text: a.text };
+            }),
             roots: m2.roots.slice(0, 12).map((r) => ({ root: r.root, gloss: r.gloss })),
+            instruction: text, previous: prev,
           });
           patch.text = plan.reply || (ar ? "إليك مسوّدةً تبني عليها:" : "A draft to build on:");
           patch.draft = composed.text;
@@ -203,9 +211,24 @@ export default function Assistant() {
               <h1 className="mu-empty-h">{ar ? "نِبراس" : "Nibras"}</h1>
               <p className="mu-empty-lead">
                 {ar
-                  ? "مساعدُ بحثٍ في القرآن: يجمع لك الآيات بالمعنى، ومعاني الجذور، ثم يصوغ منها مسوّدةَ منشورٍ أو خطبةٍ أو محاضرة — من نصّ القرآن وبياناته وحدها، لا تفسيرَ ولا فتوى."
-                  : "A research chat over the Qur'an: it gathers verses by meaning and root senses, then drafts a post / khutba / lecture from that material only — no tafsir, no ruling."}
+                  ? "مساعدُ بحثٍ في القرآن: يجمع لك الآيات بالمعنى، ومعاني الجذور، ثم يصوغ منها مسوّدةَ منشورٍ أو خطبةٍ أو محاضرةٍ من نصّ القرآن وبياناته."
+                  : "A research chat over the Qur'an: it gathers verses by meaning and root senses, then drafts a post / khutba / lecture from that material."}
               </p>
+              <ol className="mu-how">
+                <li>
+                  <span className="mu-how-n">١</span>
+                  <span>{ar ? "اطلبْ آياتٍ في موضوعٍ بالمعنى، أو معنى جذرٍ ومواضعِه." : "Ask for verses on a theme by meaning, or a root's sense."}</span>
+                </li>
+                <li>
+                  <span className="mu-how-n">٢</span>
+                  <span>{ar ? "تتجمّعُ الآياتُ والجذورُ في هذه المحادثةِ مادّةً محفوظةً لك." : "Verses and roots accumulate in this chat as saved material."}</span>
+                </li>
+                <li>
+                  <span className="mu-how-n">٣</span>
+                  <span>{ar ? "اطلبْ صياغةَ منشورٍ أو خطبةٍ أو محاضرةٍ منها، تُدعَّمُ بالآيات — ثم قل «وسِّعْ» أو «نقِّحْ» لتطويرها." : "Ask for a post / khutba / lecture from them, cited to the verses — then say 'expand' or 'refine'."}</span>
+                </li>
+              </ol>
+              <div className="mu-ex-label muted">{ar ? "جرِّبْ:" : "Try:"}</div>
               <div className="mu-examples">
                 {EXAMPLES_AR.map((ex) => (
                   <button key={ex} className="mu-ex" onClick={() => void send(ex)}>{ex}</button>
@@ -231,7 +254,7 @@ export default function Assistant() {
             {busy ? "…" : ar ? "إرسال" : "Send"}
           </button>
         </div>
-        <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث، لا تفسيرَ ولا فتوى." : "Grounded drafts from the Qur'an's data — for research, not tafsir or fatwa."}</div>
+        <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث." : "Grounded drafts from the Qur'an's data — for research."}</div>
       </main>
     </div>
   );
