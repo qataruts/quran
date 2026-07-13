@@ -21,7 +21,7 @@ export default function TierBadge({ loc, style }: { loc: string; style?: CSSProp
       className={`kl-badge tb-link ${tierCls(cls.tier)}`}
       role="link"
       tabIndex={0}
-      title={ar ? "بطاقةُ الآية في الميزان" : "the verse's card"}
+      title={ar ? "بطاقةُ الآية" : "the verse's card"}
       style={style}
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); go(); }}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }}

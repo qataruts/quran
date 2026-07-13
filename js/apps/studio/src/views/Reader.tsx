@@ -161,6 +161,9 @@ function Inspector({ word }: { word: WordDoc | null }) {
           criterion={{ kind: "manual", value: word.location }}
           label={`⊕ ${t("collect")}`}
         />
+        <Link to={`/aya/${word.surahNo}/${word.ayahNo}`} className="chip link" style={{ textDecoration: "none" }}>
+          {getUILang() === "ar" ? "بطاقةُ الآية ←" : "verse card →"}
+        </Link>
       </div>
     </div>
   );

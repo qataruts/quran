@@ -119,6 +119,11 @@ export default function Kulliyat() {
             {ar ? "لفهمِ كيف نحسبُ هذا تمامًا — التضميناتِ والمتّجهاتِ والعوامل الستّة — طالِعْ " : "For exactly how this is computed — embeddings, vectors and the six factors — see "}
             <Link to="/about" className="kl-aboutlink">{ar ? "صفحةَ «عن المشروع» ←" : "the About page ←"}</Link>
           </p>
+          <p className="kl-disclaimer">
+            {ar
+              ? "هذه مراتبُ عمومِ الدلالة: الأصلُ الجامعُ الذي تنضوي تحته المعاني، ثمّ ما يتفرّعُ عنه تفصيلًا. والتفصيلُ ليس أدنى؛ إنّما يُبيّنُ الأصلَ ويُفصّله."
+              : "These are tiers of meaning-breadth: the gathering principle under which meanings fall, then what elaborates it as detail. A detail is not lesser; it unfolds the principle."}
+          </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(meta?.verses ?? 6236)}</b> {ar ? "آية" : "verses"}</span>
             <span className="chip"><b>{num(meta?.themes ?? 0)}</b> {ar ? "محورًا" : "themes"}</span>

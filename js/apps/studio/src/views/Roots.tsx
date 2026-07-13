@@ -444,6 +444,13 @@ function RootDetail({ root }: { root: string }) {
           </div>
         )}
 
+        {/* trace this word across the mushaf — the thematic thread */}
+        <div style={{ marginTop: 12 }}>
+          <Link to={`/khayt?q=${encodeURIComponent(rootDoc.root)}`} className="chip link" style={{ textDecoration: "none" }}>
+            {getUILang() === "ar" ? "تتبَّعْ هذا اللفظَ عبر المصحف ←" : "trace this word across the mushaf →"}
+          </Link>
+        </div>
+
         {/* Derived lemmas */}
         <div className="card" style={{ marginTop: 16 }}>
           <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t("roots.lemmas")}</h3>

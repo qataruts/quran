@@ -6,8 +6,8 @@
  * verses most on the thread. Same reproducible technique that anchors التوحيد.
  * Route: /khayt. (see docs/mechanism-roadmap.md)
  */
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { fuzzyRoots, getAyahByGlobalNo, getAyahByLocation, searchAyahs, surahNameAr } from "../db";
 import { getUILang, num, useUILang } from "../i18n";
 import { loadVectors, meaningSearch, vectorsReady } from "../semantic";
@@ -27,6 +27,14 @@ export default function ThematicThread() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const seq = useRef(0);
+  const [params] = useSearchParams();
+
+  // seed from a link, e.g. /khayt?q=رحم — trace that word/root straight away
+  useEffect(() => {
+    const seed = params.get("q");
+    if (seed && seed.trim()) { setInput(seed); void run(seed); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function clear() { seq.current++; setInput(""); setConcept(""); setThread([]); setHeat([]); setError(null); setLoading(false); }
 

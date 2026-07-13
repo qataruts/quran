@@ -12,7 +12,7 @@ const FACTORS: { key: keyof Signals; ar: string; en: string }[] = [
   { key: "selfstand", ar: "الاستقلالُ النحويّ", en: "self-standing" },
   { key: "gen", ar: "عمومُ المفردات", en: "lexical generality" },
   { key: "cent", ar: "المعنى المركزيّ", en: "central meaning" },
-  { key: "norm", ar: "قوّةُ الإنشاء", en: "establishing force" },
+  { key: "norm", ar: "صِيَغُ التقرير والأمر", en: "assertive/imperative forms" },
   { key: "breadth", ar: "السَّعةُ المفهوميّة", en: "breadth" },
 ];
 
@@ -29,6 +29,11 @@ export default function WhyRank({ location }: { location: string }) {
         <span>{ar ? "لماذا هذه المرتبة؟" : "Why this tier?"}</span>
         <span className="why-score">{num(pc(cls.jamiya))}<small>٪</small></span>
       </div>
+      <p className="why-note">
+        {ar
+          ? "هذه أوصافٌ بنيويّةٌ لعمومِ الدلالة: أهي أصلٌ جامعٌ أم تفصيل."
+          : "These describe the breadth of a verse's meaning: a gathering principle vs a detail."}
+      </p>
       <div className="why-rows">
         {FACTORS.map(({ key, ar: la, en }) => {
           const val = cls.sig[key] ?? 0;

@@ -111,7 +111,7 @@ export default function AyaCard() {
             <span className="mw-sep">›</span>
             <span className="mw-here">{arName(loc)}</span>
           </div>
-          <h1 className="jw-title" style={{ marginBottom: 6 }}>{ar ? "الآيةُ في الميزان" : "The verse in the balance"}</h1>
+          <h1 className="jw-title" style={{ marginBottom: 6 }}>{ar ? "بطاقةُ الآية" : "Verse card"}</h1>
           <div className="aya-head-badges">
             <Link to={`/read/${s}/${a}`} className="kl-verse-ref" style={{ fontSize: 15 }}>{arName(loc)}</Link>
             <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
@@ -198,9 +198,13 @@ export default function AyaCard() {
             <summary>ج {ar ? "جذورُ الآية" : "the verse's roots"} <span className="muted">{num(roots.length)}</span></summary>
             <div className="aya-more-body aya-roots">
               {roots.map((r) => (
-                <Link key={r} to={`/roots/${encodeURIComponent(r)}`} className="chip link"><span className="quran" style={{ fontSize: 17 }}>{r}</span></Link>
+                <span key={r} className="aya-root-pair">
+                  <Link to={`/roots/${encodeURIComponent(r)}`} className="chip link" style={{ textDecoration: "none" }}><span className="quran" style={{ fontSize: 17 }}>{r}</span></Link>
+                  <Link to={`/khayt?q=${encodeURIComponent(r)}`} className="aya-root-trace" title={ar ? "تتبَّعْ هذا اللفظَ عبر المصحف" : "trace across the mushaf"}>↝</Link>
+                </span>
               ))}
             </div>
+            <div className="muted" style={{ fontSize: 12, padding: "0 16px 6px" }}>{ar ? "↝ يتتبّعُ اللفظَ عبر المصحف (خيطٌ موضوعيّ)" : "↝ traces the word across the mushaf"}</div>
           </details>
         )}
 

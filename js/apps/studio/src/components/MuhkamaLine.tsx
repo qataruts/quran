@@ -23,14 +23,14 @@ export default function MuhkamaLine({ location }: { location: string }) {
 
   if (cls.tier === "كلّية") {
     return (
-      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ هذه الآية في الميزان — من أعلى الآيات جامعيّةً" : "this verse's card in the balance"}>
+      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — من أعلى الآيات جامعيّةً" : "this verse's card in the balance"}>
         ◆ {ar ? "كلّيّة" : "kulliyya"}
       </Link>
     );
   }
   const k = kulliyaOf(location);
   return (
-    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "بطاقةُ هذه الآية في الميزان: مرتبتُها ومحورُها وموضعُها في الشجرة" : "this verse's card: its tier, محور and place in the tree"}>
+    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "بطاقةُ الآية: مرتبتُها ومحورُها وموضعُها في الشجرة" : "this verse's card: its tier, محور and place in the tree"}>
       {cls.tier}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
     </Link>
   );

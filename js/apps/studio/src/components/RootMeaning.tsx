@@ -86,6 +86,14 @@ export default function RootMeaning({ root }: { root: string }) {
           ))}
         </div>
       )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+        <Link to={`/khayt?q=${encodeURIComponent(root)}`} className="chip link" style={{ textDecoration: "none" }}>
+          {ar ? "تتبَّعْ هذا اللفظَ عبر المصحف ←" : "trace across the mushaf →"}
+        </Link>
+        <Link to={`/roots/${encodeURIComponent(root)}`} className="chip link" style={{ textDecoration: "none" }}>
+          {ar ? "صفحةُ الجذر ←" : "root page →"}
+        </Link>
+      </div>
     </div>
   );
 }
