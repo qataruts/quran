@@ -140,44 +140,49 @@ function LangToggle() {
 type NavItem = [to: string, ar: string, en: string];
 const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
-    ar: "الميزان والبنية", en: "The balance",
+    ar: "الموضوعات", en: "Themes",
     items: [
-      ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
-      ["/shabaka", "خريطة المصحف", "Mushaf map"],
       ["/mawdui", "المحاور", "Axes"],
       ["/mawadi", "المواضيع", "Topics"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
-      ["/furuq", "فروق التنزيل", "Furūq"],
       ["/amthal", "الأمثال", "Parables"],
     ],
   },
   {
-    ar: "جذور القرآن", en: "Roots",
+    ar: "بناء المصحف", en: "Composition",
     items: [
-      ["/roots", "الجذور", "Roots"],
-      ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
-      ["/wujuh", "الوجوه والنظائر", "Polysemy"],
-      ["/galaxy", "شبكة الجذور", "Roots network"],
+      ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
+      ["/shabaka", "خريطة المصحف", "Mushaf map"],
+      ["/furuq", "فروق التنزيل", "Furūq"],
+      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
   {
-    ar: "أدوات وإحصاءات", en: "Tools & stats",
+    ar: "الجذور واللغة", en: "Roots & language",
     items: [
+      ["/roots", "الجذور", "Roots"],
+      ["/galaxy", "شبكة الجذور", "Roots network"],
+      ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
+      ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+      ["/sarf", "الصرف بالأرقام", "Morphology"],
+    ],
+  },
+  {
+    ar: "مصادر وأدوات", en: "Sources & tools",
+    items: [
+      ["/mujam", "معجم القرآن", "Dictionary"],
       ["/tafasir", "التفاسير والمصادر", "Tafsir & sources"],
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
-      ["/mujam", "معجم القرآن", "Dictionary"],
-      ["/sarf", "الصرف بالأرقام", "Morphology"],
-      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
 ];
 
-/** The nav groups, with المجموعات appended only when its layer is enabled in settings. */
+/** The nav groups, with المجموعات appended to «مصادر وأدوات» only when its layer is enabled. */
 function useNavGroups() {
   const s = useSettings();
   if (!s.layers.collect) return NAV_GROUPS;
   return NAV_GROUPS.map((g) =>
-    g.en === "Tools & stats"
+    g.en === "Sources & tools"
       ? { ...g, items: [...g.items, ["/collections", "المجموعات", "Collections"] as NavItem] }
       : g,
   );

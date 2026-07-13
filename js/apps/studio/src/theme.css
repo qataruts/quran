@@ -1211,6 +1211,13 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .trad-topic-count { flex: none; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .trad-topic-body { padding: 2px 12px 12px; }
 
+/* bridge: computed محاور that overlap a traditional باب */
+.tf-bridge { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.tf-bridge-h { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-inline-end: 2px; }
+.tf-bridge-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-quran); font-size: 14px; padding: 4px 12px; border-radius: 999px; text-decoration: none; color: var(--accent); background: var(--accent-soft); transition: filter .12s; }
+.tf-bridge-chip:hover { filter: brightness(0.96); }
+.tf-bridge-n { font-family: var(--font-ui, sans-serif); font-size: 11px; color: var(--muted); font-weight: 700; }
+
 /* التفاسير — cited reference library (browse + search) */
 .tf-genre { margin-bottom: 22px; }
 .tf-genre-h { font-family: var(--font-quran); color: var(--accent); font-size: 20px; margin: 0 0 10px; padding-inline-start: 2px; }

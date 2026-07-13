@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { tradSection, tradSections, useVerseIndex } from "../mawdui";
+import { classOf, themeName, themeHeadOf, useKulliyat } from "../kulliyat";
 import TierBadge from "../components/TierBadge";
 import TopicLayerToggle from "../components/TopicLayerToggle";
 import type { AyahDoc } from "../types";
@@ -54,7 +55,22 @@ function Sections() {
 function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
   const data = useMemo(() => tradSection(sec), [sec]);
+  const kReady = useKulliyat();
   const [open, setOpen] = useState<Set<number>>(() => new Set());
+  // BRIDGE: which computed محاور do this باب's verses fall into? (top overlaps)
+  const bridge = useMemo(() => {
+    if (!kReady || !data) return [];
+    const tally = new Map<number, number>();
+    for (const tp of data.topics)
+      for (const loc of tp.verses) {
+        const th = classOf(loc)?.theme;
+        if (th != null) tally.set(th, (tally.get(th) ?? 0) + 1);
+      }
+    return [...tally.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([theme, count]) => ({ theme, count, name: themeName(theme) || (themeHeadOf(theme) ? arName(themeHeadOf(theme)!) : "") }));
+  }, [kReady, data]);
   if (!data) return <p className="muted">{t("notFound")}</p>;
   const totalVerses = data.topics.reduce((n, tp) => n + tp.verses.length, 0);
   const toggle = (id: number) =>
@@ -74,6 +90,16 @@ function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> 
         <h1 className="mw-title">{data.title}</h1>
         <div className="muted" style={{ fontSize: 13 }}>{num(data.topics.length)} {ar ? "موضوعًا" : "topics"} · {ayahsCount(totalVerses)} · {ar ? "تصنيفٌ متوارَث" : "traditional"}</div>
       </header>
+      {bridge.length > 0 && (
+        <div className="tf-bridge" title={ar ? "الطبقةُ المحسوبة التي تُقاطع هذا الباب المتوارَث" : "the computed layer overlapping this traditional chapter"}>
+          <span className="tf-bridge-h"><span className="ai-spark" aria-hidden /> {ar ? "محاورُ محسوبةٌ تُقاطع هذا الباب:" : "computed axes overlapping this chapter:"}</span>
+          {bridge.map((b) => (
+            <Link key={b.theme} to={`/mawdui/${b.theme}`} className="tf-bridge-chip">
+              {b.name} <span className="tf-bridge-n">{num(b.count)}</span>
+            </Link>
+          ))}
+        </div>
+      )}
       <div className="trad-topics">
         {data.topics.map((tp) => {
           const isOpen = open.has(tp.id);
