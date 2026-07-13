@@ -10,7 +10,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import WhyRank from "../components/WhyRank";
-import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeHeadOf, themeName, themeSizeOf, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
+import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeName, themeSizeOf, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -26,7 +26,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
   const cls = classOf(loc);
   const kids = childrenOf(loc);
   const canDrill = kids.length > 0 && depth < 6;
-  const head = cls ? themeHeadOf(cls.theme) : null;
+  const tname = cls ? themeName(cls.theme) : "";
   const tsize = cls ? themeSizeOf(cls.theme) : 0;
   const sub = cls && cls.tier !== "تفصيل" ? subtreeCounts(loc) : null;
   const under: string[] = [];
@@ -50,13 +50,9 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
           </button>
         )}
       </div>
-      {cls && (head || under.length > 0) && (
+      {cls && (tname || under.length > 0) && (
         <div className="kl-sub">
-          {head && (head === loc ? (
-            <span className="kl-theme" title={themeName(cls.theme)}>◇ {ar ? `محورٌ يضمّ ${num(tsize)} آية` : `theme · ${tsize} verses`}</span>
-          ) : (
-            <Link to={`/read/${head.split(":")[0]}/${head.split(":")[1]}`} className="kl-theme" title={themeName(cls.theme)}>◇ {ar ? `محور: ${arName(head)}` : `theme: ${arName(head)}`}</Link>
-          ))}
+          {tname && <span className="kl-theme" title={ar ? `محورٌ يضمّ ${num(tsize)} آية` : `theme · ${tsize} verses`}>◇ {tname}</span>}
           {under.length > 0 && <span className="kl-under">{ar ? `تحته ${under.join(" و")}` : `under: ${under.join(", ")}`}</span>}
         </div>
       )}
@@ -96,8 +92,9 @@ export default function Kulliyat() {
   const filtered = useMemo(() => {
     const src = q.trim() ? all : byTier; // typing searches the WHOLE Qur'an, any tier
     const out = src.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean));
-    // mushaf order = the verse in its context (sequence); else by جامعية (src is pre-sorted)
+    // mushaf order = the verse in its context (sequence); else strictly by جامعية
     if (sort === "mushaf") out.sort((a, b) => mushafKey(a) - mushafKey(b));
+    else out.sort((a, b) => (classOf(b)?.jamiya ?? 0) - (classOf(a)?.jamiya ?? 0));
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [byTier, all, q, texts, sort]);

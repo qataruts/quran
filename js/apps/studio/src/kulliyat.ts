@@ -23,7 +23,7 @@ export interface VerseClass {
   sig: Signals;
 }
 interface Payload {
-  meta: { verses: number; themes: number; cfg: Record<string, unknown>; themeNames?: string[][] };
+  meta: { verses: number; themes: number; cfg: Record<string, unknown>; themeNames?: string[][]; themeLabels?: string[] };
   verses: Record<string, VerseClass>;
 }
 
@@ -110,8 +110,10 @@ export function kulliyatWeights(): Record<string, number> {
   return (w && typeof w === "object" ? w : {}) as Record<string, number>;
 }
 
-/** The computed name of a theme (its most distinctive roots) — a rough fingerprint. */
+/** The theme's scholarly name (falls back to its distinctive roots). */
 export function themeName(theme: number): string {
+  const label = data?.meta.themeLabels?.[theme];
+  if (label) return label;
   const tn = data?.meta.themeNames?.[theme];
   return tn && tn.length ? tn.join(" ") : "";
 }

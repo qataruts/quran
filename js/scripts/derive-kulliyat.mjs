@@ -160,8 +160,28 @@ for (let s = 0; s < CFG.themes; s++) {
   for (let j = 0; j < N; j++) { const d = 1 - cos(seed, j); if (d < minD[j]) minD[j] = d; }
   if (s + 1 < CFG.themes) { let far = 0, fd = -1; for (let j = 0; j < N; j++) if (minD[j] > fd) { fd = minD[j]; far = j; } seeds.push(far); }
 }
+// spherical k-means (farthest-point init + Lloyd iterations) — nearest-to-seed
+// alone gives wildly uneven clusters (1..477); k-means balances them into
+// coherent, nameable themes. Deterministic → reproducible.
 const cluster = new Int16Array(N);
-for (let j = 0; j < N; j++) { let best = 0, bs = -2; for (let s = 0; s < seeds.length; s++) { const c = cos(seeds[s], j); if (c > bs) { bs = c; best = s; } } cluster[j] = best; }
+const cptr = new Float32Array(CFG.themes * DIM);
+for (let s = 0; s < seeds.length; s++) { const b = seeds[s] * DIM; for (let d = 0; d < DIM; d++) cptr[s * DIM + d] = V[b + d]; }
+for (let iter = 0; iter < 15; iter++) {
+  for (let j = 0; j < N; j++) {
+    let best = 0, bs = -2; const jb = j * DIM;
+    for (let s = 0; s < CFG.themes; s++) { let c = 0; const cb = s * DIM; for (let d = 0; d < DIM; d++) c += V[jb + d] * cptr[cb + d]; if (c > bs) { bs = c; best = s; } }
+    cluster[j] = best;
+  }
+  const cnt = new Int32Array(CFG.themes);
+  cptr.fill(0);
+  for (let j = 0; j < N; j++) { const s = cluster[j], jb = j * DIM, cb = s * DIM; cnt[s]++; for (let d = 0; d < DIM; d++) cptr[cb + d] += V[jb + d]; }
+  for (let s = 0; s < CFG.themes; s++) {
+    const cb = s * DIM;
+    if (!cnt[s]) { const b = seeds[s] * DIM; for (let d = 0; d < DIM; d++) cptr[cb + d] = V[b + d]; continue; } // keep empty seed alive
+    let n = 0; for (let d = 0; d < DIM; d++) n += cptr[cb + d] * cptr[cb + d]; n = Math.sqrt(n) || 1;
+    for (let d = 0; d < DIM; d++) cptr[cb + d] /= n;
+  }
+}
 
 // ---------- stage 2: جامعية + tiers ----------
 for (const r of rows) r.jamiya = CFG.weights.tawhid * r.tawhidP + CFG.weights.cent * r.centP + CFG.weights.gen * r.genP + CFG.weights.selfstand * (1 - r.ctxP) + CFG.weights.norm * r.normP + CFG.weights.breadth * r.breadthP;
@@ -232,8 +252,15 @@ for (let th = 0; th < seeds.length; th++) {
   themeNames[th] = scored.slice(0, 3).map(([rid]) => rootAr.get(rid)).filter(Boolean);
 }
 
+// human, scholarly names for the themes (see js/scripts/theme-names.json)
+let themeLabels = [];
+try {
+  const named = JSON.parse(fs.readFileSync(`${HERE}/theme-names.json`, "utf8"));
+  themeLabels = Array.from({ length: seeds.length }, (_, t) => named.find((x) => x.t === t)?.name || "");
+} catch (e) { console.log("theme-names.json not loaded:", e.message); }
+
 // ---------- output + report ----------
-const out = { meta: { verses: N, themes: seeds.length, cfg: CFG, themeNames }, verses: {} };
+const out = { meta: { verses: N, themes: seeds.length, cfg: CFG, themeNames, themeLabels }, verses: {} };
 for (const r of rows) out.verses[r.a.location] = {
   tier: tier.get(r.i), jamiya: Math.round(r.jamiya * 1000) / 1000, theme: cluster[r.i], parent: parent.get(r.i) || null,
   sig: { tawhid: +r.tawhidP.toFixed(2), cent: +r.centP.toFixed(2), gen: +r.genP.toFixed(2), selfstand: +(1 - r.ctxP).toFixed(2), norm: +r.normP.toFixed(2), breadth: +r.breadthP.toFixed(2) },
