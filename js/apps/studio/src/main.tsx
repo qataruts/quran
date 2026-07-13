@@ -374,8 +374,7 @@ function App() {
           <Route path="/amthal" element={<Amthal />} />
           <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />
-          <Route path="/mawdui/:s" element={<Mawdui />} />
-          <Route path="/mawdui/:s/:t" element={<Mawdui />} />
+          <Route path="/mawdui/:t" element={<Mawdui />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />
           <Route path="/network" element={<Network />} />

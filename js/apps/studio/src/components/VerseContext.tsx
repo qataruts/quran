@@ -7,30 +7,34 @@
 import { Link } from "react-router-dom";
 import { getUILang, num, useUILang } from "../i18n";
 import { useVerseIndex, verseInfo } from "../mawdui";
+import { classOf, themeName, useKulliyat } from "../kulliyat";
 
 export default function VerseContext({ location }: { location: string | null }) {
   useUILang();
   const ready = useVerseIndex();
+  const kReady = useKulliyat();
   if (!location || !ready) return null;
   const info = verseInfo(location);
-  if (!info || (!info.topic && !info.twins)) return null;
+  const cls = kReady ? classOf(location) : null;
+  const topic = cls ? themeName(cls.theme) : null;
+  if (!topic && !info?.twins) return null;
   const ar = getUILang() === "ar";
 
   return (
     <div className="vc">
       <div className="vc-title">{ar ? "موضع الآية" : "This verse in the maps"}</div>
 
-      {info.topic && (
-        <Link to={info.sectionIdx != null ? `/mawdui/${info.sectionIdx}` : "/mawdui"} className="vc-row">
-          <span className="vc-lbl">{ar ? "الموضوع" : "topic"}</span>
+      {topic && cls && (
+        <Link to={`/mawdui/${cls.theme}`} className="vc-row">
+          <span className="vc-lbl">{ar ? "المحور" : "محور"}</span>
           <span className="vc-body">
-            <span className="vc-val">{info.topic}</span>
-            {info.section && <span className="vc-sub">{info.section}</span>}
+            <span className="vc-val">{topic}</span>
+            <span className="vc-sub">{ar ? "محورٌ محسوب" : "computed محور"}</span>
           </span>
         </Link>
       )}
 
-      {info.twins > 0 && (
+      {info && info.twins > 0 && (
         <div className="vc-net">
           <Link to="/furuq" className="chip link">
             {ar ? `${num(info.twins)} فرق تنزيل` : `${info.twins} furūq`}

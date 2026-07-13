@@ -120,6 +120,27 @@ export function themeName(theme: number): string {
 /** The theme's representative verse (its highest-جامعية member) and its size. */
 export const themeHeadOf = (theme: number): string | null => themeHead?.get(theme) ?? null;
 export const themeSizeOf = (theme: number): number => themeSize?.get(theme) ?? 0;
+
+/** All computed محاور (themes), each with its name, representative verse, size,
+ *  and the جامعية of its deepest verse — sorted foundational-first. This IS the
+ *  Quran's topic layer: the 90 clusters cover every āyah, one place each. */
+export function themesList(): { theme: number; name: string; head: string | null; size: number; jamiya: number }[] {
+  if (!data) return [];
+  const out: { theme: number; name: string; head: string | null; size: number; jamiya: number }[] = [];
+  for (let t = 0; t < data.meta.themes; t++) {
+    const head = themeHeadOf(t);
+    if (!head) continue;
+    out.push({ theme: t, name: themeName(t), head, size: themeSizeOf(t), jamiya: classOf(head)?.jamiya ?? 0 });
+  }
+  return out.sort((a, b) => b.jamiya - a.jamiya);
+}
+/** Every āya of a theme, ordered by جامعية (the أصل first). */
+export function themeVerses(theme: number): string[] {
+  if (!data) return [];
+  const out: string[] = [];
+  for (const [loc, v] of Object.entries(data.verses)) if (v.theme === theme) out.push(loc);
+  return out.sort((a, b) => (data!.verses[b].jamiya) - (data!.verses[a].jamiya));
+}
 /** Count of جوامع and تفصيل verses anywhere below this verse in its tree. */
 export function subtreeCounts(loc: string): { jamia: number; tafsil: number } {
   let jamia = 0, tafsil = 0;

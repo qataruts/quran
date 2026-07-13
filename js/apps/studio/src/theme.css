@@ -1328,6 +1328,16 @@ table.data tr:hover td { background: var(--panel-2); }
 .ab-avoid li::marker { content: "—  "; color: var(--muted); }
 .ab-covenant-note { margin: 14px 0 0; font-size: 13px; line-height: 1.95; color: var(--ink-2, var(--ink)); border-top: 1px solid var(--line); padding-top: 12px; }
 
+/* the written paper (aboutContent.ts) — prose spine */
+.ab-prose { margin: 0; }
+.ab-prose-p { font-size: 14.5px; line-height: 2; margin: 0 0 12px; color: var(--ink-2, var(--ink)); }
+.ab-prose-p:last-child { margin-bottom: 0; }
+.ab-prose-p strong { color: var(--accent); font-weight: 700; }
+.ab-prose-ul { margin: 0 0 12px; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 7px; }
+.ab-prose-ul li { font-size: 14px; line-height: 1.85; color: var(--ink-2, var(--ink)); }
+.ab-prose-ul li::marker { color: var(--gold); }
+.ab-prose-ul li strong { color: var(--accent); font-weight: 700; }
+
 .ab-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ab-method { margin: 0; }
 .ab-method-t { font-weight: 700; color: var(--accent); font-size: 15px; margin-bottom: 4px; }
