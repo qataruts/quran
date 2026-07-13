@@ -18,6 +18,7 @@ import Jawami from "./views/Jawami";
 const Gaps = lazy(() => import("./views/Gaps"));
 const Muhkamat = lazy(() => import("./views/Muhkamat"));
 const Kulliyat = lazy(() => import("./views/Kulliyat"));
+const AyaCard = lazy(() => import("./views/AyaCard"));
 const Lexicon = lazy(() => import("./views/Lexicon"));
 const Wujuh = lazy(() => import("./views/Wujuh"));
 const Furuq = lazy(() => import("./views/Furuq"));
@@ -375,6 +376,7 @@ function App() {
           <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:t" element={<Mawdui />} />
+          <Route path="/aya/:s/:a" element={<AyaCard />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />
           <Route path="/network" element={<Network />} />

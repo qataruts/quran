@@ -18,17 +18,19 @@ export default function MuhkamaLine({ location }: { location: string }) {
   const cls = classOf(location);
   if (!cls) return null;
 
+  // every tier opens the verse's own clear classification page — not the general list
+  const to = `/aya/${location.split(":")[0]}/${location.split(":")[1]}`;
+
   if (cls.tier === "كلّية") {
     return (
-      <Link to="/kulliyat" className="chip mk-chip k" title={ar ? "من كلّيّات القرآن المحسوبة — من أعلى الآيات جامعيّةً" : "a computed kulliyya"}>
+      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ هذه الآية في الميزان — من أعلى الآيات جامعيّةً" : "this verse's card in the balance"}>
         ◆ {ar ? "كلّيّة" : "kulliyya"}
       </Link>
     );
   }
   const k = kulliyaOf(location);
-  const to = k ? `/read/${k.split(":")[0]}/${k.split(":")[1]}` : "/kulliyat";
   return (
-    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "المرتبةُ المحسوبة، والكلّيّةُ التي تندرجُ تحتها" : "computed tier + the kulliyya it belongs under"}>
+    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "بطاقةُ هذه الآية في الميزان: مرتبتُها ومحورُها وموضعُها في الشجرة" : "this verse's card: its tier, محور and place in the tree"}>
       {cls.tier}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
     </Link>
   );

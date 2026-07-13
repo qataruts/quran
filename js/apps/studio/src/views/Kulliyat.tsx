@@ -111,8 +111,12 @@ export default function Kulliyat() {
           <h1 className="jw-title">{ar ? "الكلّيّات والجوامع والتفصيل" : "Kulliyyāt · Jawāmiʿ · Tafṣīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "تصنيفٌ محسوبٌ لآيات القرآن في مراتبَ متدرّجة، من بيانات القرآن نفسِه. اختَرِ المرتبة، وابحثْ، وانقُرِ المثلّثَ لتفتحَ ما يندرجُ تحت الآية."
-              : "A computed classification of every verse. Pick a tier, search, and drill each verse down its tree."}
+              ? "نزنُ «جامعيّةَ» كلِّ آيةٍ بستّةِ عواملَ محسوبةٍ من بيانات القرآن نفسِه، فتنتظمُ الآياتُ في ثلاث مراتب: كلّيّةٌ جامعةٌ في القمّة، تتبعُها جوامعُ، ثمّ تفصيل. اختَرِ المرتبة، وابحثْ، وانقُرِ المثلّثَ لتفتحَ ما يندرجُ تحت الآية، وانقُرِ النسبةَ المئويّةَ لترى «لماذا هذه المرتبة؟»."
+              : "We weigh each verse's «jāmiʿiyya» by six computed factors from the Qur'an's own data; verses settle into three tiers — governing kulliyyāt at the top, then jawāmiʿ, then tafṣīl. Pick a tier, search, and drill down; tap the percentage for «why this tier?»."}
+          </p>
+          <p className="jw-lead" style={{ marginTop: -6, fontSize: 13.5 }}>
+            {ar ? "لفهمِ كيف نحسبُ هذا تمامًا — التضميناتِ والمتّجهاتِ والعوامل الستّة — طالِعْ " : "For exactly how this is computed — embeddings, vectors and the six factors — see "}
+            <Link to="/about" className="kl-aboutlink">{ar ? "صفحةَ «عن المشروع» ←" : "the About page ←"}</Link>
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(meta?.verses ?? 6236)}</b> {ar ? "آية" : "verses"}</span>
