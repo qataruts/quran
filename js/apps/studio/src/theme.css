@@ -984,6 +984,8 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mk-chip.t { color: var(--muted); }
 .mk-chip:hover { filter: brightness(1.03); }
 .mk-up { font-weight: 500; opacity: 0.8; }
+/* طبقة السياق — computed «read in context» chip (only on context-bound verses) */
+.ctx-chip { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); font-weight: 600; }
 
 /* الكلّيّات view — searchable drill-down tree */
 .kl-tree { display: flex; flex-direction: column; gap: 8px; }

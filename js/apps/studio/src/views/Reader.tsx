@@ -27,6 +27,7 @@ import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import MuhkamaLine from "../components/MuhkamaLine";
+import ContextHint from "../components/ContextHint";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
 import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
@@ -747,6 +748,7 @@ export default function Reader() {
                   </button>
                   <CollectButton locations={[ayah.location]} criterion={{ kind: "manual", value: ayah.location }} label="⊕" />
                   <MuhkamaLine location={ayah.location} />
+                  <ContextHint location={ayah.location} />
                 </div>
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
@@ -775,6 +777,7 @@ export default function Reader() {
         >
           <VerseContext location={selectedLoc} />
           {selectedLoc && <MuhkamaLine location={selectedLoc} />}
+          <ContextHint location={selectedLoc} />
           <Inspector word={selected} />
         </aside>
       )}
@@ -817,6 +820,7 @@ export default function Reader() {
               })()}
               <VerseContext location={selectedLoc} />
               {selectedLoc && <MuhkamaLine location={selectedLoc} />}
+              <ContextHint location={selectedLoc} />
               {selected && <Inspector word={selected} />}
             </div>
           </div>
