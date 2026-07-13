@@ -32,6 +32,7 @@ const Lisan = lazy(() => import("./views/Lisan"));
 const Sarf = lazy(() => import("./views/Sarf"));
 const About = lazy(() => import("./views/About"));
 const Galaxy = lazy(() => import("./views/Galaxy"));
+const VerseGalaxy = lazy(() => import("./views/VerseGalaxy"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const RootJourney = lazy(() => import("./views/RootJourney"));
@@ -160,7 +161,8 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/furuq", "فروق التنزيل", "Furūq"],
       ["/mawdui", "المواضيع", "Topics"],
       ["/amthal", "الأمثال", "Parables"],
-      ["/galaxy", "شبكة القرآن", "Network"],
+      ["/shabaka", "شبكة الآيات", "Verse galaxy"],
+      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
@@ -361,6 +363,7 @@ function App() {
           <Route path="/lisan" element={<Lisan />} />
           <Route path="/sarf" element={<Sarf />} />
           <Route path="/galaxy" element={<Galaxy />} />
+          <Route path="/shabaka" element={<VerseGalaxy />} />
           <Route path="/about" element={<About />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
