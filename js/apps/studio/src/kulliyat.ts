@@ -8,11 +8,12 @@ import { useEffect, useState } from "react";
 
 export type Tier = "كلّية" | "جامعة" | "تفصيل";
 export interface Signals {
-  struct: number;    // الكلّيّة اللفظيّة
-  cent: number;      // الشمول الدلاليّ
-  norm: number;      // قوّة الإنشاء والتقرير
-  particLow: number; // قلّة التخصيص
-  breadth: number;   // السَّعة المفهوميّة
+  tawhid: number;    // القربُ من محور التوحيد «لا إله إلا»
+  cent: number;      // المعنى المركزيّ
+  gen: number;       // عمومُ المفردات
+  selfstand: number; // الاستقلالُ النحويّ
+  norm: number;      // قوّةُ الإنشاء والتقرير
+  breadth: number;   // السَّعةُ المفهوميّة
 }
 export interface VerseClass {
   tier: Tier;
@@ -22,7 +23,7 @@ export interface VerseClass {
   sig: Signals;
 }
 interface Payload {
-  meta: { verses: number; themes: number; cfg: Record<string, unknown> };
+  meta: { verses: number; themes: number; cfg: Record<string, unknown>; themeNames?: string[][] };
   verses: Record<string, VerseClass>;
 }
 
@@ -95,6 +96,25 @@ export function themeMembers(theme: number): { kulliya: string | null; jawami: s
   return { kulliya: kulliyaOfTheme(theme), jawami: jawami.sort(byJamiya), tafsil: tafsil.sort(byJamiya) };
 }
 export const kulliyatMeta = (): Payload["meta"] | null => data?.meta ?? null;
+
+/** The computed name of a theme (its most distinctive roots). */
+export function themeName(theme: number): string {
+  const tn = data?.meta.themeNames?.[theme];
+  return tn && tn.length ? tn.join(" ") : "";
+}
+/** Count of جوامع and تفصيل verses anywhere below this verse in its tree. */
+export function subtreeCounts(loc: string): { jamia: number; tafsil: number } {
+  let jamia = 0, tafsil = 0;
+  const walk = (l: string) => {
+    for (const c of childrenOf(l)) {
+      const t = classOf(c)?.tier;
+      if (t === "جامعة") jamia++; else if (t === "تفصيل") tafsil++;
+      walk(c);
+    }
+  };
+  walk(loc);
+  return { jamia, tafsil };
+}
 
 /** The كلّيّة this verse belongs under — walk the parent chain up to a كلّيّة. */
 export function kulliyaOf(loc: string): string | null {

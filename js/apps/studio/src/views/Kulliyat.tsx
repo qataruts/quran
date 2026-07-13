@@ -9,7 +9,7 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
-import { allVerseLocs, childrenOf, classOf, kulliyatMeta, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
+import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeName, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -24,6 +24,10 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
   const cls = classOf(loc);
   const kids = childrenOf(loc);
   const canDrill = kids.length > 0 && depth < 6;
+  const th = cls ? themeName(cls.theme) : "";
+  const sub = cls && cls.tier !== "تفصيل" ? subtreeCounts(loc) : null;
+  const under: string[] = [];
+  if (sub) { if (sub.jamia) under.push(`${num(sub.jamia)} جامعة`); if (sub.tafsil) under.push(`${num(sub.tafsil)} تفصيلًا`); }
   const [s, a] = loc.split(":");
   const toggle = () => canDrill && setOpen((v) => !v);
   return (
@@ -37,8 +41,14 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
         <span className="quran kl-verse-text" onClick={toggle} style={{ cursor: canDrill ? "pointer" : "default" }}>
           {texts.get(loc)?.textClean ?? loc}
         </span>
-        {canDrill && <span className="muted kl-kids">{num(kids.length)}</span>}
+        {cls && <span className="kl-jam" title={ar ? "مؤشّر الجامعيّة المحسوب" : "jāmiʿiyya index"}>{num(Math.round(cls.jamiya * 100))}٪</span>}
       </div>
+      {cls && (th || under.length > 0) && (
+        <div className="kl-sub">
+          {th && <span className="kl-theme" title={ar ? "المحور المحسوب (أبرزُ جذورِه)" : "computed theme"}>◇ {th}</span>}
+          {under.length > 0 && <span className="kl-under">{ar ? `تحته ${under.join(" و")}` : `under: ${under.join(", ")}`}</span>}
+        </div>
+      )}
       {open && canDrill && (
         <div className="kl-children">
           {kids.slice(0, kidLimit).map((k) => <Node key={k} loc={k} texts={texts} depth={depth + 1} />)}
@@ -63,7 +73,7 @@ export default function Kulliyat() {
   const [tier, setTier] = useState<Tier>("كلّية");
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(30);
-  const [sort, setSort] = useState<"jamiya" | "mushaf">("jamiya");
+  const [sort, setSort] = useState<"jamiya" | "mushaf">("mushaf");
   useEffect(() => { ayahByLocationMap().then(setTexts); }, []);
   useEffect(() => { setLimit(30); }, [q, tier]);
 
