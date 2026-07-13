@@ -1370,6 +1370,24 @@ table.data tr:hover td { background: var(--panel-2); }
 .gx-lg-k { width: 13px; height: 13px; }
 .gx-lg-j { width: 9px; height: 9px; }
 .gx-lg-t { width: 6px; height: 6px; }
+/* خريطة المصحف — the tier map */
+.mm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-top: 8px; font-size: 12px; color: var(--ink-2); }
+.mm-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.mm-legend b { color: var(--ink); }
+.mm-lg { width: 12px; height: 12px; border-radius: 3px; }
+.mm-lg.k { background: var(--gold); }
+.mm-lg.j { background: var(--accent); }
+.mm-lg.t { background: var(--line); }
+.mm-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.mm-sura-h { font-size: 12.5px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.mm-cells { display: flex; flex-wrap: wrap; gap: 2px; }
+.mm-cell { width: 11px; height: 11px; border-radius: 2px; cursor: pointer; background: var(--line); transition: transform .08s; }
+.mm-cell.t { background: var(--line); }
+.mm-cell.j { background: var(--accent); opacity: 0.8; }
+.mm-cell.k { background: var(--gold); box-shadow: 0 0 3px var(--gold); }
+.mm-cell.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+.mm-cell:hover { transform: scale(1.5); }
+.mm-panel { margin-top: 18px; position: relative; }
 /* الخيوط الموضوعية — thematic threads */
 .th-form { display: flex; gap: 8px; margin-top: 10px; }
 .th-form input { flex: 1; }
