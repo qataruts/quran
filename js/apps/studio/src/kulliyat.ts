@@ -33,6 +33,9 @@ let loading: Promise<Payload> | null = null;
 let heads: Map<number, string> | null = null;
 /** loc -> child locs (reverse of parent, built once) */
 let children: Map<string, string[]> | null = null;
+/** theme index -> its representative (highest-جامعية) verse loc + its size */
+let themeHead: Map<number, string> | null = null;
+let themeSize: Map<number, number> | null = null;
 
 export function loadKulliyat(): Promise<Payload> {
   if (data) return Promise.resolve(data);
@@ -45,8 +48,13 @@ export function loadKulliyat(): Promise<Payload> {
       data = p;
       heads = new Map();
       children = new Map();
+      themeHead = new Map();
+      themeSize = new Map();
       for (const [loc, v] of Object.entries(p.verses)) {
         if (v.tier === "كلّية") heads.set(v.theme, loc);
+        themeSize.set(v.theme, (themeSize.get(v.theme) ?? 0) + 1);
+        const cur = themeHead.get(v.theme);
+        if (cur === undefined || v.jamiya > p.verses[cur].jamiya) themeHead.set(v.theme, loc);
         if (v.parent) {
           const list = children.get(v.parent) ?? [];
           list.push(loc);
@@ -102,11 +110,14 @@ export function kulliyatWeights(): Record<string, number> {
   return (w && typeof w === "object" ? w : {}) as Record<string, number>;
 }
 
-/** The computed name of a theme (its most distinctive roots). */
+/** The computed name of a theme (its most distinctive roots) — a rough fingerprint. */
 export function themeName(theme: number): string {
   const tn = data?.meta.themeNames?.[theme];
   return tn && tn.length ? tn.join(" ") : "";
 }
+/** The theme's representative verse (its highest-جامعية member) and its size. */
+export const themeHeadOf = (theme: number): string | null => themeHead?.get(theme) ?? null;
+export const themeSizeOf = (theme: number): number => themeSize?.get(theme) ?? 0;
 /** Count of جوامع and تفصيل verses anywhere below this verse in its tree. */
 export function subtreeCounts(loc: string): { jamia: number; tafsil: number } {
   let jamia = 0, tafsil = 0;

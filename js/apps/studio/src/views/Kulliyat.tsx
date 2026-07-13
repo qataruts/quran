@@ -10,7 +10,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import WhyRank from "../components/WhyRank";
-import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeName, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
+import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeHeadOf, themeName, themeSizeOf, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -26,7 +26,8 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
   const cls = classOf(loc);
   const kids = childrenOf(loc);
   const canDrill = kids.length > 0 && depth < 6;
-  const th = cls ? themeName(cls.theme) : "";
+  const head = cls ? themeHeadOf(cls.theme) : null;
+  const tsize = cls ? themeSizeOf(cls.theme) : 0;
   const sub = cls && cls.tier !== "تفصيل" ? subtreeCounts(loc) : null;
   const under: string[] = [];
   if (sub) { if (sub.jamia) under.push(`${num(sub.jamia)} جامعة`); if (sub.tafsil) under.push(`${num(sub.tafsil)} تفصيلًا`); }
@@ -49,9 +50,13 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
           </button>
         )}
       </div>
-      {cls && (th || under.length > 0) && (
+      {cls && (head || under.length > 0) && (
         <div className="kl-sub">
-          {th && <span className="kl-theme" title={ar ? "المحور المحسوب (أبرزُ جذورِه)" : "computed theme"}>◇ {th}</span>}
+          {head && (head === loc ? (
+            <span className="kl-theme" title={themeName(cls.theme)}>◇ {ar ? `محورٌ يضمّ ${num(tsize)} آية` : `theme · ${tsize} verses`}</span>
+          ) : (
+            <Link to={`/read/${head.split(":")[0]}/${head.split(":")[1]}`} className="kl-theme" title={themeName(cls.theme)}>◇ {ar ? `محور: ${arName(head)}` : `theme: ${arName(head)}`}</Link>
+          ))}
           {under.length > 0 && <span className="kl-under">{ar ? `تحته ${under.join(" و")}` : `under: ${under.join(", ")}`}</span>}
         </div>
       )}
