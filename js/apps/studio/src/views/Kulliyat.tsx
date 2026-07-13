@@ -14,6 +14,7 @@ import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 const tierCls = (t?: Tier) => (t === "كلّية" ? "k" : t === "جامعة" ? "j" : "t");
+const mushafKey = (loc: string) => { const [s, a] = loc.split(":").map(Number); return s * 1000 + a; };
 
 /** One verse in the tree — drillable to the verses that gather under it. */
 function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>; depth: number }) {
@@ -28,8 +29,8 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
   return (
     <div className="kl-node">
       <div className={`kl-verse ${tierCls(cls?.tier)}`}>
-        <button className="kl-drill" onClick={toggle} disabled={!canDrill} aria-label={ar ? "فتح/إغلاق" : "toggle"}>
-          {canDrill ? (open ? "▾" : "▸") : "•"}
+        <button className={`kl-drill${open ? " open" : ""}`} onClick={toggle} disabled={!canDrill} aria-label={ar ? (open ? "إغلاق" : "فتح") : ""}>
+          {canDrill ? (open ? "−" : "+") : "•"}
         </button>
         <Link to={`/read/${s}/${a}`} className="kl-verse-ref">{arName(loc)}</Link>
         {cls && <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>}
@@ -62,6 +63,7 @@ export default function Kulliyat() {
   const [tier, setTier] = useState<Tier>("كلّية");
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(30);
+  const [sort, setSort] = useState<"jamiya" | "mushaf">("jamiya");
   useEffect(() => { ayahByLocationMap().then(setTexts); }, []);
   useEffect(() => { setLimit(30); }, [q, tier]);
 
@@ -71,9 +73,12 @@ export default function Kulliyat() {
   const all = useMemo(() => (ready ? allVerseLocs() : []), [ready]);
   const filtered = useMemo(() => {
     const src = q.trim() ? all : byTier; // typing searches the WHOLE Qur'an, any tier
-    return src.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean));
+    const out = src.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean));
+    // mushaf order = the verse in its context (sequence); else by جامعية (src is pre-sorted)
+    if (sort === "mushaf") out.sort((a, b) => mushafKey(a) - mushafKey(b));
+    return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [byTier, all, q, texts]);
+  }, [byTier, all, q, texts, sort]);
   const tierN = (t: Tier) => (t === "كلّية" ? counts.kulliya : t === "جامعة" ? counts.jamia : counts.tafsil);
 
   if (!ready) {
@@ -104,6 +109,11 @@ export default function Kulliyat() {
                 {tt} <span className="muted">{num(tierN(tt))}</span>
               </button>
             ))}
+          </div>
+          <div className="jw-chipset">
+            <span className="jw-filter-lbl">{ar ? "الترتيب" : "sort"}</span>
+            <button className={sort === "jamiya" ? "on" : ""} onClick={() => setSort("jamiya")}>{ar ? "الأعلى جامعيّةً" : "by weight"}</button>
+            <button className={sort === "mushaf" ? "on" : ""} onClick={() => setSort("mushaf")}>{ar ? "ترتيب المصحف" : "mushaf order"}</button>
           </div>
         </div>
 

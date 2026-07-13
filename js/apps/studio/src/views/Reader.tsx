@@ -712,66 +712,12 @@ export default function Reader() {
                 key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
                 style={{
-                  padding: "10px 12px",
+                  padding: "8px 12px 10px",
                   borderRadius: "var(--radius)",
-                  marginBottom: 6,
+                  marginBottom: 20,
                   background: isTarget ? "var(--accent-soft)" : undefined,
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: 6,
-                    marginBottom: 4,
-                  }}
-                >
-                  {/* locate */}
-                  <AyahRef location={ayah.location} />
-                  <span className="chip">
-                    {t("reader.juz")} {num(ayah.juz)}
-                  </span>
-                  <span className="chip">
-                    {t("reader.page")} {num(ayah.page)}
-                  </span>
-                  {ayah.sajdaType && (
-                    <span className="chip gold" title={ayah.sajdaType}>
-                      ۩ {t("reader.sajda")}
-                    </span>
-                  )}
-                  {/* listen to this ayah (one clear audio button; continuous
-                      recitation is the surah-header «استمع للسورة») */}
-                  <AudioButton ayahId={ayahIdOf(ayah)} />
-                  {/* study layers */}
-                  <EraabChip
-                    open={panelOpen("eraab", ayah.location)}
-                    onToggle={() => togglePanel("eraab", ayah.location)}
-                  />
-                  <SimilarAyahs
-                    ayahId={ayahIdOf(ayah)}
-                    location={ayah.location}
-                    open={panelOpen("similar", ayah.location)}
-                    onToggle={() => togglePanel("similar", ayah.location)}
-                  />
-                  <TadabburChip
-                    open={panelOpen("tadabbur", ayah.location)}
-                    onToggle={() => togglePanel("tadabbur", ayah.location)}
-                  />
-                  {/* save */}
-                  <button
-                    className={`chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
-                    onClick={() => toggleBookmark(ayah.location)}
-                    title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
-                  >
-                    {bookmarks.includes(ayah.location) ? "★" : "☆"}
-                  </button>
-                  <CollectButton
-                    locations={[ayah.location]}
-                    criterion={{ kind: "manual", value: ayah.location }}
-                    label="⊕"
-                  />
-                </div>
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
                   ayahNo={ayah.ayahNo}
@@ -779,7 +725,29 @@ export default function Reader() {
                   onSelect={(w: WordDoc) => setSelected(w)}
                 />
                 <Translations ayah={ayah} />
-                <MuhkamaLine location={ayah.location} />
+                {/* ONE tight line UNDER the verse: locate · listen · study tools ·
+                    save · and the verse's computed مرتبة — all as small chips */}
+                <div className="ayah-tools">
+                  <AyahRef location={ayah.location} />
+                  <span className="chip">{t("reader.juz")} {num(ayah.juz)}</span>
+                  <span className="chip">{t("reader.page")} {num(ayah.page)}</span>
+                  {ayah.sajdaType && (
+                    <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
+                  )}
+                  <AudioButton ayahId={ayahIdOf(ayah)} />
+                  <EraabChip open={panelOpen("eraab", ayah.location)} onToggle={() => togglePanel("eraab", ayah.location)} />
+                  <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
+                  <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
+                  <button
+                    className={`chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
+                    onClick={() => toggleBookmark(ayah.location)}
+                    title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
+                  >
+                    {bookmarks.includes(ayah.location) ? "★" : "☆"}
+                  </button>
+                  <CollectButton locations={[ayah.location]} criterion={{ kind: "manual", value: ayah.location }} label="⊕" />
+                  <MuhkamaLine location={ayah.location} />
+                </div>
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
                 {panelOpen("similar", ayah.location) && (

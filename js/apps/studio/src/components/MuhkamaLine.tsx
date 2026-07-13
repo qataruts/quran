@@ -1,7 +1,8 @@
 /**
- * The verse's computed place in the الكلّيّات classification — its tier
- * (كلّيّة / جامعة / تفصيل) and the كلّيّة it belongs under. From kulliyat.json
- * (see docs/kulliyat-methodology.md). Renders nothing for unclassified verses.
+ * The verse's computed place in the الكلّيّات classification, as ONE small chip
+ * that sits inline with the reader's other tools: «◆ كلّيّة» (gold) or a tier
+ * chip «جامعة ↑ الفرقان ٥٩» linking to the كلّيّة it belongs under. From
+ * kulliyat.json (see docs/kulliyat-algorithm-design.md).
  */
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
@@ -19,22 +20,16 @@ export default function MuhkamaLine({ location }: { location: string }) {
 
   if (cls.tier === "كلّية") {
     return (
-      <div className="mk-line mk-line-root" title={ar ? "من كلّيّات القرآن المحسوبة — من أعلى الآيات جامعيّةً" : "a computed kulliyya"}>
-        ◆ {ar ? "آيةٌ كلّيّة" : "kulliyya"}
-        <Link to="/kulliyat" className="mk-line-chip" style={{ textDecoration: "none" }}>{ar ? "الكلّيّات ←" : "all →"}</Link>
-      </div>
+      <Link to="/kulliyat" className="chip mk-chip k" title={ar ? "من كلّيّات القرآن المحسوبة — من أعلى الآيات جامعيّةً" : "a computed kulliyya"}>
+        ◆ {ar ? "كلّيّة" : "kulliyya"}
+      </Link>
     );
   }
   const k = kulliyaOf(location);
+  const to = k ? `/read/${k.split(":")[0]}/${k.split(":")[1]}` : "/kulliyat";
   return (
-    <div className="mk-line" title={ar ? "مرتبةُ الآية والكلّيّةُ التي تندرجُ تحتها (محسوبة)" : "computed tier + the kulliyya it belongs under"}>
-      <span className={`kl-badge ${cls.tier === "جامعة" ? "j" : "t"}`}>{cls.tier}</span>
-      <span className="mk-line-lbl">{ar ? "تندرجُ تحت:" : "under:"}</span>
-      {k ? (
-        <Link to={`/read/${k.split(":")[0]}/${k.split(":")[1]}`} className="mk-line-chip quran">{arName(k)}</Link>
-      ) : (
-        <span className="muted">—</span>
-      )}
-    </div>
+    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "المرتبةُ المحسوبة، والكلّيّةُ التي تندرجُ تحتها" : "computed tier + the kulliyya it belongs under"}>
+      {cls.tier}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
+    </Link>
   );
 }
