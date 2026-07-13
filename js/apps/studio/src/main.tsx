@@ -335,6 +335,7 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
   const loc = useLocation();
   const p = loc.pathname;
   const ar = getUILang() === "ar";
+  if (p.startsWith("/assistant")) return null; // نِبراس is a focused full-screen chat
   const on = (to: string) => (to === "/read" ? p === "/" || p.startsWith("/read") : p === to || p.startsWith(to + "/"));
   return (
     <nav className="tabbar" aria-label={ar ? "تنقّل" : "tabs"}>

@@ -417,9 +417,9 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 /* mobile bottom sheet — the word/ayah inspector, stable like a native app:
    a backdrop dims + locks the page, the sheet is fixed to the bottom and only
    its own body scrolls. */
-.sheet-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.34); z-index: 44; animation: sheet-fade 0.15s ease; }
+.sheet-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.34); z-index: 90; animation: sheet-fade 0.15s ease; }
 .word-sheet {
-  position: fixed; inset-inline: 0; bottom: 0; z-index: 46;
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 92;
   min-height: 56vh; max-height: 88vh; display: flex; flex-direction: column;
   border-radius: 20px 20px 0 0;
   padding: 0 16px calc(14px + env(safe-area-inset-bottom, 0px));
@@ -1727,6 +1727,11 @@ table.data tr:hover td { background: var(--panel-2); }
   /* pages clear the tab bar (and FAB) so their last rows stay tappable */
   .page, .mw-wrap, .jw-wrap, .aya-wrap, .fr-wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .mm-grid { padding-bottom: 12px; }
+  /* bottom-anchored docks sit ABOVE the tab bar, not behind it */
+  .reading-dock { bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .scrolltop-fab { inset-block-end: calc(110px + env(safe-area-inset-bottom)); z-index: 55; }
+  /* centered modals keep clear of the bar on short screens */
+  .mm-panel, .rj-modal .card, .rj-modal { margin-bottom: 4px; }
 }
 .mu-empty-tag { display: inline-block; margin: 2px 0 10px; padding: 3px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12.5px; font-weight: 700; }
 
