@@ -1691,9 +1691,32 @@ table.data tr:hover td { background: var(--panel-2); }
 .nibras-fab-ic { width: 20px; height: 20px; flex: none; }
 .nibras-fab-label { line-height: 1; }
 @media (max-width: 760px) {
-  .nibras-fab { right: 15px; bottom: 16px; width: 54px; height: 54px; padding: 0; justify-content: center; gap: 0; }
+  .nibras-fab { right: 15px; bottom: calc(74px + env(safe-area-inset-bottom)); width: 54px; height: 54px; padding: 0; justify-content: center; gap: 0; }
   .nibras-fab-label { display: none; }
   .nibras-fab-ic { width: 28px; height: 28px; }
+}
+
+/* ── mobile bottom tab bar ─────────────────────────────────────────────────── */
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  .tabbar {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 56;
+    display: flex; align-items: stretch;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 5px 4px calc(5px + env(safe-area-inset-bottom));
+  }
+  .tabbar .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; text-decoration: none;
+    color: var(--muted); font-size: 10.5px; font-weight: 600; padding: 3px 0; cursor: pointer;
+  }
+  .tabbar .tab svg { width: 23px; height: 23px; }
+  .tabbar .tab.active { color: var(--accent); }
+  /* pages clear the tab bar (and FAB) so their last rows stay tappable */
+  .page, .mw-wrap, .jw-wrap, .aya-wrap, .fr-wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .mm-grid { padding-bottom: 12px; }
 }
 .mu-empty-tag { display: inline-block; margin: 2px 0 10px; padding: 3px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12.5px; font-weight: 700; }
 

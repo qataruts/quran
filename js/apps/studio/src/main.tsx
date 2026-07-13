@@ -329,6 +329,35 @@ function NibrasFab() {
   );
 }
 
+/** Mobile-only bottom tab bar — thumb-reachable jumps to the key surfaces; the
+ *  «المزيد» tab opens the full drawer. Hidden on desktop. */
+function MobileTabBar({ onMenu }: { onMenu: () => void }) {
+  const loc = useLocation();
+  const p = loc.pathname;
+  const ar = getUILang() === "ar";
+  const on = (to: string) => (to === "/read" ? p === "/" || p.startsWith("/read") : p === to || p.startsWith(to + "/"));
+  return (
+    <nav className="tabbar" aria-label={ar ? "تنقّل" : "tabs"}>
+      <NavLink to="/read" className={`tab${on("/read") ? " active" : ""}`}>
+        <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4.5A2 2 0 0 1 6 3h5v16H6a2 2 0 0 0-2 1.2zM20 4.5A2 2 0 0 0 18 3h-5v16h5a2 2 0 0 1 2 1.2z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
+        <span>{ar ? "المصحف" : "Read"}</span>
+      </NavLink>
+      <NavLink to="/kulliyat" className={`tab${on("/kulliyat") || on("/aya") ? " active" : ""}`}>
+        <svg viewBox="0 0 24 24" aria-hidden><path d="M12 2 3 7l9 5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+        <span>{ar ? "الكلّيّات" : "Kulliyyāt"}</span>
+      </NavLink>
+      <NavLink to="/mawdui" className={`tab${on("/mawdui") ? " active" : ""}`}>
+        <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+        <span>{ar ? "المواضيع" : "Topics"}</span>
+      </NavLink>
+      <button className="tab" onClick={onMenu} aria-label={ar ? "القائمة" : "menu"}>
+        <svg viewBox="0 0 24 24" aria-hidden><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+        <span>{ar ? "المزيد" : "More"}</span>
+      </button>
+    </nav>
+  );
+}
+
 function App() {
   const mobile = useIsMobile();
   const [drawer, setDrawer] = useState(false);
@@ -364,6 +393,7 @@ function App() {
         </header>
         {mobile && drawer && <MobileDrawer onClose={() => setDrawer(false)} />}
         <NibrasFab />
+        {mobile && <MobileTabBar onMenu={() => setDrawer(true)} />}
         <RouteBoundary>
         <Routes>
           <Route path="/" element={<Home />} />
