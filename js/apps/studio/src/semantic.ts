@@ -137,6 +137,36 @@ async function embedQuery(text: string): Promise<Float32Array> {
 
 // --- search --------------------------------------------------------------------
 
+/** Dequantize + L2-normalize the ayah vector at row `r` into `out`. */
+function normVec(r: number, out: Float32Array) {
+  const { dim, scales, data } = store!;
+  const base = r * dim;
+  let n = 0;
+  for (let i = 0; i < dim; i++) { const x = data[base + i] * scales[r]; out[i] = x; n += x * x; }
+  n = Math.sqrt(n) || 1;
+  for (let i = 0; i < dim; i++) out[i] /= n;
+}
+
+/**
+ * الخيط الموضوعيّ — the cosine proximity of EVERY ayah to the centroid of a set of
+ * seed rows (0-based). Same reproducible «seed → centre → proximity» technique that
+ * anchors التوحيد, generalized to any concept: seed a meaning, trace it through the
+ * whole mushaf. Returns a Float32Array[count].
+ */
+export async function centroidProximity(seedRows: number[]): Promise<Float32Array> {
+  await loadVectors();
+  const { dim, count } = store!;
+  const cen = new Float32Array(dim), tmp = new Float32Array(dim);
+  let used = 0;
+  for (const r of seedRows) { if (r < 0 || r >= count) continue; normVec(r, tmp); for (let i = 0; i < dim; i++) cen[i] += tmp[i]; used++; }
+  if (!used) return new Float32Array(count);
+  let n = 0; for (let i = 0; i < dim; i++) n += cen[i] * cen[i]; n = Math.sqrt(n) || 1;
+  for (let i = 0; i < dim; i++) cen[i] /= n;
+  const prox = new Float32Array(count);
+  for (let r = 0; r < count; r++) { normVec(r, tmp); let d = 0; for (let i = 0; i < dim; i++) d += tmp[i] * cen[i]; prox[r] = d; }
+  return prox;
+}
+
 export async function meaningSearch(text: string, topK = 20): Promise<SemanticHit[]> {
   await loadVectors();
   const q = await embedQuery(text);
