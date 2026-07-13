@@ -1033,8 +1033,10 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .aya-kid-text { flex: 1; min-width: 0; font-family: var(--font-quran); direction: rtl; text-align: right; font-size: 16px; line-height: 1.85; color: var(--ink-2); }
 .aya-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 8px; }
 .kl-kids { flex: none; font-size: 11px; }
-.kl-jam { flex: none; font-size: 11.5px; font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; background: none; border: 1px solid transparent; cursor: pointer; padding: 1px 5px; border-radius: 7px; }
-.kl-jam:hover, .kl-jam.on { background: var(--gold-soft); border-color: var(--gold); }
+.kl-jam { flex: none; font-size: 11.5px; font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; background: var(--gold-soft); border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); cursor: pointer; padding: 1px 6px; border-radius: 7px; }
+.kl-jam::after { content: "⌄"; margin-inline-start: 3px; font-size: 10px; opacity: 0.85; display: inline-block; transition: transform .15s ease; }
+.kl-jam.on::after { transform: rotate(180deg); }
+.kl-jam:hover, .kl-jam.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
 /* «لماذا هذه المرتبة؟» — the six factors' exact arithmetic */
 .why { margin: 6px 0 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); }
 .why-head { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: 12.5px; margin-bottom: 8px; }
