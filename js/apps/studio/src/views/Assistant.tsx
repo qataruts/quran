@@ -220,10 +220,11 @@ export default function Assistant() {
             <div className="mu-empty">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
               <h1 className="mu-empty-h">{ar ? "نِبراس" : "Nibras"}</h1>
+              <div className="mu-empty-tag">{ar ? "بحثٌ بالمعنى · ومحادثة" : "meaning-search · chat"}</div>
               <p className="mu-empty-lead">
                 {ar
-                  ? "مساعدُ بحثٍ في القرآن: يجمع لك الآيات بالمعنى، ومعاني الجذور، ثم يصوغ منها مسوّدةَ منشورٍ أو خطبةٍ أو محاضرةٍ من نصّ القرآن وبياناته."
-                  : "A research chat over the Qur'an: it gathers verses by meaning and root senses, then drafts a post / khutba / lecture from that material."}
+                  ? "هنا البحثُ بالمعنى: اكتبْ ما تريد بلُغتِك، فيجمعُ نِبراس الآياتِ الأقربَ معنًى ومعاني الجذور، ثم يصوغُ منها — إن شئتَ — مسوّدةَ منشورٍ أو خطبةٍ أو محاضرةٍ من نصّ القرآن وبياناته. (والبحثُ النصّيّ باللفظ في شريط المصحف.)"
+                  : "Meaning-search lives here: write what you want in your own words; Nibras gathers the closest verses by meaning and root senses, then — if you like — drafts a post / khutba / lecture from that material. (Textual search by wording is in the reader's bar.)"}
               </p>
               <ol className="mu-how">
                 <li>

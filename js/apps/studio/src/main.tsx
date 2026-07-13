@@ -175,7 +175,6 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
       ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
       ["/collections", "المجموعات", "Collections"],
-      ["/about", "عن المشروع", "About"],
     ],
   },
 ];
@@ -214,12 +213,7 @@ function Nav() {
       {NAV_GROUPS.map((g) => (
         <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
       ))}
-      <NavLink to="/search" title={ar ? "البحث بالمعنى في القرآن كلّه" : "meaning-based search"}>
-        <span className="ai-spark" aria-hidden /> {t("nav.search")}
-      </NavLink>
-      <NavLink to="/assistant" title={ar ? "نِبراس: مساعدُ بحثٍ وصياغةٍ من بيانات القرآن" : "research & drafting assistant"}>
-        <span className="ai-spark" aria-hidden /> {ar ? "نِبراس" : "Nibras"}
-      </NavLink>
+      <NavLink to="/about" title={ar ? "عن المشروع" : "about the project"}>{ar ? "عن المشروع" : "About"}</NavLink>
     </nav>
   );
 }
@@ -275,8 +269,6 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
-          <NavLink to="/search"><span className="ai-spark" aria-hidden /> {ar ? "البحث الدلالي" : "Semantic search"}</NavLink>
-          <NavLink to="/assistant"><span className="ai-spark" aria-hidden /> {ar ? "نِبراس" : "Nibras"}</NavLink>
           {NAV_GROUPS.map((g) => (
             <div key={g.ar} className="drawer-group">
               <div className="drawer-group-h">{ar ? g.ar : g.en}</div>
@@ -285,6 +277,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           ))}
+          <NavLink to="/about">{ar ? "عن المشروع" : "About"}</NavLink>
         </nav>
         <div className="drawer-controls">
           <SourcesPanel />
@@ -306,6 +299,24 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
         {children}
       </Suspense>
     </ErrorBoundary>
+  );
+}
+
+/** نِبراس — a floating AI-chat button on every page (mobile + web), pinned bottom-
+ *  right; the single entry to research + meaning-search chat. A speech bubble with
+ *  a sparkle marks it as an AI chat. Hidden while نِبراس itself is open. */
+function NibrasFab() {
+  const loc = useLocation();
+  const ar = getUILang() === "ar";
+  if (loc.pathname.startsWith("/assistant")) return null;
+  return (
+    <NavLink to="/assistant" className="nibras-fab" title={ar ? "نِبراس: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Nibras: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "نِبراس — محادثة ذكاء اصطناعي" : "Nibras — AI chat"}>
+      <svg className="nibras-fab-ic" viewBox="0 0 24 24" aria-hidden focusable="false">
+        <path d="M12 1.6c.55 5.9 1.9 9.95 9.9 10.4-8 .45-9.35 4.5-9.9 10.4-.55-5.9-1.9-9.95-9.9-10.4 8-.45 9.35-4.5 9.9-10.4z" fill="currentColor" />
+        <path d="M19.4 2.2c.2 2.1.7 3.55 3.5 3.7-2.8.15-3.3 1.6-3.5 3.7-.2-2.1-.7-3.55-3.5-3.7 2.8-.15 3.3-1.6 3.5-3.7z" fill="currentColor" opacity=".7" />
+      </svg>
+      <span className="nibras-fab-label">{ar ? "نِبراس" : "Nibras"}</span>
+    </NavLink>
   );
 }
 
@@ -343,6 +354,7 @@ function App() {
           )}
         </header>
         {mobile && drawer && <MobileDrawer onClose={() => setDrawer(false)} />}
+        <NibrasFab />
         <RouteBoundary>
         <Routes>
           <Route path="/" element={<Home />} />

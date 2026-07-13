@@ -1662,3 +1662,23 @@ table.data tr:hover td { background: var(--panel-2); }
   .mu-thread { padding: 14px 12px; }
   .mu-input { padding: 10px 12px; }
 }
+
+/* ── نِبراس FAB — floating AI-chat button (labelled pill on web, round on mobile) */
+.nibras-fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 15px 8px 13px; border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none;
+  font-weight: 700; font-size: 14px; box-shadow: 0 6px 18px rgba(79,70,229,0.40);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.nibras-fab:hover { transform: translateY(-1px); box-shadow: 0 9px 24px rgba(79,70,229,0.50); }
+.nibras-fab:active { transform: translateY(0); }
+.nibras-fab-ic { width: 20px; height: 20px; flex: none; }
+.nibras-fab-label { line-height: 1; }
+@media (max-width: 760px) {
+  .nibras-fab { right: 15px; bottom: 16px; width: 54px; height: 54px; padding: 0; justify-content: center; gap: 0; }
+  .nibras-fab-label { display: none; }
+  .nibras-fab-ic { width: 28px; height: 28px; }
+}
+.mu-empty-tag { display: inline-block; margin: 2px 0 10px; padding: 3px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12.5px; font-weight: 700; }
