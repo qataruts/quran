@@ -34,7 +34,7 @@ export default function About() {
 
   const METHODS = ar
     ? [
-        ["المحكمات والجوامع", "نبني شبكةً من توارُد المعاني في الآيات بالإحصاء — أيُّ المعاني يجتمع مع أيّ؛ ثم يستخرج الذكاءُ الاصطناعيُّ من نصّ القرآن وصرفِه أصولَه الجامعة وتفصيلَها ونوعَ كلٍّ منها، فتنتظم في هرمٍ من القاعدة إلى الأصول الكبرى — من النصّ نفسه، لا مِن رأيٍ خارجَه."],
+        ["الكلّيّات والجوامع والتفصيل", "نحسبُ لكلِّ آيةٍ «جامعيّتَها» بستّةِ مقاييسَ من بيانات القرآن نفسِه: قُربَها من التوحيد، وعمومَ لفظِها، واستقلالَها النحويّ، وقوّةَ إنشائها، وسَعتَها، ومركزيّةَ معناها. فتنتظمُ الآياتُ في مراتبَ — كلّيّاتٌ جامعةٌ في القمّة، تتبعُها جوامعُ، ثمّ تفصيلٌ — شجرةً تُعادُ في كلّ مرّة، لا رأيَ فيها؛ والذكاءُ الاصطناعيُّ يُقيّمُ صحّتَها ولا يصنعُها."],
         ["فروق التنزيل", "نُحاذي آليًّا بين كلِّ آيتين متشابهتين لفظًا بخوارزمية محاذاة النصوص، فتظهر مواضعُ الاختلاف كلمةً كلمة: إبدالًا وتقديمًا وزيادةً وإيجازًا."],
         ["الفروق اللغوية والمترادفات", "نُحوّل تعريفَ كلِّ جذرٍ في المعجمين إلى «متّجهٍ» رقميّ يمثّل معناه، ثم نقيس القُربَ بينها: فأقربُها متّجهًا أقربُها معنًى (مترادفات)، وعناقيدُها المتبادلة حقولٌ دلالية — والقارئ يوازن الفرق بنفسه."],
         ["مثلها (الآيات القريبة)", "بالطريقة نفسها نُمثّل كلَّ آيةٍ بمتّجه معنى، فنكشف أقربَ الآيات إليها دلالةً عبر المصحف كلِّه — ترتيبٌ بحسب القُرب، لا تأويلٌ للمعنى."],
@@ -42,7 +42,7 @@ export default function About() {
         ["مساعد التدبّر", "نجمع ما حسبناه عن الآية — إعرابَها وجذورَها ومعانيها وجيرانها — ونعرضه على نموذج توليدٍ بتوجيهٍ صارمٍ يمنعه من تجاوز هذه المادّة أو ادّعاء التفسير."],
       ]
     : [
-        ["Muḥkamāt & principles", "We lift the Qur'an's decisive statements, then build a network of their co-occurrence — which meanings gather with which — so they settle into a pyramid from detail up to the great governing principles, by counting alone, with no prior ordering."],
+        ["Kulliyyāt · Jawāmiʿ · Tafṣīl", "We compute a «universality» score for every verse from six measures over the Qur'an's own data: nearness to tawḥīd, generality of wording, grammatical self-standing, establishing force, breadth, and central meaning. Verses settle into tiers — governing kulliyyāt at the top, then jawāmiʿ, then tafṣīl — a tree that recomputes identically every time, with no opinion in it; AI only validates the result, it never authors it."],
         ["Furūq al-tanzīl", "We align every pair of near-identical verses with a sequence-alignment algorithm, surfacing each difference word by word: substitution, reordering, addition and concision."],
         ["Lexical distinctions & synonyms", "We turn each root's lexicon definition into a numeric meaning-vector, then measure closeness: nearest by vector = nearest by meaning (synonyms), and mutual clusters are semantic fields — the reader weighs the difference."],
         ["Similar verses", "The same way, each verse becomes a meaning-vector, revealing its closest āyāt across the whole muṣḥaf — ranked by nearness, not interpreted."],
@@ -131,8 +131,8 @@ export default function About() {
             <li>
               <b>{ar ? "استخراجُ الطبقات من النصّ:" : "Extracting the layers from the text:"}</b>{" "}
               {ar
-                ? "به قرأنا نصَّ المصحف واستخرجنا منه بنيتَه — المحكمات والتفصيل والجوامع، والمواضيع، والأمثال، والفروق، وسواها — فما كان منّا إلا ترتيبُها وعرضُها."
-                : "with it we read the mushaf's text and drew out its structure — the muḥkamāt, tafṣīl and principles, the topics, parables, furūq and more — our part being only to arrange and present them."}
+                ? "به قرأنا نصَّ المصحف واستخرجنا منه بعضَ طبقاتِه — المواضيعَ والأمثالَ والفروقَ وسواها — فما كان منّا إلا ترتيبُها وعرضُها. (أمّا الكلّيّاتُ والجوامعُ فمحسوبةٌ لا رأيَ فيها.)"
+                : "with it we read the mushaf's text and drew out some layers — the topics, parables, furūq and more — our part being only to arrange and present them. (The kulliyyāt/jawāmiʿ, by contrast, are computed — no opinion.)"}
             </li>
             <li>
               <b>{ar ? "متّجهات المعنى (embeddings):" : "Meaning-vectors (embeddings):"}</b>{" "}
