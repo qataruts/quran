@@ -1,0 +1,53 @@
+{
+ "findings": [
+  {
+   "issue": "Every surah in the flagship per-surah grid displays its number instead of its Arabic name (\"1\", \"2\", \"3\"… instead of الفاتحة، البقرة، آل عمران…), because the builder script selects the wrong column.",
+   "evidence": "js/scripts/export-fawasil.mjs:18 runs `SELECT data FROM surahs` and reads `s.nameAr`/`s.surahNo` off the parsed row — but in quran-app.db the `surahs` table stores `surahNo` and `nameAr` as real table COLUMNS (verified via PRAGMA table_info(surahs)), while the `data` JSON blob only contains `{rukuCount, hasBismillah}`. So every `s.nameAr`/`s.surahNo` is undefined, the `nameOf` lookup map (line 45) is built entirely from undefined keys, and `nameOf.get(no) ?? String(no)` (line 58) always falls through to the numeric fallback. Confirmed live in the shipped data: `node -e \"...\"` on public/fawasil.json prints `{no:1,name:'1',...}, {no:2,name:'2',...}, {no:4,name:'4',domPct:96,...}` for all 114 surahs — the exact bug the owner would see on the page.",
+   "severity": "critical"
+  },
+  {
+   "issue": "The per-surah section reduces each surah's entire rhyme sequence to one static number (dominant letter + %), throwing away the ordered ayah-by-ayah ending sequence — which is exactly the data that contains the genuinely interesting فاصلة phenomena (monorhyme surahs, clean rhyme-shift points, staccato surahs). The current design cannot show any of this.",
+   "evidence": "export-fawasil.mjs only ever does `m[r] = (m[r]||0)+1` per surah (line 41) — it never records ayah order, so `runsOf`-style analysis is impossible downstream. Re-deriving the sequence directly from quran-app.db (grouping consecutive same-ending ayahs into 'runs') shows facts the page never surfaces: 13 surahs are literally monorhyme end-to-end (domPct=100%: 48 الفتح‏(29 آية)، 54 القمر‏(55)، 63 المنافقون‏(11)، 72 الجن‏(28)، 76 الإنسان‏(31)، 91، 92 الليل‏(21)، 97، 103، 105، 108، 112، 114) yet these render in the *same* 'hi' color tier (domPct≥90, 31 surahs total) as surahs merely 90-99% uniform — visually indistinguishable. Surahs الإسراء (17, 111 آيات) and الكهف (18, 110 آيات) hold one rhyme almost the entire way and shift exactly 1-2 times at locatable ayahs — a quotable, deep-linkable transition point, currently invisible. Conversely القارعة (11 آيات, 9 runs), الممتحنة (13 آيات, 11 runs), الحجرات (18, 14 runs), and الحج (78, 57 runs) change rhyme almost every verse — a real stylistic contrast (terse oath/apocalyptic register vs. discursive legislative register) the page never mentions or computes.",
+   "severity": "major"
+  },
+  {
+   "issue": "\"أكثر الخواتيم\" (commonest 24 two-letter endings) is a flat, uninterpreted chip dump that duplicates the letters bar above it in coarser form and adds no per-surah link or explanation.",
+   "evidence": "Fawasil.tsx:72-81 renders `d.endings.map(...)` as bare `«end» count` chips with no percentage, no context, no click-through — e.g. «ون» 1755, «ين» 1297 are just the ن-bucket from the letters bar (already 50.1%) split by preceding vowel, presented as if it were new information.",
+   "severity": "minor"
+  },
+  {
+   "issue": "The letters bar counts a bare orthographic alif (\"ا\", 15.2% of all ayahs) as a رَويّ letter with zero explanation of why — it is the pausal realization of tanwين النصب (e.g. تنزيلًا), a defensible methodological choice but currently opaque, which is likely part of why the owner can't tell 'how this works.'",
+   "evidence": "export-fawasil.mjs:21-26 `stripMarks`/`roeyaOf` strip the tanwin diacritic but keep the trailing alif letter as the 'last character'; Fawasil.tsx's copy (line 48-49) states the headline stat but never explains the alif case, so a reader sees 'ا' ranked #2 rhyme letter with no rationale.",
+   "severity": "minor"
+  }
+ ],
+ "how_it_works": "أطلس الفواصل is a static, precomputed page (no live DB query at request time). js/scripts/export-fawasil.mjs runs offline against quran-app.db: for each of the 6,236 ayahs it strips Arabic diacritics from `textClean`, takes the last word, and extracts (a) its final letter — called the روي — and (b) its final two letters — called the \"ending.\" It tallies: a global letter→count table (`letters`), a global two-letter ending→count table capped at the top 24 (`endings`), and a per-surah letter→count table (`bySurah`) reduced to just the single most-frequent letter and its share (`dom`/`domPct`). The result is written once to public/fawasil.json (~a few KB) and Fawasil.tsx just fetches and renders it: a horizontal bar chart of the top-12 global rhyme letters, a chip list of the top-24 two-letter endings, and a 114-cell grid — one per surah — showing the surah's \"name,\" dominant rhyme letter, and its percentage, color-tiered at ≥90% (gold) / ≥60% (accent) / below (plain). It sits in the \"مصادر وأدوات\" nav group next to إحصاءات القرآن (Maalim.tsx), which is the app's established \"computed facts, no opinion\" stats page built from live DB queries (allAyahs/listSurahs) rather than a precomputed JSON snapshot.",
+ "proposals": [
+  {
+   "title": "Fix the surah-name column bug in export-fawasil.mjs",
+   "rationale": "One-line, unambiguous fix: select `surahNo, nameAr` as real columns from `surahs` (as db.ts/Maalim.tsx already do), not `data`. This must happen regardless of which redesign path is chosen — right now the flagship grid is unreadable (shows digits, not names).",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Replace the per-surah grid with a rhyme 'fingerprint' strip per surah",
+   "rationale": "Rework export-fawasil.mjs to emit the ordered per-ayah ending sequence per surah (not just a tally), then render each surah as a thin horizontal strip of ayah-sized segments colored by ending letter. Uniform bands read instantly as monorhyme surahs (13 confirmed); color changes mark exact transition ayahs (e.g. الإسراء's single shift, الكهف's few shifts) which can deep-link via the existing readPathOf(`surah:ayah`) helper (already used in Maalim.tsx) straight into /read — turning an abstract percentage into a concrete, exploreable, quotable insight the owner explicitly asked for (rhythm of the surah, transitions marking shifts). This is the genuine, previously-hidden فاصلة insight in this project's own data and deserves to stay a standalone page, not be diluted into a stat card.",
+   "effort": "days",
+   "needs_swarm": false
+  },
+  {
+   "title": "Cut the 'commonest endings' chip dump; replace with curated monorhyme / most-mixed surah callouts",
+   "rationale": "Drop the uninterpreted 24-chip list (redundant with the letters bar) and instead surface 2-3 short, labeled lists — 'قافيةٌ واحدةٌ من أوّلها إلى آخِرها' (13 surahs), 'أسرعُ السور تحوّلًا في القافية' (القارعة، الممتحنة، الحجرات…) — each linking into the new fingerprint view, so every section on the page earns its place with an actual reading of the data rather than a raw tally.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "(Stretch) Correlate rhyme-shift ayahs with the existing thematic-thread layer",
+   "rationale": "Memory notes a خيوط الموضوعية / thematic-thread layer already shipped; cross-referencing the fingerprint's rhyme-shift ayah numbers against topic-thread boundaries across all 114 surahs would let the page claim (with actual evidence, not speculation) that faṣila shifts often coincide with thematic turns — the strongest possible version of the story the owner is asking for. Larger, exploratory, cuts across two data layers.",
+   "effort": "week+",
+   "needs_swarm": true
+  }
+ ],
+ "section": "أطلس الفواصل (views/Fawasil.tsx)",
+ "verdict": "The page's premise is legitimate — verse-ending rhyme (الفاصلة/الروي) is a real, well-studied dimension of Qur'anic style — but the current implementation only computes the shallowest possible cut of it (one dominant letter and a percentage per surah, plus two flat global tallies), and even that is currently broken: the per-surah grid shows surah numbers instead of names because export-fawasil.mjs queries the wrong DB column. Worse, the aggregation throws away the one piece of information — the ordered sequence of endings through a surah — that actually contains the interesting phenomena: re-deriving it from the same raw text shows 13 surahs are literally monorhyme start to finish, several long surahs (الإسراء، الكهف) hold one rhyme almost throughout and shift at a single locatable ayah, and several short surahs (القارعة، الممتحنة، الحجرات، الحج) change rhyme almost every verse — a genuine, quotable, deterministic-from-text story the page never tells. This is not a case for retiring the page: the data supports a focused, standalone redesign around a per-surah rhyme \"fingerprint\" with deep-linkable transition points, after fixing the name bug and cutting the redundant endings chip-dump."
+}

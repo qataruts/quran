@@ -1,0 +1,53 @@
+{
+ "findings": [
+  {
+   "issue": "The live /galaxy page (شبكة الجذور, nav-registered in main.tsx:163/429) fetches network-${deg}.json (Galaxy.tsx:87, deg∈{1..5}) but those 5 files were deleted from js/apps/studio/public/ by commit 6d54be0 (\"تنظيف: حذفُ الملفّات الميتة التي تُربك التقييم\", 2026-07-14 03:29), which mistakenly classified them as dead. The fetch 404s, `r.ok` is false, the .then resolves to null, and Galaxy.tsx:88-90 silently `return`s on null — `net` never gets set, so the page is stuck forever on \"جارٍ بناء الشبكة…\" (building the network…) with no visible error. This is exactly the owner's «لا تعمل».",
+   "evidence": "js/apps/studio/src/views/Galaxy.tsx:87-90 fetch(`network-${deg}.json`...).then(r=>r.ok?r.json():null).then(j=>{if(!j)return;...}); `git show --stat 6d54be0` lists network-1.json..network-5.json among deleted files; `ls js/apps/studio/public/network-*.json` → no matches (only verse-network.json present, a different dataset). Confirmed by regenerating: `node js/scripts/export-network.mjs` (3m10s, needs local d3-force/d3-quadtree already present in node_modules) reproduced all 5 files with a schema that matches Galaxy.tsx's Net interface exactly (spot-checked network-3.json: meta{minW:3,nodes:844,edges:16878,clusters:16,span:810.8}, node0{r,o,x,y,c}, edge0{s,t,w}).",
+   "severity": "critical"
+  },
+  {
+   "issue": "The deletion is a live production regression, not just a local-tree glitch: js/apps/studio/package.json's build (\"tsc --noEmit && vite build\") and prebuild (copy-assets.mjs) never regenerate network-*.json — copy-assets.mjs only copies quran-app.db(.gz) and the two embedding binaries. Vercel serves whatever public/*.json is committed, so quran.uts.qa's /galaxy has been broken since 6d54be0 was pushed, and nothing in CI/build would have caught it (TypeScript doesn't type-check fetch URLs; a green `vite build` says nothing about a missing public JSON).",
+   "evidence": "js/apps/studio/package.json:8-11 (prebuild/build scripts); js/apps/studio/copy-assets.mjs (only copies quran-app.db/.gz + quran-neighbors.bin + quran-embeddings.bin, no network-*.json); no js/scripts/export-network.mjs reference anywhere in package.json or a CI workflow (none found under .github/workflows).",
+   "severity": "critical"
+  },
+  {
+   "issue": "Root cause of the false deletion: the cleanup commit's message claims verification \"بالمراجع + بناءٌ سليم\" (by references + a clean build), but Galaxy.tsx never spells out the literal filenames \"network-1.json\" etc — it builds them from a template literal `network-${deg}.json`. A reference-audit that greps for exact filenames (as opposed to the stem \"network-\") will not find this live usage, and a clean build can't catch it either since the fetch is runtime-only. The genuinely-dead sibling page from the same commit, Network.tsx, did NOT itself reference network-N.json (`git show 6d54be0^:js/apps/studio/src/views/Network.tsx | grep network-` → empty) — so the audit tool's blind spot is specifically dynamic/templated fetch URLs, not name confusion between two views.",
+   "evidence": "js/apps/studio/src/views/Galaxy.tsx:87; commit message of 6d54be0; empirical grep of the deleted Network.tsx at 6d54be0^ showing zero references to network-N.json.",
+   "severity": "major"
+  },
+  {
+   "issue": "Adjacent debris from the same cleanup, opposite direction: export-verse-network.mjs (→ verse-network.json, 1.04MB, still present and tracked) is now itself orphaned — its only consumer, VerseGalaxy.tsx (routed at /shabaka), was correctly deleted in 6d54be0 because it had already been superseded a commit earlier (6ce5295, \"المجرّة كانت لطخة غير وظيفية\" — replaced by MushafMap). Nobody removed the now-dead generator script or its 1MB JSON output.",
+   "evidence": "js/scripts/export-verse-network.mjs writes public/verse-network.json; `grep -rn verse-network js/apps/studio/src` finds no consumer; commit 6ce5295 replaced /shabaka's VerseGalaxy with MushafMap; commit 6d54be0 deleted VerseGalaxy.tsx.",
+   "severity": "minor"
+  }
+ ],
+ "proposals": [
+  {
+   "title": "Commit the regenerated network-1..5.json (already verified, sitting untracked in the working tree) and document the script as a manual must-rerun step",
+   "rationale": "This is the actual fix for «لا تعمل». I already ran `node js/scripts/export-network.mjs` and confirmed the 5 output files are schema-correct and consistent with the deployed DB (js/apps/studio/public/quran-app.db's md5 matches the committed quran-app.db.gz from 2026-07-10, so the regenerated network is not stale relative to production). They are currently untracked — `git status` shows network-1..5.json as ?? — ready to add/commit. Also add one line to js/data/README.md (or a CLAUDE.md) listing export-network.mjs and export-verse-network.mjs as offline precompute steps NOT wired into build/CI, so the next dead-file sweep greps for the filename stem instead of exact names, or explicitly checks Galaxy.tsx's template-literal fetch before deleting.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Root families by shared biliteral core (الأصل الثنائي), grounded in ابن فارس's مقاييس اللغة",
+   "rationale": "Verified with real data: the 1651 roots reduce to 486 distinct first-two-radical cores, with 194 families of ≥4 members (a workable grouping density; 126 singletons just render alone). The project already has maqayis.json (6.19MB, keyed by root) — Ibn Fāris's own dictionary is literally organized around \"هذا أصلٌ واحد يدلّ على...\" claims for shared bi-radical families, so a families page can show his own philological verdict per group rather than a spatial layout. Reading text instead of staring at unlabeled dots, reuses data already on hand, no new backend/embedding work.",
+   "effort": "day",
+   "needs_swarm": false
+  },
+  {
+   "title": "Co-occurrence heatmap for the top ~60-100 hub roots (by occurrence), as a complement to (or lighter alternative for) the spatial galaxy",
+   "rationale": "export-network.mjs already computes the exact pairwise co-occurrence weights (pairW map) that a heatmap needs — no new data pipeline. An N×N grid colored by shared-verse count is denser-information and more scannable at this node count than a force layout, and slots naturally next to the existing degree-slider (1+..5+) UI. Good for power users who want to *compare* strengths, not just spot clusters visually.",
+   "effort": "day",
+   "needs_swarm": false
+  },
+  {
+   "title": "Semantic clusters of roots via mean-pooled ayah embeddings",
+   "rationale": "ayah_embedding (6236 rows in quran-kg.db) already backs quran-embeddings.bin/quran-neighbors.bin at the verse level (export-embeddings.mjs, export-neighbors.mjs, derive-kulliyat.mjs already show the pattern). Mean-pooling each root's member ayahs into a 1651-root-vector table and clustering (k-means/agglomerative) would surface *semantic* proximity between roots — a genuinely different signal than shared-verse co-occurrence — and could reuse the \"محاور\" naming/labeling approach already built for kulliyat. Bigger lift: needs a new script (root-level pooling + clustering) and a naming pass for clusters; a good candidate to hand to a swarm for the clustering+naming work while the view itself stays simple (list per cluster, not another force graph).",
+   "effort": "days",
+   "needs_swarm": true
+  }
+ ],
+ "section": "شبكة الجذور (views/Galaxy.tsx, route /galaxy)",
+ "how_it_works": "Galaxy.tsx is registered at /galaxy (main.tsx:163,429; nav label \"شبكة الجذور\"/\"Roots network\"). On mount/degree-change it fetches `${BASE_URL}network-${deg}.json` for deg∈{1..5} (Galaxy.tsx:87), caches per-degree, derives an adjacency map + a baked Path2D of the strongest ~2500 edges + Louvain-cluster buckets (buildDerived, Galaxy.tsx:57-72), then renders everything on a single <canvas> with its own pan/zoom/hover/pinch handling (draw(), Galaxy.tsx:128-197) — clicking a star opens a side panel with the Rāghib/Ibn Fāris gloss (via getRoot) and its top co-occurring roots (adj.current), with links out to /roots, /mujam, /fabric for that root.\n\nThe data itself is precomputed OFFLINE by js/scripts/export-network.mjs (not part of any build/CI step): it reads the words/roots tables from js/apps/studio/public/quran-app.db, builds a verse→root-set map, counts shared-verse co-occurrence weight for every root pair, filters to 5 minimum-weight thresholds (≥1..≥5 — this is the \"links\" degree selector in the UI), runs a one-pass Louvain community detection for cluster color, lays the roots out with a seeded d3-force simulation (600 ticks), and writes network-1.json .. network-5.json into public/. quran-app.db itself is built upstream from quran-kg.db by build_qkg.py → convert-to-app-db.mjs (which also produces a `rootEdges` table, 16878 rows — coincidentally identical to the w≥3 edge count export-network.mjs computes independently from `words`, suggesting the two could be unified).",
+ "verdict": "The owner's «لا تعمل» is not a design problem, it's a straightforward regression with a one-line cause and a verified fix: yesterday's dead-code cleanup (6d54be0) deleted network-1..5.json because its reference-audit didn't catch that Galaxy.tsx fetches them through a template literal (`network-${deg}.json`) rather than a literal filename — and since neither TypeScript nor `vite build` can catch a missing runtime-fetched public/*.json, the break shipped straight to production (quran.uts.qa) with a green build. I regenerated all 5 files from the exact DB that's committed/deployed (checksums match) and confirmed the output schema matches what Galaxy.tsx expects field-for-field; they're sitting untracked in the working tree, one `git add` + commit away from unbreaking the page. On the design question: the team has already exercised good judgment here before — the 6236-node verse galaxy was correctly killed as \"a non-functional smudge\" and replaced by a clearer Mushaf-map grid, while this exact 1650-node root galaxy was explicitly kept as \"successful\" in the very same commit, and a third force-graph (رفقاء الكلمة) was already replaced by a ranked list that's now live at /roots/:root. So I'd fix the data first and leave the galaxy as-is short-term (it was working and judged fine at this scale before the regression), then layer in the cheaper, more legible complements — root families by shared biliteral core (philologically grounded in the project's own Ibn Fāris data, verified 194 families of ≥4 members) and a co-occurrence heatmap (reuses the exact data export-network.mjs already computes) — before investing in the heavier semantic-clustering-via-embeddings option."
+}

@@ -1,0 +1,74 @@
+{
+ "findings": [
+  {
+   "issue": "«تشبيهات قرآنية» bucket is ~51% false positives: the «كاف التشبيه» heuristic fires on the generic connective particles «كذلك» (thus/likewise) and «كما» (as/just as, in the sense of manner-of-action) merely because QAC tags their prefixed كَ as pos=P — with no check on what kind of word the كَ attaches to.",
+   "evidence": "js/scripts/export-amthal.mjs:31-40 builds `kaf` from `s0.role===\"prefix\" && s0.pos===\"P\" && norm(s0.text)===\"ك\"` with no check on the STEM segment (segs[1]). Live count: 235 unique ayahs match this rule; word-form breakdown shows كذلك=86 and كما=59 of 247 matched words. I computed the exact overlap against the final similes[] array (257 entries): 130/257 (50.6%) are present ONLY because of a bare كذلك/كما and contain no كمثل/كأن/substantive كاف-noun at all — e.g. 2:73 «فَقُلْنَا ٱضْرِبُوهُ بِبَعْضِهَا ۚ كَذَٰلِكَ يُحْىِ ٱللَّهُ ٱلْمَوْتَىٰ» and 2:151 «كَمَآ أَرْسَلْنَا فِيكُمْ رَسُولًا» — neither is a rhetorical simile. Root cause identified via quran-kg.db segment table: the stem after كَ has pos=\"DEM\" for كذلك and pos=\"SUB\" for كما (both pos_basic values differ), whereas genuine similes (كصيّب، كمثل، كشجرة) and legitimate implicit comparisons (كمن، كالذي — pos=\"REL\") have a real nominal stem. Excluding stems with pos in {DEM,SUB} cuts similes from 257→129 cleanly, removing exactly the noise while preserving all substantive comparisons.",
+   "severity": "critical"
+  },
+  {
+   "issue": "The «مضروبة» (parables) vs «تشبيهات» (similitudes) split is a linguistic accident (does root ضرب happen to co-occur with root مثل in the exact same ayah?), not the classical genre distinction. Several of the Qur'an's most famous مثل مصرّح (canonical parables) are consequently mislabeled as mere «تشبيهات».",
+   "evidence": "Checked roots directly: 29:41 (العنكبوت/spider — «مَثَلُ الَّذِينَ اتَّخَذُوا... كَمَثَلِ الْعَنكَبُوتِ»), 62:5 (donkey carrying books), 7:176 (the dog), 2:17 (fire-kindler) all contain root مثل but NOT root ضرب in that ayah — so export-amthal.mjs:27-28,43 puts them in similes, not parables. A reader browsing «أمثالٌ مضروبة» in Amthal.tsx:101-105 will never see the spider, the dog, or the donkey there; they appear only under «تشبيهاتٌ قرآنية» (Amthal.tsx:106-110), whose own subtitle text says «تشبيهٌ يُقرِّب المعنى بنظيرٍ محسوس» (a mere rhetorical comparison) — understating that these ARE full didactic أمثال.",
+   "severity": "major"
+  },
+  {
+   "issue": "Completeness gap: 91 of the 148 ayahs carrying root مثل are absent from the page altogether, and at least one canonical مثل مصرّح is missing entirely — 13:35 «مَّثَلُ الْجَنَّةِ الَّتِى وُعِدَ الْمُتَّقُونَ» (the Paradise parable), because it uses bare «مثل» (no ضرب co-occurrence, no «كمثل», no كاف/كأن marker).",
+   "evidence": "Computed set difference: mithlAyahs(148) − (parables∪similes from amthal.json) = 91 locs, including 13:35. Its near-twin 47:15 (same opening «مَّثَلُ الْجَنَّةِ...») IS captured, but only incidentally via the unrelated comparison «كَمَنْ هُوَ خَالِدٌ فِى النَّارِ» later in the same ayah — an arbitrary inclusion/exclusion asymmetry between two parallel verses that shows the marker approach is fragile for the «مصرّحة» category (most of the 91 excluded ones are legitimately non-parabolic uses of «مثل» meaning \"like/equal-to\", e.g. 2:23 «بسورة من مثله», 4:11 share-language — but 13:35 is a clean miss of a top-tier classical مثل).",
+   "severity": "major"
+  },
+  {
+   "issue": "Multi-ayah parables are shown as a single trigger verse, with the actual narrative/content of the parable never displayed — the section shows only the \"topic sentence\", not the parable itself.",
+   "evidence": "18:32 (two-gardens parable, «وَٱضْرِبْ لَهُم مَّثَلًا رَّجُلَيْنِ...») is present in parables[], but 18:33 through 18:44 — the dialogue, the ruin of the garden, the moral — are absent from the page entirely (checked all 13 locs, none present). Same for 36:13 (people of the town, «وَٱضْرِبْ لَهُم مَّثَلًا أَصْحَـٰبَ ٱلْقَرْيَةِ»): 36:14-32 (the messengers, the martyr, the destruction) are entirely absent. A user reading the parable card sees one clause and a link into the reader, not the parable's substance.",
+   "severity": "major"
+  },
+  {
+   "issue": "No pairing of any مثل with an explanation of its مضرِب (what it illustrates) or مورد (occasion) — the task's explicit ask — even though the codebase already has two ready-made resources for this that go entirely unused by Amthal.tsx.",
+   "evidence": "Amthal.tsx:59-64 renders only `arName(loc)` + `highlightVerse(texts.get(loc)?.textUthmani, q)` + a Link to the reader — no explanatory text anywhere. Yet js/apps/studio/src/books.ts already exposes an attributed, verse-anchored tafsir lookup (`bookTextAt(source, loc)`, `tafsirFor(loc)`, used today only by TafsirChip.tsx) over 24 cited tafsir books in js/data/tafsir/*.jsonl (muyassar, saadi, jalalayn, ibnkathir, …). Separately, quran-kg.db's `ayah_tafsil` table already has a `rel='مثال'` relation (1047 rows, 937 with review='confirm') linking abstract \"hub\" ayahs to illustrative example-ayahs — e.g. tafsil_ayah_id for 16:75 (the owned-slave parable) is linked (rel='مثال', review='confirm') to hub ayahs 29:62 and 43:32 about God apportioning provision — precisely the \"what does this parable illustrate\" relation the task asks for. Only 43/286 amthal.json locs overlap with مثال-tagged tafsil ayahs today (it's a broader concept than literary أمثال), but it's a real, already-built, reviewed asset that is not wired into this section at all.",
+   "severity": "major"
+  },
+  {
+   "issue": "export-amthal.mjs reads the legacy `quran-app.db` (monlite doc-store schema, table `words` with a denormalized `segments` JSON blob) rather than the canonical `quran-kg.db` (relational `word`/`segment`/`root` tables) that the rest of the KG pipeline (ayah_tafsil, ayah_principle, root_meaning, embeddings) is built on.",
+   "evidence": "export-amthal.mjs:16 `const DB = path.join(ROOT, \"quran-app.db\")`. Row counts happen to match today (both report 77,429 words / 6,236 ayahs), so results are currently consistent, but this script is the only one in the «الموضوعات» nav group depending on the old DB — any future divergence between the two DBs (e.g. a QAC correction applied to one but not the other) would silently desync أمثال from the rest of the KG-derived content.",
+   "severity": "minor"
+  },
+  {
+   "issue": "No category exists at all for «الأمثال الكامنة» (implicit parables — didactic comparisons that never use the lemma مثل, e.g. proverbialized ayat), which classical أمثال-القرآن literature treats as a standard third class alongside مصرّحة and تشبيهات بالكاف.",
+   "evidence": "Amthal.tsx only exposes `kind: \"all\" | \"parables\" | \"similes\"` (line 29) and export-amthal.mjs has no code path for مثل-less implicit comparisons at all — the concept is simply not represented, and can't be, purely deterministically, since implicit parables are identified by classical scholarly judgment rather than a lexical marker.",
+   "severity": "minor"
+  }
+ ],
+ "how_it_works": "أمثال القرآن (route /amthal, nav group «الموضوعات») is built by js/scripts/export-amthal.mjs, a fully deterministic script — no tafsir, no LLM judgment — that reads the legacy `quran-app.db` (`words` table: surahNo/ayahNo/textClean/root/segments-JSON) and writes js/apps/studio/public/amthal.json with two flat arrays of \"s:a\" locations:\n• parables (مضروبة, 29 verses): ayahs where BOTH root ض-ر-ب and root م-ث-ل occur together (export-amthal.mjs:27-28,43).\n• similes (تشبيهات, 257 verses): ayahs matching ANY of — a word starting with «كمثل» (line 29), a word starting with «كأن» (line 30), or a word whose first morphological segment is a كَ-prefix tagged as a preposition (لines 31-40, the «كاف التشبيه» heuristic) — minus anything already counted as a parable (lines 44-45).\n\nThe two categories were built by the SAME script in the SAME provenance/methodology across two commits: db363ba (2026-07-11) shipped parables(29)+similes(14, كمثل-only); 9f722d9 (2026-07-12) broadened the similes definition to add the كاف-prefix heuristic + كأن, growing similes 14→257. So the owner's \"history of adding altashbih\" did not introduce a different data pipeline or a model-judged layer — it's the identical deterministic script with a much looser (and, as shown below, much noisier) pattern rule for the second bucket.\n\nAmthal.tsx fetches amthal.json, renders two `group()` sections (parables/similes) each just listing arName(loc) + the single ayah's highlighted text + a Link into the reader (Amthal.tsx:48-68, 101-110) — no explanation, no مضرِب/مورد pairing, no ayah-range for multi-verse parables, filtered only by PageSearch/fuzzyMatch over the verse text and surah name.",
+ "proposals": [
+  {
+   "title": "Fix كاف-التشبيه precision using the stem's real POS (DEM/SUB exclusion)",
+   "rationale": "Verified fix: exclude كاف-prefix hits whose following stem segment has pos='DEM' (كذلك) or pos='SUB' (كما) — both already present as a field in quran-app.db's segments JSON, no DB migration needed. This removes exactly the 128-130 noise entries (257→129) while preserving all substantive comparisons (كصيّب، كمثل، كشجرة) and legitimate relative-pronoun comparisons (كمن، كالذي, pos='REL', kept). One-line change to the existing loop in export-amthal.mjs:31-40, then rerun + commit amthal.json.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Re-tier into three classical categories: مصرّحة / كامنة / تشبيهات بالكاف, with a swarm-assisted classification + owner review for the parts that can't be pure regex",
+   "rationale": "مصرّحة (explicit, uses lemma مثل/أمثال as the noun of comparison) needs a semantic pass — not every root-مثل ayah is a parable (e.g. 4:11 share-language vs 13:35 Paradise parable) — so run a claude-swarm classification over the 148 root-مثل ayahs (same pattern already used for ayah_principle/ayah_tafsil: `source='claude-swarm-pass-x'` + `review` column) to tag مصرّح-parable vs not, surfacing misses like 13:35. كامنة (implicit, no مثل lemma at all) genuinely requires scholarly judgment — seed candidates from the EXISTING ayah_tafsil rel='مثال' relation (937 confirmed rows) plus a targeted swarm pass, with an explicit review gate before shipping, exactly like the project's existing ayah_principle convention. تشبيهات بالكاف stays deterministic (fixed heuristic above).",
+   "effort": "days",
+   "needs_swarm": true
+  },
+  {
+   "title": "Show each parable's full ayah range, not just the trigger verse",
+   "rationale": "18:32 (two gardens) and 36:13 (people of the town) currently show only the topic sentence; the actual parable content (18:33-44, 36:14-32) never appears. Add a small curated `{start, end}` override table for the ~30-70 multi-ayah entries (trivial size, hand-built once with tafsir cross-check, or LLM-assisted boundary detection + owner spot-check for speed) and render the full span in the reader-linked card instead of a single ayah.",
+   "effort": "day",
+   "needs_swarm": true
+  },
+  {
+   "title": "Pair every مثل/تشبيه with an attributed مضرِب explanation, reusing existing data — no new data pipeline needed",
+   "rationale": "Wire in what's already built: (a) reuse `bookTextAt`/`tafsirFor` from books.ts (already powering TafsirChip.tsx) to show one short, attributed tafsir excerpt per parable ayah (default muyassar, same UX pattern already shipped elsewhere); (b) where a تفصيل link exists (`ayah_tafsil` rel='مثال', review!='reject'), surface \"هذا مثالٌ على⟶ hub ayah\" as a direct pointer to the abstract principle it illustrates — this is real, reviewed data already in quran-kg.db, just never queried by this export script. A short swarm pass to condense the (often multi-paragraph, multi-ayah) tafsir excerpt into a one-line مضرِب label per parable would raise this from \"raw tafsir dump\" to genuinely useful presentation, matching the project's \"presentation over data volume\" principle.",
+   "effort": "day",
+   "needs_swarm": true
+  },
+  {
+   "title": "Migrate export-amthal.mjs from legacy quran-app.db to canonical quran-kg.db",
+   "rationale": "Every other پipeline in الموضوعات/الكلّيّات reads quran-kg.db's relational word/segment/root tables (which also expose pos more cleanly for proposal #1's fix, without JSON-parsing a blob per word). Counts match today (77,429 words / 6,236 ayahs in both) so this is low-risk tech-debt cleanup, not a data fix, but removes a silent-desync risk and lets this script benefit from any future QAC corrections applied only to quran-kg.db.",
+   "effort": "hours",
+   "needs_swarm": false
+  }
+ ],
+ "section": "أمثال القرآن (views/Amthal.tsx)",
+ "verdict": "The section is honestly labeled as computed-from-text-not-tafsir and the \"مضروبة\" (29) bucket is clean and correctly verified — every entry genuinely contains «ضرب … مثلاً». But the \"تشبيهات\" bucket (257, added in a later commit using the same deterministic script, not a different provenance) is roughly half noise: the كاف-التشبيه heuristic fires on the generic particles كذلك/كما with no check on what they attach to, which I traced to a precise, fixable root cause in the QAC POS tags already present in the data (DEM/SUB stems vs real nominal stems). Beyond precision, the section conflates the classical مصرّحة/كامنة/تشبيه taxonomy into an accidental two-way split driven by whether ضرب happens to co-occur in the same ayah — so some of the Qur'an's most iconic parables (spider, dog, donkey) are shown as mere \"similitudes,\" one canonical parable (13:35, Paradise) is missing outright, and multi-ayah parables (two gardens, people of the town) are truncated to a single topic sentence with their actual content never shown. Most importantly for the task's own ask: there is no مضرِب/مورد pairing at all today, even though the codebase already has both an attributed 24-book tafsir layer (books.ts) and a reviewed تفصيل layer with a ready-made rel='مثال' relation (937 confirmed rows) that were never wired into this view. All of this is fixable without inventing new infrastructure — a small deterministic fix, a modest curated-range table, and reuse of two data assets that already exist in the codebase."
+}

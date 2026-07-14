@@ -1,0 +1,80 @@
+{
+ "findings": [
+  {
+   "issue": "~40% of manually-verified entries are false positives: the 2-means embedding split captures narrative/topical bimodality (e.g. paradise-context vs hell-context, one story's episode) rather than a genuine change in the word's meaning, then presents it under the label 'وجه' (classical technical term for a distinct sense).",
+   "evidence": "Sampled 12/80 entries and checked each verse group against the actual root's المفردات (Rāghib al-Isfahānī) entry, which is already in the app (public/mufradat.json). خالِد/خلد (wujuh.json, n=74, faces 38/36): face1 = eternity-in-paradise verses (9:89, 98:8, 4:57...), face2 = eternity-in-hell verses (64:10, 2:39, 7:36...) — mufradat.json['خلد'] gives ONE unified sense ('الخُلُود: هو تبرّي الشيء من اعتراض الفساد وبقاؤه على الحالة التي هو عليها') with no second sense; the split is purely which affterlife-destination the verse describes, not a different meaning of خالد. جَرَيْ/جري (n=57): face1 = ships 'running' on the sea (22:65, 45:12...), face2 = rivers 'flowing' under gardens (85:11, 9:89...) — mufradat.json['جري'] = one sense ('الجَرْي: المرّ السريع كمرّ الماء') applied to two different subjects. مِلَّة/ملل (n=15, the single HIGHEST-scoring entry in the whole 492-word scan, score=0.077): face1 = 'اتّبِعوا مِلّةَ إبراهيم' (Abraham's creed, positive), face2 = 'لتعودُنّ في مِلّتِنا' (the disbelievers demanding a return to THEIR creed) — mufradat.json['ملل'] gives one sense (المِلّة كالدّين) with no second meaning; the split is by referent (whose creed), not by word-sense. وَجْه/وجه (n=66): face1 = commands to 'turn your face' toward the qibla (2:149-150, 30:30...), face2 = descriptions of '(وجوه يومئذ) ناضرة/باسرة' on Judgment Day (75:22-24, 88:2, 80:38-40) — both are the literal 'face' sense; mufradat.json['وجه'] documents the REAL polysemy of this root (الجارحة vs الذات: 'ويبقى وجه ربك... قيل ذاته' / التوجّه إلى الله), which the computed split entirely missed.",
+   "severity": "critical"
+  },
+  {
+   "issue": "The ranking score (embedding-cluster separation × group-balance) does not track genuine-polysemy likelihood, so the section's default order actively surfaces weak/false examples before strong ones.",
+   "evidence": "export-wujuh.mjs:128-130 computes score = sep*balance purely from vector geometry. In the 492-word scan, the #1 ranked entry by score (مِلَّة, score 0.077) is the false-positive described above (referent-split, not sense-split), while a textbook classical وجه — يَمِين (oath vs. right-hand/أصحاب اليمين, clearly attested in mufradat.json['يمن']) — ranks far lower (score 0.056, ~14th of 80). Nothing in the pipeline or UI distinguishes 'high score' from 'linguistically real'; readers see مِلَّة first.",
+   "severity": "major"
+  },
+  {
+   "issue": "Even the single most-separated word in the entire scanned set is only weakly bimodal, meaning the top-80 cutoff is not evidence of real two-sense structure — it is just 'the least-similar centroids available' in a field where ALL words show high residual similarity.",
+   "evidence": "Recomputed cosine similarity between each word's two face-centroids from score/balance (score = (1-cosSim)*balance): across the 80 kept words, cosSim ranges from 0.892 (best/most-separated: مِلَّة, itself a false positive per above) to 0.963 (worst still-featured), median 0.946. A textbook, real polysemy word like استوى (استوى على العرش vs. لا يستوي/'not equal') sits at cosSim≈0.9245 — barely better than the pool median. k-means will always produce SOME 2-way split of a continuous embedding cloud; without a null-model or threshold test, ranking by raw separation cannot itself certify a genuine sense distinction.",
+   "severity": "major"
+  },
+  {
+   "issue": "The 'characteristic context' keys shown per face (marketed as 'أبرز ما يقترن به') are dominated by hyper-frequent Qur'anic function/name words rather than true distinctive collocates, because export-wujuh.mjs's distinctive() has no idf/rarity weighting.",
+   "evidence": "export-wujuh.mjs:62-71 ranks keys purely by raw count-difference (ca-cb) with no normalization by the word's overall corpus frequency. Tallying all 80 words' face keys (912 total key slots, wujuh.json): 'اللَّه' appears as a listed 'characteristic' key in 67 of 160 faces (42%), 'قالَ' in 47, 'كانَ' in 46, 'رَبّ' in 34 — simply because these are the most frequent words in the whole Qur'an (اللَّه appears ~2700+ times), so any 20-40-verse subset will show SOME raw-count skew toward them by chance, not because they diagnose a sense. This makes the one feature meant to help the reader 'judge' (Wujuh.tsx:44-48, jw comment '/* honest approximation... the reader judges */') mostly noise for a large fraction of entries.",
+   "severity": "major"
+  },
+  {
+   "issue": "The app already ships full classical دواوين entries (الراغب الأصفهاني's المفردات and ابن فارس's مقاييس اللغة) for 80% of the featured roots — the exact resource that would let the reader (or the pipeline itself) confirm/refute each computed split — but Wujuh.tsx never surfaces or links to them.",
+   "evidence": "js/apps/studio/public/mufradat.json and public/maqayis.json contain full per-root classical text and are already rendered at /mujam/:root (src/views/Mujam.tsx:1-9, 'المفردات... و«مقاييس اللغة»... نصُّها كما هو'). Checked programmatically: 64/80 (80%) of wujuh.json's words have a mufradat.json entry, 63/80 have maqayis.json. Wujuh.tsx's root chip (line 71-77) only links to /roots/:root (usage stats), never to /mujam/:root (the actual dictionary text) — despite both routes living in the same 'الجذور واللغة' nav group (main.tsx:160-172) one item apart.",
+   "severity": "major"
+  },
+  {
+   "issue": "The page title reuses the exact name of a real classical discipline ('الوجوه والنظائر', associated with مقاتل بن سليمان, الدامغاني, ابن الجوزي) for a statistically-computed artifact that, per the above, is wrong on independent verification roughly 40% of the time in a 12-entry manual sample — creating a mismatch between the section's implied authority and its actual reliability, even though the in-page copy (Wujuh.tsx:126-129) does honestly disclose 'not copied from books of وجوه ونظائر'.",
+   "evidence": "Wujuh.tsx:125 Arabic title is literally 'الوجوه والنظائر' with no qualifier in the heading itself (the '(computed)'/'(محسوبة)' qualifier only appears in the source comment at line 2, not in the rendered h1); the nav label (main.tsx:165) is also the bare classical term. A reader who trusts the heading and then sees e.g. 'خالِد له وجهان' would reasonably but incorrectly conclude the Qur'an uses خالد with two different meanings.",
+   "severity": "minor"
+  },
+  {
+   "issue": "twoMeans() is hard-coded to exactly k=2 (export-wujuh.mjs:83-117), so words the classical genre documents with 3+ senses cannot ever be represented correctly, and the UI's 'N senses' branch for >2 is dead code.",
+   "evidence": "export-wujuh.mjs:136-145 always pushes exactly 2 entries into faces:[...]. Wujuh.tsx:79 has a ternary for w.faces.length === 2 ? 'وجهان' : '${num(w.faces.length)} أوجه' that can never take the second branch given current data, since every word in wujuh.json has faces.length === 2 (verified: no word has 1 or 3+ faces).",
+   "severity": "minor"
+  }
+ ],
+ "proposals": [
+  {
+   "title": "Ground every entry in the classical دواوين already in the app (المفردات/مقاييس) instead of showing raw verse lists in isolation",
+   "rationale": "64/80 (80%) of featured roots already have full الراغب/ابن فارس text sitting unused in mufradat.json/maqayis.json, rendered elsewhere at /mujam/:root. Surfacing an excerpt (or a direct link) per WordCard lets the reader immediately check whether the computed split matches a real documented sense — this is the single highest-value, lowest-cost fix, and directly answers task 4's 'link to المفردات entries' ask.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Add a corroboration signal/badge per entry: 'موافقٌ لِما في المعجم' vs 'تجميعٌ سياقي لم يؤكّده المعجم'",
+   "rationale": "Because the mufradat text is already present for most roots, a lightweight check (does the root's classical entry describe ≥2 distinguishable senses, vs one unified sense applied to different referents/topics) can retroactively label each of the 80 entries. This directly fixes the finding that ranking score doesn't track truth (مِلَّة ranks #1 despite being a false positive) by giving readers (and the sort order) an actual ground-truth signal instead of raw cosine separation.",
+   "effort": "day",
+   "needs_swarm": false
+  },
+  {
+   "title": "Replace the arbitrary top-80-by-separation cutoff with a null-model/threshold test",
+   "rationale": "Measured cosine similarity between the two face-centroids across the current top-80 ranges only 0.892–0.963 (median 0.946) — even the 'clearest' split is weak, consistent with k-means always finding SOME cut in a largely unimodal, topic-driven embedding cloud. Comparing each word's observed separation against a null distribution (e.g. random same-size verse-subset splits) would let the tool only surface genuinely outlying, non-arbitrary splits rather than 'least-similar-of-a-uniformly-weak-field'.",
+   "effort": "day",
+   "needs_swarm": false
+  },
+  {
+   "title": "Fix distinctive() to use idf/rarity-weighted collocates instead of raw count-difference",
+   "rationale": "'اللَّه' currently shows up as a 'characteristic context' key in 42% of all faces purely because it's the most frequent word in the Qur'an, not because it discriminates a sense — this actively misleads readers who rely on the keys chips to judge the split (the section's own stated mechanism for letting 'القارئ يحكم'). Weighting by corpus frequency (idf/PMI) or excluding a stoplist of top Qur'anic function/name words is a small, mechanical change to export-wujuh.mjs's distinctive().",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Allow k>2 (or gate to k=2 only when corroborated) instead of forcing exactly two groups",
+   "rationale": "Classical وجوه والنظائر entries routinely list 3-15+ senses per word (e.g. هدى); forcing k=2 both under-represents real richly-polysemous words and, per the manual sample, frequently produces a spurious binary split (topic A vs topic B) for words that in truth have one sense used across varied contexts. Trying k=2 vs k=3 and picking by corroboration-with-mufradat or silhouette score would better match the genre and also retire the dead 'N senses' UI branch.",
+   "effort": "days",
+   "needs_swarm": false
+  },
+  {
+   "title": "Stop-gap: add an explicit 'قيد المراجعة' review banner now, reusing the Kulliyat pattern, until the corroboration fix lands",
+   "rationale": "Kulliyat.tsx:122-132 already has a shipped, in-house UI pattern (kl-disclaimer / kl-review classes) for exactly this situation — an interim, honest 'read this as exploratory, not verdicts' banner. Given the ~40% false-positive rate found on manual sampling, the cheapest immediate risk-reduction is to add the same banner to Wujuh (explicitly noting some splits reflect narrative topic rather than word-meaning, and pointing to the root's مفردات entry as the way to check) rather than let the section stand unqualified while the real fixes are built.",
+   "effort": "hours",
+   "needs_swarm": false
+  }
+ ],
+ "section": "الوجوه والنظائر (js/apps/studio/src/views/Wujuh.tsx, public/wujuh.json, js/scripts/export-wujuh.mjs)",
+ "how_it_works": "export-wujuh.mjs (run via `node scripts/export-wujuh.mjs`, comment at lines 1-9) is the sole builder of wujuh.json — there is no classical كتاب الوجوه والنظائر source (مقاتل/الدامغاني/ابن الجوزي) involved anywhere in the pipeline; it is purely computed. For every content lemma with a root that occurs in ≥14 distinct verses (MIN_VERSES, line 18; 492 lemmas qualify, wujuh.json meta.scanned), it pulls each occurrence-verse's pre-existing Gemini ayah embedding (768-dim, ayah_embedding table, normalized at lines 24-35), runs a 2-means clustering (twoMeans(), lines 83-117, forced k=2, 25 iterations, cosine similarity via dot product on unit vectors) to split the verse set into exactly two groups, and keeps only lemmas whose two groups both have ≥3 verses. It scores each split as `sep * balance` (lines 128-130: sep = 1 − cosineSim(centroidA, centroidB); balance = min(|A|,|B|)/max(|A|,|B|)) — a pure embedding-geometry signal, then sorts descending and keeps the top 80 (out of 492) as 'candidates' (words.sort + slice(0,80), lines 149-150). For each kept word it also computes 'characteristic context' keys per face (distinctive(), lines 61-71): the co-occurring content-lemmas that appear more often in group A's verses than group B's (plain count-difference, no frequency normalization), used purely as a display aid, not as part of the score. The React view (Wujuh.tsx) fetches wujuh.json, shows a header disclaimer (lines 126-129) stating this is 'a COMPUTED approximation... not from a وجوه-ونظائر book', then renders each word as a collapsible card (WordCard, lines 64-92) with exactly two 'وجه' panels (Face, lines 33-62), each showing its verse count, its 'characteristic context' key-chips, and up to 5 (expandable to all) linked verses ranked by proximity to that face's centroid. No gloss/definition of the purported sense is ever shown, and no link to any classical lexicon is rendered, even though the app already carries full المفردات (الراغب الأصفهاني) and مقاييس اللغة (ابن فارس) text per-root (public/mufradat.json, public/maqayis.json) and renders it at the separate /mujam/:root route (Mujam.tsx).",
+ "verdict": "The section is honestly labeled as computed rather than drawn from the classical genre it names — but 'honestly disclosed' is not the same as 'sound', and the owner's doubt is well-founded. Manually cross-checking 12 of the 80 featured words against the Qur'an text and against the app's own المفردات entries (which exist for 80% of these roots but are never consulted or linked) found roughly 5 genuine, classically-recognizable وجوه (استوى، يمين، عين، ضرب، ملكت) sitting alongside 5 clear false positives where the 'two senses' are really the same single meaning split by narrative topic — eternity-in-paradise vs eternity-in-hell for خالد, ships vs rivers 'flowing' for جري, Abraham's creed vs disbelievers' creed for ملة, and qibla-direction vs Day-of-Judgment for وجه (which even misses that root's REAL, mufradat-documented polysemy of ذات/توجّه). The ranking score doesn't help a reader tell these apart — the single top-ranked word in the entire 492-word scan (مِلَّة) is a false positive — and even the best-separated entry in the whole top-80 has only modest embedding separation (centroid cosine similarity 0.89, median 0.946), consistent with k-means simply cutting a mostly-continuous, topic-driven semantic cloud rather than finding truly disjoint senses. The 'characteristic context' keys meant to help the reader judge are themselves dominated by hyper-frequent words like الله/قال/كان (appearing as 'distinctive' in 30-40%+ of all faces) rather than real diagnostic collocates. None of this means the underlying idea is worthless — embedding-based sense-splitting can be a legitimate discovery tool — but as shipped it should not be trusted or promoted under the classical genre's name without changes: at minimum, wire in the mufradat/maqayis text that's already sitting in the codebase as a corroboration check and reader-facing citation, and until that lands, add the same 'قيد المراجعة' disclaimer pattern already used for Kulliyat so the section doesn't quietly present topic-clustering as lexical fact."
+}

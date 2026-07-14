@@ -1,0 +1,85 @@
+{
+ "section": "الفروق اللغوية (Lisan.tsx / export-lexnet.mjs / lexnet.json)",
+ "how_it_works": "One computed semantic network is built once by js/scripts/export-lexnet.mjs and shipped as public/lexnet.json (539KB, 1603 roots); Lisan.tsx (route /lisan) is a pure client-side consumer of that file plus the live DB.\n\nBuild pipeline (export-lexnet.mjs): for every QAC root that carries a classical lexicon entry (from quran-app.db `roots.data`, itself pre-joined from quran-kg.db's `root_meaning` table against مقاييس ابن فارس + المفردات الراغب — 1603 of 1651 total roots, 97%), it (1) builds an `embedText` = root + de-noised مقاييس core sense (600 chars) + de-noised الراغب prose (900 chars), capped at 1500 chars; (2) embeds it with gemini-embedding-001 (768-dim, SEMANTIC_SIMILARITY), cached in .lexnet-vecs.bin so reruns are free; (3) computes each root's cosine-nearest 12 roots above 0.60 ('near', directed, NOT symmetrised) — this is «مترادفاتها المحوسبة»; (4) greedily grows disjoint 3-10 member 'fields' from strong (≥0.855) *mutual* neighbours seeded by highest-occurrence root — this is «الحقول الدلالية»; (5) separately, scans only الراغب's prose for sentences opening with one of four fixed phrases (الفرق بين / أخصّ من / أعمّ من / أبلغ من) and lifts up to 3 verbatim sentences per root as `contrast` — the only human/scholar-authored text in the whole feature; everything else is machine-computed, never generated/composed by the model.\n\nRuntime (Lisan.tsx): fetches lexnet.json once; user picks word A (fuzzy search over all roots with lexicon entries, `rootsWithMeanings()`), then either picks from A's `near` chips or searches word B directly; the two `Column`s render side-by-side: root+occurrence chip, al-Rāghib's verbatim `contrast` quotes (if any), full مقاييس text, full المفردات text (word-boundary-unaware clip at 460 chars with an expand button), and a live sample of up to 8 Qur'anic attestation verses (fetched per-root from the DB, root highlighted token-by-token). The 'fields' tab just lists the 167 precomputed clusters as clickable chip groups that seed the compare flow. Nothing is judged or ranked by the model at request time — the app is a live viewer over one static precomputed JSON plus on-demand DB lookups for verses/full lexicon text.",
+ "findings": [
+  {
+   "issue": "Extracted «فرّق الراغب» quotes are systematically truncated at the first Arabic comma, dropping the explanatory second half of the very distinction they exist to show.",
+   "evidence": "js/scripts/export-lexnet.mjs:78 splits al-Rāghib's prose on `/(?<=[.،؛])\\s+/` — treating «،» as a sentence end. Classical Arabic uses «،» as an internal clause connector, so most «الفرق بين X و Y أنّ…» constructions get cut before the part that defines Y. Concrete cases (full source vs. what lexnet.json actually stores): بسل → shown: «والفرق بين الحرام والبَسْل أنّ الحرام عامّ فيما كان ممنوعا منه بالحكم والقهر،» (defines الحرام only); source continues «والبسل هو الممنوع منه بالقهر» — the definition of بسل itself, the whole point of the comparison, never survives. Same pattern for حسن (cuts before the explanation of الحسنى), غير (cuts right before «فإنّ الغيرين قد يكونان متّفقين في الجواهر بخلاف المختلفين…»), جزع (cuts before «فإنّ الحزن عام والجزع هو حزن يصرف الإنسان...»), and أمد (cuts before the parallel «والزمان عامّ في المبدأ والغاية»). This affects the majority of the 42 roots that carry any contrast text at all.",
+   "severity": "major"
+  },
+  {
+   "issue": "Only 42 of 1603 roots (2.6%) surface an explicit «فرق» quote, because extraction requires the sentence to contain one of four fixed trigger phrases (الفرق بين / أخصّ من / أعمّ من / أبلغ من) and only scans مفردات (never مقاييس). Real distinctions phrased naturally are missed entirely.",
+   "evidence": "js/scripts/export-lexnet.mjs:62,72 (`CONTRAST_OK` regex; `raq = ms.find(m=>m.key===\"mufradat\")`). Concrete miss: for عوم (root of «عام»), الراغب's own entry reads: «العَامُ كالسّنة، لكن كثيرا ما تستعمل السّنة في الحول الذي يكون فيه الشّدّة أو الجدب... والعام بما فيه الرّخاء والخصب» — a textbook عام/سنة distinction, sitting in the corpus already — yet it produces zero contrast entries for عوم because it opens with «كالسّنة، لكن» rather than the four whitelisted openers. مقاييس's own comparative remarks (which exist for many roots) are never scanned at all.",
+   "severity": "major"
+  },
+  {
+   "issue": "Embedding-based nearest-neighbour discovery misses several canonical near-synonym pairs that classical الفروق اللغوية literature treats as core cases — including one of the owner's own coverage-check examples (عام/سنة).",
+   "evidence": "Computed full-corpus cosine ranks (script run against .lexnet-vecs.bin, 1602 candidates per root): عام(عوم)→سنة(سنو) rank 33/1602 (cos 0.80), سنة→عام rank 315/1602 — neither appears in the other's displayed top-12 «near» list (js/scripts/export-lexnet.mjs:156-170, NEAR_K=12). Same for ظلم→جور rank 282, جور→ظلم rank 211; حبب→ودد rank 230; فرح→سرور rank 815/334. سنو's own top-12 in lexnet.json is dominated by unrelated agricultural/camel roots (سنم، قنو، صنو، نوق) rather than عوم, likely because ابن فارس's سنو entry emphasises irrigation/السقاية imagery over the 'year' sense.",
+   "severity": "major"
+  },
+  {
+   "issue": "Neighbour edges are directed and truncated at K=12 per root, so a strong pair can appear as a computed synonym from one word's page but not the reverse — an inconsistent discovery experience depending on which word the user opens first.",
+   "evidence": "js/scripts/export-lexnet.mjs:160-170: `near[i]` is each root's own top-12, never symmetrised. Verified example: cos(حلف, قسم)=0.820 → rank 11/1602 from قسم's side (shown as a chip) but rank 15/1602 from حلف's side (not shown, since only top-12 kept). A user starting from «حلف» never sees «قسم» offered as a computed synonym, though the reverse works.",
+   "severity": "minor"
+  },
+  {
+   "issue": "The greedy field-builder can pull thin, rare-occurrence roots into a field via superficial embedding proximity, producing a semantically loose cluster under a legible label.",
+   "evidence": "js/scripts/export-lexnet.mjs:179-200 (FIELD_MIN=0.855, size cap 10). The 9-member «أرض» field (largest in the dataset) includes «رمد» (occ=1, meaning \"ashes/eye disease\", cos 0.858 to أرض) and «رقي» (occ=4, whose أرض-adjacent sense — «بقعة من الأرض» — is a minor/archaic third meaning, not رقي's ordinary \"ascend\" sense). Both are low-occurrence roots whose lexicon entries are short, which the export script itself flags as a risk in comments (\"compressed 0.84+-everywhere cosine space\") but does not mitigate by occurrence-weighting.",
+   "severity": "minor"
+  },
+  {
+   "issue": "«الحقول الدلالية» (semantic fields) tab covers only 37.7% of lexicon-bearing roots; the other 62.3% belong to no field and are simply invisible in that tab, with no copy explaining why.",
+   "evidence": "Computed from lexnet.json: 605 of 1603 roots appear in the 167 fields (min size 3, avg 3.62, max 9); the remaining 998 roots were claimed as a seed then released for having <3 mutual strong neighbours (js/scripts/export-lexnet.mjs:198-199) and never resurface elsewhere in the fields tab.",
+   "severity": "minor"
+  },
+  {
+   "issue": "Column's text-clipping cuts at a fixed character offset without regard to word boundaries, risking a truncated word right before the ellipsis.",
+   "evidence": "js/apps/studio/src/views/Lisan.tsx:59-60: `const clip = (txt) => (!expanded && txt.length > CAP ? \\`${txt.slice(0, CAP)}…\\` : txt);` with CAP=460 — no `lastIndexOf(\" \")` backoff.",
+   "severity": "minor"
+  },
+  {
+   "issue": "public/mufradat.json and public/maqayis.json (the files named in the task brief as \"keyed by normalized root\") use a different, coarser root key than lexnet.json/QAC roots — they do not double geminate consonants — so they cannot be merged with lexnet.json's roots without re-running the same join logic already used to populate quran-app.db.",
+   "evidence": "js/scripts/build-lexicons.mjs:24-31 `normRoot()` only strips diacritics/hamza-forms, e.g. keeps «رب» ungeminated, vs. QAC's «ربب». Measured: 274 of lexnet.json's 1603 roots have no matching key in either public/mufradat.json or public/maqayis.json (e.g. أله، ربب، ضلل، أمن، صلو، أخر — all common, present roots, just spelled differently). The correctly-joined full text (matched via quran-kg.db's `root_meaning` table, ~1651 rows) is what export-lexnet.mjs already consumes through quran-app.db `roots.data`; the flat public JSONs serve a different consumer (word-card gloss) and are not a shortcut to \"more/fuller\" text for this feature.",
+   "severity": "minor"
+  }
+ ],
+ "proposals": [
+  {
+   "title": "Stop truncating «فرق» quotes at the Arabic comma",
+   "rationale": "The single highest-leverage, lowest-risk fix: comma-splitting is discarding exactly the explanatory half of most of the 42 existing distinction quotes (بسل, حسن, غير, جزع, أمد all lose their payload). Change the splitter to only break on «.» / «؛» (or greedily rejoin comma-fragments forward to the next true sentence end, raising the length cap to ~600), then regenerate lexnet.json — the embedding cache (.lexnet-vecs.bin) is untouched so this is a zero-API-cost rerun.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Symmetrise the computed-synonym edges",
+   "rationale": "Cosine similarity is symmetric; the top-12 cutoff currently is not. Union each pair's membership after computing all directed top-12 lists (if j∈near[i] add i to near[j] with the same score even if j's own top-12 was full) so a root near the rank-12 boundary (e.g. حلف↔قسم) is discoverable from either side. Pure post-processing step in export-lexnet.mjs, no re-embedding needed.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Broaden contrast extraction beyond the four fixed openers, and scan مقاييس too",
+   "rationale": "The عام/سنة case shows the classical text often states a real distinction in free prose (\"كالسّنة، لكن كثيرا ما...\") that no small regex whitelist will ever fully catch, and ابن فارس's own comparative remarks are never scanned at all. Two complementary moves: (a) widen the trigger vocabulary (لكن، وأكثر ما يقال، ولا يقال إلا، بخلاف as a genuine mid-sentence contrast, not just a sentence opener) and apply it to both lexica; (b) for a higher-recall option, add a bounded Gemini pass per root-with-neighbours that is asked only to locate and quote verbatim (not paraphrase) any sentence in the existing definition that distinguishes it from a named neighbour — preserving the 'surfaced, never invented' principle already stated in the file's own header comment, with a spot-check pass against source text before shipping (the July 12 audit already proved this kind of verification catches problems).",
+   "effort": "day",
+   "needs_swarm": false
+  },
+  {
+   "title": "Seed a small curated list of canonical الفروق اللغوية pairs to backstop embedding gaps",
+   "rationale": "Measured ranks show the embedding space genuinely misses well-established pairs (عام/سنة, ظلم/جور, حبب/ودد, فرح/سرور) that any classical دراسة of الفروق would include — no amount of tuning K/thresholds recovers all of these because the lexicon definitions genuinely emphasise different facets. A hand-curated seed list of ~50-100 well-known pairs (sourced from a public-domain reference such as أبو هلال العسكري's «الفروق اللغوية», if a usable digitisation can be found, similar in spirit to the existing collect-mufradat.mjs ingestion) injected as guaranteed mutual edges (clearly marked as 'a scholar's distinction', separate from the computed ones) would directly plug the gaps this review found, including the owner's own عام/سنة example.",
+   "effort": "days",
+   "needs_swarm": true
+  },
+  {
+   "title": "Surface field-membership and confidence signals in the compare view",
+   "rationale": "Cheap, client-side-only additions that make the computed nature of the data more legible: (a) when two words are both selected, check lex.fields client-side and show a chip if they share a semantic field; (b) show the raw cosine score already present in lexnet.json (e.g. \"تقارب محسوب: 0.87\") next to the synonym chips so users can gauge strength themselves rather than treating all 12 as equal; (c) a light 'occurrences قليلة — تطابق أقل موثوقية' hint when a root's occurrence count is very low (<10), since this review found rare roots (رمد occ=1, رقي occ=4) produce the noisiest neighbour placements.",
+   "effort": "hours",
+   "needs_swarm": false
+  },
+  {
+   "title": "Word-boundary-safe clipping in Column",
+   "rationale": "Trivial correctness/polish fix: back off `clip()`'s slice to the last whitespace ≤ CAP before appending the ellipsis, so a scholar's sentence is never visibly cut mid-word.",
+   "effort": "hours",
+   "needs_swarm": false
+  }
+ ],
+ "verdict": "The mechanism is honest and well-engineered where it is computed — near-synonym discovery and semantic fields are genuinely derived from embeddings of the two classical lexica with no model-invented text, and the UI's framing (\"نحسب ونعرض... لا نُقرِّر\") matches what the pipeline actually does. The July 12 audit fix correctly eliminated garbled/leaked footnote text from the al-Rāghib quotes. But the feature's namesake artifact — the actual «فرق» (distinction) — is thin in both depth and breadth: only 42 of 1603 roots (2.6%) carry one at all, restricted to four fixed trigger phrases scanned in مفردات alone, and even those 42 are routinely truncated at the first comma, dropping precisely the clause that explains the second term being compared. Embedding-based synonym/field discovery is solid for common, thick-entry roots but demonstrably misses several textbook near-synonym pairs (عام/سنة chief among them — literally the owner's own coverage-check example, and the source text already states this exact distinction in prose the extractor doesn't recognize) and produces occasional noisy clusters around rare, thinly-defined roots. None of this is fatal — the underlying two-lexica side-by-side comparison remains genuinely useful even without a quoted فرق — but \"الفروق اللغوية\" currently under-delivers on its own name for all but a handful of roots, and the fixes (comma-truncation, edge symmetry) are cheap, cache-free reruns that would materially improve the 42 existing quotes today, with a same-day extension pass or a curated seed list needed to meaningfully grow the 2.6% figure."
+}
