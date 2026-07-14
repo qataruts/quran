@@ -28,6 +28,7 @@ covered) and `textMB`.
 | `gharib/` | السراج (الخضيري) · الميسّر في الغريب · تحليل كلمات القرآن |
 | `qiraat/` | الموسوعة القرآنية للقراءات · النشر (ابن الجزري) |
 | `asbab/` | المحرَّر في أسباب النزول (المزيني، 198 آية — الصحيح فقط) · أسباب نزول القرآن (الواحدي، 564 آية) |
+| `lexicon/` | المفردات في غريب القرآن (الراغب الأصفهاني، تحقيق الداوودي) — **root-organized**, `{root, letter, text, ayahs}` |
 | `quranpedia/` | `topics.json` (تصنيف موضوعي) · `similar.ndjson` (متشابه) · `qiraat.ndjson` (قراءات لكل كلمة) |
 
 ### Quranpedia structured layers (api.quranpedia.net, per-āyah)
@@ -54,6 +55,9 @@ node scripts/harvest-quranpedia.mjs qiraat
 node scripts/harvest-quranpedia-book.mjs 460 asbab muharrar   # المحرّر (المزيني)
 node scripts/harvest-quranpedia-book.mjs 2919 asbab wahidi    # أسباب النزول (الواحدي)
 #    NB: run book harvests ONE AT A TIME — concurrent runs throttle the API (~20% errors)
+# 2c) المفردات للراغب (root-organized, from Quranpedia's book-contents dump)
+curl -s https://api.quranpedia.net/books-contents/book-353.json -o /tmp/mufradat353.json
+node scripts/collect-mufradat.mjs /tmp/mufradat353.json
 # 3) embed a book for نِبراس (browser int8 path)
 GEMINI_API_KEY=… node scripts/build-book-embeddings.mjs <genre>/<id>.jsonl <id>
 #    then register {id,label} in src/rag.ts BOOK_SOURCES

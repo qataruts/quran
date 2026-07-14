@@ -1808,6 +1808,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .translate-src { color: var(--accent); }
 .asbab-entry { border-inline-start-color: #b5763a; }
 .asbab-src { color: #b5763a; }
+/* المفردات — الراغب, in the word card (lazy, expandable) */
+.muf-block { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.muf-toggle { font-size: 12px !important; padding: 1px 0 !important; color: var(--gold) !important; }
+.muf-text { margin-top: 8px; font-size: 13.5px; line-height: 1.95; color: var(--ink-2, var(--ink)); border-inline-start: 3px solid var(--gold); padding-inline-start: 11px; max-height: 320px; overflow: auto; }
 /* تفسير — pick one source at a time (each loads lazily) */
 .tafsir-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
 .tafsir-tab {

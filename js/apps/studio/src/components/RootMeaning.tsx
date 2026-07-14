@@ -8,21 +8,34 @@ import { Link } from "react-router-dom";
 import { getRoot } from "../db";
 import type { RootDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { hasMufradat, loadMufradatIndex, mufradatFor } from "../mufradat";
 
 export default function RootMeaning({ root }: { root: string }) {
   useUILang();
   const [doc, setDoc] = useState<RootDoc | null>(null);
   const [open, setOpen] = useState(false);
+  const [mufAvail, setMufAvail] = useState(false);
+  const [mufOpen, setMufOpen] = useState(false);
+  const [mufText, setMufText] = useState<string | null | undefined>(undefined); // undefined=unloaded
 
   useEffect(() => {
     let live = true;
     setOpen(false);
     setDoc(null);
+    setMufOpen(false);
+    setMufText(undefined);
+    setMufAvail(false);
     getRoot(root).then((d) => live && setDoc(d));
+    loadMufradatIndex().then(() => live && setMufAvail(hasMufradat(root)));
     return () => {
       live = false;
     };
   }, [root]);
+
+  const openMuf = () => {
+    setMufOpen((v) => !v);
+    if (mufText === undefined) mufradatFor(root).then((x) => setMufText(x));
+  };
 
   if (!doc) return null;
   const ar = getUILang() === "ar";
@@ -84,6 +97,18 @@ export default function RootMeaning({ root }: { root: string }) {
               <span className="muted"> {num(l.occurrences)}</span>
             </span>
           ))}
+        </div>
+      )}
+      {mufAvail && (
+        <div className="muf-block">
+          <button className="chip link muf-toggle" style={{ border: "none" }} onClick={openMuf} aria-expanded={mufOpen}>
+            {ar ? "المفردات في غريب القرآن — الراغب" : "al-Mufradāt — al-Rāghib"} {mufOpen ? "▴" : "▾"}
+          </button>
+          {mufOpen && (
+            <div className="muf-text" dir="rtl">
+              {mufText === undefined ? "…" : mufText ?? (ar ? "—" : "—")}
+            </div>
+          )}
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
