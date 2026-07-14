@@ -1,16 +1,16 @@
 {
  "FWD_K": 20,
- "REV_K": 14,
+ "REV_K": 12,
  "ROOT_K": 10,
  "RARE_OCC": 300,
- "CAP": 32,
- "COS_FLOOR": 0.5,
+ "CAP": 30,
+ "COS_FLOOR": 0.55,
  "NEAR_DUP": 0.95,
  "KAPPA_PAIRS": 600,
  "HUBS_PER_BATCH": 5,
- "hubs": 2507,
- "pairs": 77439,
- "batches": 502,
- "kappaBatches": 53,
+ "hubs": 3542,
+ "pairs": 104687,
+ "batches": 709,
+ "kappaBatches": 56,
  "date": "2026-07-14"
 }
