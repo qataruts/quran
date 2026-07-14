@@ -39,8 +39,17 @@ for (const [hub, links] of Object.entries(jw.tafsil ?? {}))
     }
   }
 
+// v2 evidence layer (the two badges): examined links across the verse cards
+const ev = read("v2-evidence.json");
+let evLinks = 0;
+for (const units of Object.values(ev.verses ?? {}))
+  for (const u of units)
+    for (const locs of Object.values(u.links ?? {})) evLinks += locs.length;
+const evidence = { verses: ev.meta?.versesWithUnits ?? 0, units: ev.meta?.units ?? 0, links: evLinks };
+
 const out = {
   jawami: { principles: jawami.principles, hubs: jawami.hubs, links: jawami.links, rels: relCounts },
+  evidence,
   muhkamat: { count: muhkamat.muhkamat, kubra: muhkamat.kubra, network: muhkamat.network },
   mawdui: { sections: mawdui.sections, topics: mawdui.topics, verses: mawdui.verses },
   furuq: { pairs: furuq.pairs, categories: furuq.categories },

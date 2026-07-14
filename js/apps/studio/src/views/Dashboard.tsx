@@ -259,6 +259,7 @@ function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
 /** The small `meta` roll-up of every knowledge layer (public/layer-stats.json). */
 interface LayerStats {
   jawami: { principles: number; hubs: number; links: number; rels: Record<string, number> };
+  evidence?: { verses: number; units: number; links: number };
   muhkamat: { count: number; kubra: number; network: { nodes: number; giantPct: number; avgHops: number } };
   mawdui: { sections: number; topics: number; verses: number };
   furuq: { pairs: number; categories: Record<string, number> };
@@ -409,17 +410,24 @@ export default function Dashboard() {
                   <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.jawami.links)}</div>
                     <div className="lyr-t">{ar ? "رابط تفصيل" : "tafsil links"}</div>
-                    <div className="lyr-s">{ar ? "٤ علاقات مُراجَعة" : "4 reviewed relations"}</div>
+                    <div className="lyr-s">{ar ? "الجيل الأوّل · ٤ علاقات" : "gen 1 · 4 relations"}</div>
                   </Link>
+                  {layers.evidence && (
+                    <Link to="/about" className="lyr">
+                      <div className="lyr-n">{num(layers.evidence.links)}</div>
+                      <div className="lyr-t">{ar ? "صِلةُ دليلٍ مفحوصة" : "examined evidence links"}</div>
+                      <div className="lyr-s">{ar ? `شارتا الدليل في بطاقات ${num(layers.evidence.verses)} آية` : `the two badges across ${layers.evidence.verses} verse cards`}</div>
+                    </Link>
+                  )}
                   <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.muhkamat.count)}</div>
                     <div className="lyr-t">{ar ? "محكمة" : "muhkamat"}</div>
                     <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} عنوانًا` : `from ${layers.muhkamat.kubra}`}</div>
                   </Link>
-                  <Link to="/mawdui" className="lyr">
+                  <Link to="/mawadi" className="lyr">
                     <div className="lyr-n">{num(layers.mawdui.topics)}</div>
-                    <div className="lyr-t">{ar ? "موضوعًا" : "topics"}</div>
-                    <div className="lyr-s">{num(layers.mawdui.sections)} {ar ? "أقسام · تغطية كاملة" : "sections"}</div>
+                    <div className="lyr-t">{ar ? "موضوعًا متوارثًا" : "inherited topics"}</div>
+                    <div className="lyr-s">{num(layers.mawdui.sections)} {ar ? "بابًا · عن أهل العلم" : "chapters · from the scholars"}</div>
                   </Link>
                   <div className="lyr" style={{ cursor: "default" }}>
                     <div className="lyr-n">{num(net.giantPct)}٪</div>

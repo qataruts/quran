@@ -9,11 +9,16 @@
       <stop offset="0.4" stop-color="#f3d089" stop-opacity="0.48"/>
       <stop offset="1" stop-color="#f4c96a" stop-opacity="0"/>
     </radialGradient>
-    <!-- the flame is now a diamond of light: violet (AI) melting into gold (lamp) -->
+    <!-- the diamond of light: violet (AI) melting into gold (lamp) -->
     <linearGradient id="spark" x1="0.2" y1="0" x2="0.5" y2="1">
       <stop offset="0" stop-color="#b493e6"/>
       <stop offset="0.5" stop-color="#e6bd6a"/>
       <stop offset="1" stop-color="#efb63c"/>
+    </linearGradient>
+    <!-- the golden hilal cradling it -->
+    <linearGradient id="hilal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d089"/>
+      <stop offset="1" stop-color="#e9a93f"/>
     </linearGradient>
   </defs>
 
@@ -30,16 +35,15 @@
     <!-- light filling the niche -->
     <ellipse cx="256" cy="316" rx="128" ry="150" fill="url(#halo)"/>
 
-    <!-- suspension line + ring of the lamp -->
-    <path d="M256 186 L256 232" stroke="#eccc7d" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="256" cy="186" r="7.5" fill="none" stroke="#eccc7d" stroke-width="5"/>
+    <!-- الهلال الذهبي: قوسٌ يحتضن النجمة — وهو قدحُ المصباح أيضًا -->
+    <path fill="url(#hilal)" d="M192 318 A64 64 0 1 0 320 318 A84 84 0 0 1 192 318 Z"/>
 
-    <!-- مصباح: the flame as a crisp 4-point diamond of light -->
-    <g transform="translate(167.2 219.2) scale(7.4)">
+    <!-- المعيّن نجمةً في قلب الهلال (نور المصباح) -->
+    <g transform="translate(208 248) scale(4)">
       <path fill="url(#spark)" d="M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z"/>
     </g>
     <!-- inner glint (keeps it reading as light, not a solid gem) -->
-    <g transform="translate(205.6 257.6) scale(4.2)">
+    <g transform="translate(229.6 269.6) scale(2.2)">
       <path fill="#fff7de" opacity="0.9" d="M12 6C12.2 9 14.9 11.7 18 12C14.9 12.3 12.2 15 12 18C11.8 15 9.1 12.3 6 12C9.1 11.7 11.8 9 12 6Z"/>
     </g>
 

@@ -31,8 +31,8 @@ export default function WhyRank({ location }: { location: string }) {
       </div>
       <p className="why-note">
         {ar
-          ? "هذه أوصافٌ بنيويّةٌ لعمومِ الدلالة: أهي أصلٌ جامعٌ أم تفصيل."
-          : "These describe the breadth of a verse's meaning: a gathering principle vs a detail."}
+          ? "هذه أوصافٌ بنيويّةٌ لعمومِ الدلالة، من حسابِ الجيلِ الأوّل — أبقيناهُ معروضًا للشفافية؛ والدليلُ الأحدثُ (شارتا القاعدةِ والتفرُّع) في أعلى بطاقةِ الآية."
+          : "Structural descriptions of meaning-breadth, from the first-generation arithmetic — kept visible for transparency; the newer evidence (the rule & elaboration badges) sits atop the verse card."}
       </p>
       <div className="why-rows">
         {FACTORS.map(({ key, ar: la, en }) => {

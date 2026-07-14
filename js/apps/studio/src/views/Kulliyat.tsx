@@ -112,23 +112,26 @@ export default function Kulliyat() {
           <h1 className="jw-title">{ar ? "الكلّيّات والجوامع والتفصيل" : "Kulliyyāt · Jawāmiʿ · Tafṣīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "نزنُ «جامعيّةَ» كلِّ آيةٍ بستّةِ عواملَ محسوبةٍ من بيانات القرآن نفسِه، فتنتظمُ الآياتُ في ثلاث مراتب: كلّيّةٌ جامعةٌ في القمّة، تتبعُها جوامعُ، ثمّ تفصيل. اختَرِ المرتبة، وابحثْ، وانقُرِ المثلّثَ لتفتحَ ما يندرجُ تحت الآية، وانقُرِ النسبةَ المئويّةَ لترى «لماذا هذه المرتبة؟»."
-              : "We weigh each verse's «jāmiʿiyya» by six computed factors from the Qur'an's own data; verses settle into three tiers — governing kulliyyāt at the top, then jawāmiʿ, then tafṣīl. Pick a tier, search, and drill down; tap the percentage for «why this tier?»."}
+              ? "ترتيبٌ استكشافيٌّ من الجيل الأوّل لمشكاة: انتظمتِ الآياتُ فيه على ثلاث مراتبَ من عمومِ الدلالة — كلّيّةٌ فجوامعُ فتفصيل — بستّةِ عواملَ حُسبت من بيانات القرآن نفسِه. اختَرِ المرتبة، وابحثْ، وانقُرِ المثلّثَ لتفتحَ ما يندرجُ تحت الآية، وانقُرِ النسبةَ لترى حسابَها كاملًا."
+              : "A first-generation exploratory ordering: the verses arranged in three tiers of meaning-breadth — kulliyyāt, jawāmiʿ, tafṣīl — by six factors computed from the Qur'an's own data. Pick a tier, search, drill down; tap the percentage to see the full arithmetic."}
           </p>
           <p className="jw-lead" style={{ marginTop: -6, fontSize: 13.5 }}>
-            {ar ? "لفهمِ كيف نحسبُ هذا تمامًا — التضميناتِ والمتّجهاتِ والعوامل الستّة — طالِعْ " : "For exactly how this is computed — embeddings, vectors and the six factors — see "}
-            <Link to="/about" className="kl-aboutlink">{ar ? "صفحةَ «عن المشروع» ←" : "the About page ←"}</Link>
+            {ar
+              ? "وقد راجعنا هذا الميزانَ مراجعةً جذريّةً معلنة، وخرج منها دليلٌ أصدق: شارتا «صيغةُ قاعدة» و«ثبت تفرُّعُه» في بطاقة كلِّ آية — تصفانِ ولا تُرتِّبان. القصّةُ كاملةً في "
+              : "We have since reviewed this scale openly, root and branch; what emerged is more truthful evidence: the «rule form» and «proven elaboration» badges on each verse's card — they describe, they do not rank. The full story is in "}
+            <Link to="/about" className="kl-aboutlink">{ar ? "صفحةِ «عن المشروع» ←" : "the About page ←"}</Link>
           </p>
           <p className="kl-disclaimer">
             {ar
               ? "هذه مراتبُ عمومِ الدلالة: الأصلُ الجامعُ الذي تنضوي تحته المعاني، ثمّ ما يتفرّعُ عنه تفصيلًا. والتفصيلُ ليس أدنى؛ إنّما يُبيّنُ الأصلَ ويُفصّله."
               : "These are tiers of meaning-breadth: the gathering principle under which meanings fall, then what elaborates it as detail. A detail is not lesser; it unfolds the principle."}
           </p>
-          {/* honest interim status while the v2 rebuild (gates + directed network) is underway */}
+          {/* honest status: the review concluded; its outcome (the two evidence badges) shipped.
+              this first-generation page stays browsable until the rules explorer replaces it */}
           <p className="kl-disclaimer kl-review">
             {ar
-              ? "⚠ هذا الميزانُ قيدُ مراجعةٍ منهجيّةٍ جذريّة: تُبنى نسخةٌ ثانيةٌ على بواباتِ عمومٍ وشبكةِ تفصيلٍ موجَّهة، بتحقُّقٍ معلن. حتى تكتمل، اقرأِ المراتبَ ترتيبًا استكشافيًّا لا حكمًا."
-              : "⚠ This scale is under fundamental methodological review: a v2 built on generality gates and a directed elaboration network, with published validation, is underway. Until it lands, read these tiers as exploratory, not verdicts."}
+              ? "اكتملتِ المراجعةُ: بواباتُ العمومِ وشبكةُ التفرُّع تعملان اليومَ في بطاقات الآيات. وتبقى هذه الصفحةُ من الجيل الأوّل كما هي — شفافيةً وتوثيقًا — حتى يحلَّ محلَّها «مستكشفُ القواعد». اقرأِ المراتبَ ترتيبًا استكشافيًّا لا حكمًا."
+              : "The review is complete: the generality gates and the elaboration network now live in the verse cards. This first-generation page stays as it is — for transparency and record — until the rules explorer replaces it. Read the tiers as exploration, not verdicts."}
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(meta?.verses ?? 6236)}</b> {ar ? "آية" : "verses"}</span>

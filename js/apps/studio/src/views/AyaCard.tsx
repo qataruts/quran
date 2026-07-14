@@ -125,10 +125,10 @@ export default function AyaCard() {
         </div>
 
         <div className="card aya-facts">
-          <div className="aya-fact">
+          <div className="aya-fact" title={ar ? "من ترتيبِ الجيل الأوّل الاستكشافيّ — الدليلُ المحسوبُ الأحدث في أعلى البطاقة" : "from the first-generation exploratory ordering — the newer computed evidence sits atop this card"}>
             <span className="aya-fact-l">{ar ? "المرتبة" : "tier"}</span>
             <span className="aya-fact-v"><span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
-              <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? "مؤشّرُ الجامعيّة" : "index"} {num(Math.round(cls.jamiya * 100))}٪</span>
+              <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? "مؤشّرُ الجامعيّة" : "index"} {num(Math.round(cls.jamiya * 100))}٪ · {ar ? "الجيل الأوّل" : "gen 1"}</span>
             </span>
           </div>
           <div className="aya-fact">
