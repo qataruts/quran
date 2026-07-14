@@ -1,7 +1,7 @@
 /**
  * EvidencePanel — لوحةُ الدليل بالشارتين (قرار ب، 2026-07-14): تعرض لآيةٍ ما
  * ثبت لها فعلًا: «صيغةُ قاعدة» (بواباتُها الصرفية بأسمائها) و«ثبت تفرُّعُه»
- * (مفصِّلاتُها المحكومة بعلاقاتها الأربع + مثانيها) — الادّعاءُ على قدر الدليل،
+ * (صِلاتُها الثابتة بعلاقاتها الأربع + مثانيها) — الادّعاءُ على قدر الدليل،
  * ولا رتبةَ فوقَه.
  */
 import { useEffect, useState } from "react";
@@ -47,7 +47,7 @@ export default function EvidencePanel({ location }: { location: string }) {
           ◆ {ar ? "صيغةُ قاعدة" : "Rule form"}
         </span>
         {nLinks > 0 && (
-          <span className="ev-badge ev-net" title={ar ? "له مفصِّلاتٌ محكومةٌ في شبكة v2 (حكمٌ أعمى باختبار الحذف)" : "has blind-judged elaborators in the v2 network"}>
+          <span className="ev-badge ev-net" title={ar ? "له صِلاتُ معنًى ثبتت بعد فحصٍ مستقلٍّ لوصفها" : "meaning-relations established by independent examination"}>
             ⤷ {ar ? "ثبت تفرُّعُه" : "Proven elaboration"} <b>{num(nLinks)}</b>
           </span>
         )}
@@ -79,8 +79,8 @@ export default function EvidencePanel({ location }: { location: string }) {
       )}
       <div className="ev-foot muted">
         {ar
-          ? "شارتان لا رتبة: البواباتُ صرفٌ حتميّ، والتفرُّعُ حكمُ شبكةٍ أعمى (المنهجية في «عن المشروع»)."
-          : "Two evidence badges, no rank: gates are deterministic morphology; elaboration is a blind-judged network."}
+          ? "شارتان لا رتبة: العلاماتُ من صرف القرآن حسابًا محضًا، والصِّلاتُ فُحص وصفُها فحصًا مستقلًّا (المنهجية في «عن المشروع»)."
+          : "Two evidence badges, no rank: markers are pure morphology; relations passed independent examination of our description."}
       </div>
     </div>
   );
