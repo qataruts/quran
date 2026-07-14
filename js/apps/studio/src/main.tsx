@@ -154,7 +154,6 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
       ["/furuq", "فروق التنزيل", "Furūq"],
-      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
   {
@@ -173,6 +172,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/mujam", "معجم القرآن", "Dictionary"],
       ["/tafasir", "التفاسير والمصادر", "Tafsir & sources"],
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
+      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
 ];
