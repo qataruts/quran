@@ -74,14 +74,16 @@ for (const { root, occurrences, data } of rows) {
   // then الراغب, de-noised and capped so the essential sense dominates.
   const embedText = `${root}\n${deNoise(maq).slice(0, 600)}\n${deNoise(raq).slice(0, 900)}`.slice(0, 1500);
   // explicit distinctions الراغب writes himself (verbatim sentence extraction)
+  // v2 (مراجعة 2026-07-14): القطعُ عند نهايات الجمل [.؛] فقط — الفاصلةُ «،» ليست
+  // نهايةَ جملة، وكان القطعُ عندها يبترُ شطرَ الفرقِ الشارحَ نفسَه
   const contrast = [];
-  for (const sent of cleanRaghib(raq).split(/(?<=[.،؛])\s+/)) {
+  for (const sent of cleanRaghib(raq).split(/(?<=[.؛])\s+/)) {
     const t = sent.trim();
-    if (t.length < 18 || t.length > 300) continue;
+    if (t.length < 18 || t.length > 420) continue;
     if (!CONTRAST_OK.test(t)) continue;      // a real distinction opener
     if (FRAGMENT_START.test(t)) continue;    // not an anaphoric mid-sentence piece
     if (/[[\]|]|ص\s*\d|\d\s*\/\s*\d/.test(t)) continue; // any leftover citation/marker
-    if (!/[.،؛]$/.test(t)) continue;         // must end cleanly (not truncated)
+    if (!/[.؛]$/.test(t)) continue;          // must end cleanly (not truncated)
     contrast.push(t);
     if (contrast.length >= 3) break;
   }
