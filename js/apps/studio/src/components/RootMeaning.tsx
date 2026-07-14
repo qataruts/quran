@@ -8,33 +8,37 @@ import { Link } from "react-router-dom";
 import { getRoot } from "../db";
 import type { RootDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
-import { hasMufradat, loadMufradatIndex, mufradatFor } from "../mufradat";
+import { type Lexicon, availableLexicons, lexiconText, loadLexiconIndex } from "../lexicons";
 
 export default function RootMeaning({ root }: { root: string }) {
   useUILang();
   const [doc, setDoc] = useState<RootDoc | null>(null);
   const [open, setOpen] = useState(false);
-  const [mufAvail, setMufAvail] = useState(false);
-  const [mufOpen, setMufOpen] = useState(false);
-  const [mufText, setMufText] = useState<string | null | undefined>(undefined); // undefined=unloaded
+  const [lexs, setLexs] = useState<Lexicon[]>([]); // معاجم that have this root
+  const [openLex, setOpenLex] = useState<Set<string>>(() => new Set());
+  const [lexText, setLexText] = useState<Record<string, string | null | undefined>>({});
 
   useEffect(() => {
     let live = true;
     setOpen(false);
     setDoc(null);
-    setMufOpen(false);
-    setMufText(undefined);
-    setMufAvail(false);
+    setLexs([]);
+    setOpenLex(new Set());
+    setLexText({});
     getRoot(root).then((d) => live && setDoc(d));
-    loadMufradatIndex().then(() => live && setMufAvail(hasMufradat(root)));
+    loadLexiconIndex().then(() => live && setLexs(availableLexicons(root)));
     return () => {
       live = false;
     };
   }, [root]);
 
-  const openMuf = () => {
-    setMufOpen((v) => !v);
-    if (mufText === undefined) mufradatFor(root).then((x) => setMufText(x));
+  const toggleLex = (id: string) => {
+    setOpenLex((cur) => {
+      const next = new Set(cur);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+    if (lexText[id] === undefined) lexiconText(id, root).then((x) => setLexText((m) => ({ ...m, [id]: x })));
   };
 
   if (!doc) return null;
@@ -99,18 +103,21 @@ export default function RootMeaning({ root }: { root: string }) {
           ))}
         </div>
       )}
-      {mufAvail && (
-        <div className="muf-block">
-          <button className="chip link muf-toggle" style={{ border: "none" }} onClick={openMuf} aria-expanded={mufOpen}>
-            {ar ? "المفردات في غريب القرآن — الراغب" : "al-Mufradāt — al-Rāghib"} {mufOpen ? "▴" : "▾"}
-          </button>
-          {mufOpen && (
-            <div className="muf-text" dir="rtl">
-              {mufText === undefined ? "…" : mufText ?? (ar ? "—" : "—")}
-            </div>
-          )}
-        </div>
-      )}
+      {lexs.map((lex) => {
+        const isOpen = openLex.has(lex.id);
+        return (
+          <div key={lex.id} className="muf-block">
+            <button className="chip link muf-toggle" style={{ border: "none" }} onClick={() => toggleLex(lex.id)} aria-expanded={isOpen}>
+              {lex.label} — {lex.author} {isOpen ? "▴" : "▾"}
+            </button>
+            {isOpen && (
+              <div className="muf-text" dir="rtl">
+                {lexText[lex.id] === undefined ? "…" : lexText[lex.id] ?? "—"}
+              </div>
+            )}
+          </div>
+        );
+      })}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
         <Link to={`/khayt?q=${encodeURIComponent(root)}`} className="chip link" style={{ textDecoration: "none" }}>
           {ar ? "تتبَّعْ هذا اللفظَ عبر المصحف ←" : "trace across the mushaf →"}

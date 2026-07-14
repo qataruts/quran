@@ -24,15 +24,16 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "mukhtasar", label: "المختصر في التفسير", genre: "tafsir", author: "مركز تفسير", embedded: true },
   { id: "saadi", label: "تيسير الكريم الرحمن", genre: "tafsir", author: "السعدي", embedded: true },
   { id: "aysar", label: "أيسر التفاسير", genre: "tafsir", author: "أبو بكر الجزائري" },
-  { id: "gharibmuyassar", label: "الميسّر في غريب القرآن", genre: "gharib" },
+  { id: "gharibmuyassar", label: "الميسّر في غريب القرآن", genre: "gharib", embedded: true },
   { id: "seraj", label: "السراج في غريب القرآن", genre: "gharib", author: "الخضيري", embedded: true },
   { id: "i3rabmuyassar", label: "الإعراب الميسّر", genre: "i3rab" },
   { id: "nashr", label: "النشر في القراءات العشر", genre: "qiraat", author: "ابن الجزري" },
   { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
   { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي", embedded: true },
   { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني", embedded: true },
-  // root-keyed lexicon — نِبراس-only (shown in the word card, not the verse-anchored تفاسير section)
+  // root-keyed معاجم — نِبراس-only (shown in the word card, not the verse-anchored تفاسير section)
   { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني", embedded: true },
+  { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس", embedded: true },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
