@@ -1,5 +1,5 @@
 {
- "frozen": false,
+ "frozen": true,
  "splitRule": "md5(firstRef) first byte even→tune",
  "items": [
   {

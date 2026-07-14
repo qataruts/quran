@@ -118,5 +118,5 @@ for (const o of out) {
   if (o.half === "tune") isRule ? counts.tuneRule++ : counts.tuneTafsil++;
   else isRule ? counts.holdRule++ : counts.holdTafsil++;
 }
-writeFileSync(OUT, JSON.stringify({ frozen: false, splitRule: "md5(firstRef) first byte even→tune", items: out }, null, 1));
+writeFileSync(OUT, JSON.stringify({ frozen: true, splitRule: "md5(firstRef) first byte even→tune", items: out }, null, 1));
 console.log(`sample.json: ${out.length} items → tune ${counts.tune} (rule ${counts.tuneRule} / tafsil ${counts.tuneTafsil}) · holdout ${counts.holdout} (rule ${counts.holdRule} / tafsil ${counts.holdTafsil})`);
