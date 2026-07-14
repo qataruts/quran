@@ -133,6 +133,13 @@ export default function Wujuh() {
             <span className="chip"><b>{num(d.meta.candidates)}</b> {ar ? "كلمةً لها وجهان محتمَلان" : "words with two senses"}</span>
             <span className="chip">{ar ? `من ${num(d.meta.scanned)} كلمةٍ كثيرةِ الورود` : `of ${num(d.meta.scanned)} frequent words`}</span>
           </div>
+          {/* honest interim status — review (2026-07-14) found ~40% of entries are
+              narrative/topical splits, not true polysemy; re-grounding on المفردات/مقاييس planned */}
+          <p className="kl-disclaimer kl-review">
+            {ar
+              ? "⚠ هذا القسمُ قيدُ المراجعة: الانقسامُ الدلاليُّ المحسوبُ قد يعكسُ تباينَ الموضوعات لا تعدُّدَ المعنى الحقيقيّ. يُعادُ تأسيسُه على مداخل المفردات والمقاييس — فلا تُبنى على وجوهه نتيجةٌ حتى إشعارٍ آخر."
+              : "⚠ Under review: the computed split may reflect topical variance, not true polysemy. Re-grounding on the classical lexica is underway — treat the senses as provisional."}
+          </p>
         </header>
 
         <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث بكلمةٍ أو جذر…" : "search by word or root…"} />

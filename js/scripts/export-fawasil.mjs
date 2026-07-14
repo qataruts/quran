@@ -15,8 +15,12 @@ const OUT = path.join(ROOT, "js/apps/studio/public/fawasil.json");
 
 const db = new DatabaseSync(path.join(ROOT, "quran-app.db"), { readOnly: true });
 const ayahs = db.prepare("SELECT data FROM ayahs").all().map((r) => JSON.parse(r.data));
-const surahRows = db.prepare("SELECT data FROM surahs").all().map((r) => JSON.parse(r.data));
 db.close();
+// أسماء السور من قاعدة المعرفة — surahs.data في quran-app لا يحمل الاسم أصلًا
+// (كانت الشبكة تعرض الأرقام بدل الأسماء)
+const kg = new DatabaseSync(path.join(ROOT, "quran-kg.db"), { readOnly: true });
+const nameRows = kg.prepare("SELECT surah_no, name_ar FROM surah").all();
+kg.close();
 
 const stripMarks = (s) => (s || "").replace(/[ً-ٰٟۖ-ۭـ]/g, "");
 const roeyaOf = (t) => {
@@ -42,7 +46,7 @@ for (const a of ayahs) {
   bySurah.set(a.surahNo, m);
 }
 
-const nameOf = new Map(surahRows.map((s) => [s.surahNo, s.nameAr]));
+const nameOf = new Map(nameRows.map((s) => [s.surah_no, s.name_ar]));
 const total = ayahs.length;
 const lettersArr = Object.entries(letters)
   .map(([letter, count]) => ({ letter, count, pct: +((count / total) * 100).toFixed(1) }))
