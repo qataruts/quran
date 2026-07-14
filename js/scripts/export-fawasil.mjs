@@ -36,6 +36,7 @@ const end2Of = (t) => {
 const letters = {};
 const endings = {};
 const bySurah = new Map(); // surahNo → { [roeya]: n }
+const seqBySurah = new Map(); // surahNo → سلسلة أحرف الروي آيةً آية (بصمة السورة)
 for (const a of ayahs) {
   const r = roeyaOf(a.textClean);
   const e = end2Of(a.textClean);
@@ -44,6 +45,7 @@ for (const a of ayahs) {
   const m = bySurah.get(a.surahNo) ?? {};
   m[r] = (m[r] || 0) + 1;
   bySurah.set(a.surahNo, m);
+  seqBySurah.set(a.surahNo, (seqBySurah.get(a.surahNo) ?? "") + r);
 }
 
 const nameOf = new Map(nameRows.map((s) => [s.surah_no, s.name_ar]));
@@ -59,7 +61,7 @@ const surahs = [...bySurah.entries()]
   .map(([no, m]) => {
     const n = Object.values(m).reduce((s, x) => s + x, 0);
     const [dom, domN] = Object.entries(m).sort((a, b) => b[1] - a[1])[0];
-    return { no, name: nameOf.get(no) ?? String(no), dom, domPct: +((domN / n) * 100).toFixed(0), ayahs: n };
+    return { no, name: nameOf.get(no) ?? String(no), dom, domPct: +((domN / n) * 100).toFixed(0), ayahs: n, seq: seqBySurah.get(no) ?? "" };
   })
   .sort((a, b) => a.no - b.no);
 

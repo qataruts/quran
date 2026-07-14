@@ -12,8 +12,15 @@ interface Fawasil {
   meta: { ayahs: number; letters: number };
   letters: { letter: string; count: number; pct: number }[];
   endings: { end: string; count: number }[];
-  surahs: { no: number; name: string; dom: string; domPct: number; ayahs: number }[];
+  surahs: { no: number; name: string; dom: string; domPct: number; ayahs: number; seq?: string }[];
 }
+
+// لون كل حرف روي — لوحة حتمية من شفرة الحرف (متمايزة، هادئة)
+const royColor = (ch: string) => {
+  const code = ch.codePointAt(0) ?? 0;
+  const hue = (code * 47) % 360;
+  return `hsl(${hue}, 42%, 62%)`;
+};
 
 export default function Fawasil() {
   useUILang();
@@ -70,12 +77,20 @@ export default function Fawasil() {
         </div>
 
         <div className="card" style={{ marginBottom: 14 }}>
-          <div className="fw-h">{ar ? "أكثر الخواتيم" : "commonest endings"}</div>
-          <div className="jw-chipset" style={{ marginTop: 8 }}>
-            {d.endings.map((e) => (
-              <span key={e.end} className="chip">
-                <span className="quran">«{e.end}»</span> <span className="muted">{num(e.count)}</span>
-              </span>
+          <div className="fw-h">
+            {ar ? "بصمةُ الرَّويّ — سورةً سورة" : "rhyme fingerprint — surah by surah"}{" "}
+            <span className="muted" style={{ fontWeight: 400 }}>· {ar ? "كلُّ خانةٍ آية، لونُها حرفُ رويِّها — فتُرى تحولاتُ الفاصلة داخل السورة بعينك" : "each cell = one verse, coloured by its rhyme letter"}</span>
+          </div>
+          <div className="fw-fps">
+            {d.surahs.filter((s) => (s.seq?.length ?? 0) >= 8).map((s) => (
+              <Link key={s.no} to={`/read/${s.no}`} className="fw-fp" title={`${s.name} — ${num(s.ayahs)} آية`}>
+                <span className="fw-fp-name quran">{s.name}</span>
+                <span className="fw-fp-strip">
+                  {[...(s.seq ?? "")].map((ch, i) => (
+                    <span key={i} className="fw-fp-cell" style={{ background: royColor(ch) }} title={`${num(i + 1)} · ${ch}`} />
+                  ))}
+                </span>
+              </Link>
             ))}
           </div>
         </div>

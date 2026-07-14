@@ -1872,3 +1872,13 @@ table.data tr:hover td { background: var(--panel-2); }
 /* الوجوه المؤصَّلة — شاهد المعجم */
 .wj-quote { font-size: 13px; line-height: 1.9; color: var(--ink-2); border-inline-start: 3px solid var(--gold); padding: 6px 12px; margin-bottom: 10px; background: var(--panel-2); border-radius: 8px; }
 .wj-quote-src { color: var(--gold); font-weight: 700; font-size: 12px; }
+/* الأمثال — تجميع بالسور + المضرِب من الميسّر */
+.am-surah-h { font-size: 17px; font-weight: 700; color: var(--accent); margin: 14px 0 8px; padding-inline-start: 2px; }
+.am-madrib { display: block; margin-top: 8px; font-size: 13.5px; line-height: 1.9; color: var(--ink-2); border-inline-start: 3px solid var(--gold); padding: 6px 12px; background: var(--panel-2); border-radius: 8px; cursor: auto; }
+.am-madrib-src { color: var(--gold); font-weight: 700; font-size: 12px; }
+/* بصمة الروي — شريط ملون لكل سورة، كل خانة آية */
+.fw-fps { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; max-height: 480px; overflow-y: auto; }
+.fw-fp { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.fw-fp-name { flex: none; width: 92px; font-size: 14px; color: var(--ink); text-align: start; }
+.fw-fp-strip { flex: 1; display: flex; height: 14px; border-radius: 4px; overflow: hidden; }
+.fw-fp-cell { flex: 1; min-width: 1px; }

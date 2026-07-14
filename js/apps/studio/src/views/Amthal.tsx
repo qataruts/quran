@@ -12,6 +12,7 @@ import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import { highlightVerse } from "../highlight";
 import { fuzzyMatch } from "../lib/fuzzy";
+import { bookTextAt } from "../books";
 
 interface AmthalData {
   meta: { parables: number; similes: number; total: number };
@@ -20,6 +21,34 @@ interface AmthalData {
 }
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
+
+/** بطاقةُ مثلٍ: الآية + «المضرِب» عند الطلب — شرحُ الميسّر بالمرجع، كسولًا منسوبًا. */
+function AmthalCard({ loc, q, texts }: { loc: string; q: string; texts: Map<string, AyahDoc> }) {
+  const ar = getUILang() === "ar";
+  const [open, setOpen] = useState(false);
+  const [tafsir, setTafsir] = useState<string | null | undefined>(undefined);
+  const toggle = () => {
+    setOpen((v) => !v);
+    if (tafsir === undefined) bookTextAt("muyassar", loc).then((t2) => setTafsir(t2)).catch(() => setTafsir(null));
+  };
+  return (
+    <div className="fr-card am-card" style={{ cursor: "pointer" }} onClick={toggle}>
+      <span className="fr-ref am-ref">
+        {arName(loc)}
+        <Link to={readPathOf(loc)} className="chip" style={{ marginInlineStart: 8 }} onClick={(e) => e.stopPropagation()}>
+          {ar ? "المصحف" : "read"}
+        </Link>
+      </span>
+      <span className="quran am-text">{highlightVerse(texts.get(loc)?.textUthmani ?? loc, q)}</span>
+      {open && (
+        <span className="am-madrib" onClick={(e) => e.stopPropagation()}>
+          <span className="am-madrib-src">◆ {ar ? "المضرِب — التفسير الميسّر" : "al-Muyassar"}</span>{" "}
+          {tafsir === undefined ? "…" : tafsir ?? (ar ? "لا شرح لهذه الآية في المصدر." : "no entry")}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default function Amthal() {
   useUILang();
@@ -48,6 +77,14 @@ export default function Amthal() {
   const group = (title: string, note: string, all: string[]) => {
     const locs = all.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean));
     if (locs.length === 0) return null;
+    // تجميعٌ بالسور — بدل رصّةٍ واحدةٍ من مئات البطاقات
+    const bySurah = new Map<number, string[]>();
+    for (const loc of locs) {
+      const s = Number(loc.split(":")[0]);
+      let arr = bySurah.get(s);
+      if (!arr) bySurah.set(s, (arr = []));
+      arr.push(loc);
+    }
     return (
       <section style={{ marginTop: 22 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
@@ -55,14 +92,14 @@ export default function Amthal() {
           <span className="muted">{num(locs.length)}</span>
         </div>
         <p className="muted" style={{ margin: "0 0 12px" }}>{note}</p>
-        <div className="fr-list">
-          {locs.map((loc) => (
-            <Link key={loc} to={readPathOf(loc)} className="fr-card am-card">
-              <span className="fr-ref am-ref">{arName(loc)}</span>
-              <span className="quran am-text">{highlightVerse(texts.get(loc)?.textUthmani ?? loc, q)}</span>
-            </Link>
-          ))}
-        </div>
+        {[...bySurah.entries()].map(([s, sLocs]) => (
+          <div key={s}>
+            <div className="am-surah-h quran">{surahNameAr(s)} <span className="muted">{num(sLocs.length)}</span></div>
+            <div className="fr-list">
+              {sLocs.map((loc) => <AmthalCard key={loc} loc={loc} q={q} texts={texts} />)}
+            </div>
+          </div>
+        ))}
       </section>
     );
   };
