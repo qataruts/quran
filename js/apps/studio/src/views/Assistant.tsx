@@ -373,7 +373,8 @@ export default function Assistant() {
         }
       }
       if (!finalText) finalText = ar ? "طال البحث — هذا ما جمعتُه حتى الآن، فاسألني عنه أو ضيّق الطلب." : "Search ran long — here is what was gathered; narrow the request.";
-      finalText = enforceVerbatim(finalText, toolTexts);
+      // سندُ التنقية: نصوص أدوات هذا الدور + أجوبةُ المساعد السابقة (آياتُها من أدوات أدوارٍ مضت)
+      finalText = enforceVerbatim(finalText, [...toolTexts, ...history.filter((h) => h.role === "assistant").map((h) => h.text)]);
 
       patchMessage(cid, aid, {
         pending: false,

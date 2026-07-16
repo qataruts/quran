@@ -165,6 +165,35 @@ function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json" } });
 }
 
+// ——— حارس القاعدة الذهبية في الخادم (كشفٌ لا وعدٌ) ———
+// الخادم يرى نتائج الأدوات كلها (steps) وتاريخ الحوار، فيكشف أي اقتباسٍ
+// قرآني ﴿…﴾ لا سند له فيها ويعيد النموذجَ للبحث بدل تمرير نصٍّ من ذاكرته.
+const STRIP = /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+function collectStrings(v, into) {
+  if (!v || typeof v !== "object") return;
+  for (const [k, val] of Object.entries(v)) {
+    if (typeof val === "string" && (k === "text" || k === "sense")) into.push(val);
+    else if (typeof val === "object") collectStrings(val, into);
+  }
+}
+/** سندُ الاقتباس: نصوص الأدوات في هذا الدور + أجوبة المساعد السابقة (آياتها
+ *  دخلت الحوارَ من أدوات أدوارٍ مضت، فإعادة اقتباسها في متابعةٍ مشروعة) */
+function quoteHay(steps, messages) {
+  const texts = [];
+  for (const s of steps) collectStrings(s?.result, texts);
+  for (const m of messages) if (m?.role === "assistant") texts.push(String(m.text ?? ""));
+  return texts.join("\n").replace(STRIP, "");
+}
+/** أول اقتباسٍ ﴿…﴾ في النص لا سند له — أو null إن سلِم النص */
+function unbackedQuote(text, hay) {
+  for (const m of text.matchAll(/﴿([^﴾]*)﴾/g)) {
+    const frags = m[1].split(/…|\.\.\./).map((f) => f.replace(STRIP, "").trim()).filter((f) => f.length >= 10);
+    if (frags.length && !frags.every((f) => hay.includes(f))) return m[1];
+  }
+  return null;
+}
+const NUDGE = "تنبيه من النظام: في جوابك اقتباسٌ قرآني بين ﴿…﴾ ليس نصُّه في نتائج أدوات هذه المحادثة — والقاعدة الذهبية لا استثناء لها. ابحث عن الآية بأدواتك الآن ثم انقل نصَّها من النتيجة حرفيًّا، أو سمِّها بموضوعها بلا اقتباسٍ لنصها.";
+
 export default async function handler(req) {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
   const blocked = guard(req);
@@ -205,20 +234,33 @@ export default async function handler(req) {
       }),
     });
 
+  const hay = quoteHay(steps, messages);
+  const finalCfg = {
+    toolConfig: { functionCallingConfig: { mode: "NONE" } },
+    generationConfig: {
+      temperature: 0.55,
+      maxOutputTokens: 4096,
+      thinkingConfig: { thinkingBudget: 1024 },
+    },
+  };
+
   // نداء التأليف النهائي: النموذجُ الأقوى وحده، بميزانية تفكيرٍ وسقفٍ أعلى،
   // والأدواتُ مقفلةٌ كي لا يفتح جولةً جديدة. أي إخفاقٍ يعيد العميلَ لنص الاحتياط.
   if (body?.finalize) {
-    const fin = await generate(FINAL_MODEL, {
-      toolConfig: { functionCallingConfig: { mode: "NONE" } },
-      generationConfig: {
-        temperature: 0.55,
-        maxOutputTokens: 4096,
-        thinkingConfig: { thinkingBudget: 1024 },
-      },
-    });
+    const fin = await generate(FINAL_MODEL, finalCfg);
     if (!fin.ok) return json({ error: `upstream ${fin.status}`, detail: (await fin.text()).slice(0, 300) }, 502);
     const fdata = await fin.json();
-    const ftext = (fdata?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
+    let ftext = (fdata?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
+    // حارس القاعدة الذهبية: اقتباسٌ بلا سندٍ في التأليف النهائي → محاولةُ تصويبٍ واحدة
+    if (ftext && unbackedQuote(ftext, hay)) {
+      contents.push({ role: "model", parts: [{ text: ftext }] });
+      contents.push({ role: "user", parts: [{ text: `${NUDGE} أعد كتابة الجواب كاملًا الآن (الأدوات مقفلة): كل اقتباسٍ من نتائج الأدوات أعلاه حرفيًّا، وما ليس فيها سمِّه بموضوعه بلا نص.` }] });
+      const fin2 = await generate(FINAL_MODEL, finalCfg);
+      if (fin2.ok) {
+        const t2 = ((await fin2.json())?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
+        if (t2 && !unbackedQuote(t2, hay)) ftext = t2;
+      }
+    }
     return json({ text: ftext || "…" });
   }
 
@@ -228,7 +270,22 @@ export default async function handler(req) {
   const parts = data?.candidates?.[0]?.content?.parts ?? [];
   const calls = parts.filter((p) => p.functionCall).map((p) => ({ name: p.functionCall.name, args: p.functionCall.args ?? {} }));
   if (calls.length) return json({ calls });
-  const text = parts.map((p) => p.text || "").join("").trim();
+  let text = parts.map((p) => p.text || "").join("").trim();
+
+  // حارس القاعدة الذهبية: النموذج أجاب باقتباسٍ لا سند له في نتائج الأدوات →
+  // نعيده مرةً واحدة للبحث (الأدوات بين يديه) — غالبًا يعود بنداءات بحثٍ فعلية.
+  if (text && unbackedQuote(text, hay)) {
+    contents.push({ role: "model", parts: [{ text }] });
+    contents.push({ role: "user", parts: [{ text: NUDGE }] });
+    const res2 = await generate(MODEL);
+    if (res2.ok) {
+      const parts2 = (await res2.json())?.candidates?.[0]?.content?.parts ?? [];
+      const calls2 = parts2.filter((p) => p.functionCall).map((p) => ({ name: p.functionCall.name, args: p.functionCall.args ?? {} }));
+      if (calls2.length) return json({ calls: calls2 });
+      const t2 = parts2.map((p) => p.text || "").join("").trim();
+      if (t2 && !unbackedQuote(t2, hay)) text = t2;
+    }
+  }
 
   // أدواتٌ استُعملت في هذا الدور والنموذجُ الأقوى مهيأ → اطلب من العميل نداءَ
   // التأليف النهائي نداءً مستقلًّا (كي لا يتجاوز الطلبُ الواحد مهلةَ edge)،
