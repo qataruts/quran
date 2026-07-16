@@ -1,0 +1,222 @@
+{
+ "frozen": true,
+ "date": "2026-07-16",
+ "ratifiedBy": "owner («صادقتُ على العينة») — الحج ٧٨ استُبدلت بالتوبة ١٠٥ لتقاطعها مع المحروق",
+ "thresholds": {
+  "recall": 0.8,
+  "rejection": 0.9,
+  "kappaMin": 0.55
+ },
+ "sample": [
+  {
+   "id": "2:43",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "2:183",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "2:188",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "2:195",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "2:261",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "3:103",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "3:104",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "3:159",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "3:200",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "4:1",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "4:59",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "4:105",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "5:32",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "5:90",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "6:152",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "7:31",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "8:46",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "16:44",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "17:29",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "17:70",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "9:105",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "24:27",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "25:67",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "31:18",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "42:30",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "49:6",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "49:10",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "49:12",
+   "kind": "rule",
+   "half": "holdout"
+  },
+  {
+   "id": "57:25",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "73:20",
+   "kind": "rule",
+   "half": "tune"
+  },
+  {
+   "id": "2:60",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "3:44",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "12:19",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "12:94",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "20:18",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "20:40",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "28:11",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "27:18",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "34:14",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "18:71",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "19:24",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "37:142",
+   "kind": "counter",
+   "half": "holdout"
+  }
+ ]
+}
