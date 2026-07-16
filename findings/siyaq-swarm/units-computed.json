@@ -1,11 +1,19 @@
 {
  "meta": {
   "date": "2026-07-15",
-  "status": "CANDIDATE — pending holdout exam (owner gate)",
+  "status": "ADOPTED — passed frozen holdout 2026-07-15 (recall 17/19=89.5%, rejection 14/14=100%)",
   "unsurePolicy": "cont",
   "units": 1404,
   "kappa": 0.864,
-  "swarmJudged": 2082
+  "swarmJudged": 2082,
+  "holdout": {
+   "recall": "17/19",
+   "rejection": "14/14",
+   "missedBoundaries": [
+    "26:191",
+    "37:21"
+   ]
+  }
  },
  "units": [
   {
