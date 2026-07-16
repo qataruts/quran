@@ -18,7 +18,7 @@ import {
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
-import { loadTafsil, searchUnits, topicOf, unitOf, type TafsilUnit } from "../tafsil";
+import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
 import { ayahByLocationMap, surahNameAr } from "../db";
 
 async function postJson(url: string, body: unknown): Promise<any> {
@@ -231,34 +231,34 @@ export default function Assistant() {
           return { entries: hits.map((b) => ({ source: bookLabel(b.source), ref: b.ref, text: b.text.slice(0, 500) })) };
         }
         if (name === "context_of" || name === "search_passages") {
-          await loadTafsil();
+          await loadSiyaq();
           const texts = await ayahByLocationMap();
-          const spanText = (u: TafsilUnit, cap = 1600): string => {
+          const spanText = (u: SiyaqUnit, cap = 1600): string => {
             const parts: string[] = [];
             for (let a = u.a1; a <= u.a2; a++) parts.push(texts.get(`${u.s}:${a}`)?.textClean ?? "");
             const t = parts.join(" ۝ ");
             return t.length > cap ? `${t.slice(0, cap)}…` : t;
           };
-          const pack = (u: TafsilUnit) => ({
+          const pack = (u: SiyaqUnit) => ({
             range: `${u.s}:${u.a1}-${u.a2}`,
             span: `${surahNameAr(u.s)} ${u.a1}–${u.a2}`,
-            topic: topicOf(u.t)?.name ?? "",
+            unitName: u.name,
             text: spanText(u),
           });
           if (name === "context_of") {
             const ref = String(args.ref ?? "").trim();
             if (!/^\d{1,3}:\d{1,3}$/.test(ref)) return { error: "ref يجب أن يكون بصيغة رقم_السورة:رقم_الآية" };
             const u = unitOf(ref);
-            if (!u) return { ref, found: false, note: "لا مقطعَ لهذا الموضع" };
+            if (!u) return { ref, found: false, note: "لا وحدةَ لهذا الموضع" };
             const p = pack(u);
-            acc.books.push({ source: "التفصيل الموضوعي", ref: p.span, text: p.text.slice(0, 700) });
+            acc.books.push({ source: "وحدة سياق", ref: `${p.span} · ${u.name}`, text: p.text.slice(0, 700) });
             return { ref, passage: p };
           }
           const k = Math.min(Number(args.k) || 4, 8);
-          const hits = await searchUnits(String(args.query ?? ""), k);
+          const hits = await searchSiyaq(String(args.query ?? ""), k);
           for (const h of hits.slice(0, 3)) {
             const p = pack(h.unit);
-            acc.books.push({ source: "التفصيل الموضوعي", ref: p.span, text: p.text.slice(0, 700) });
+            acc.books.push({ source: "وحدة سياق", ref: `${p.span} · ${h.unit.name}`, text: p.text.slice(0, 700) });
           }
           return { passages: hits.map((h) => pack(h.unit)) };
         }

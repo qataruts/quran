@@ -34,6 +34,7 @@ import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
 import VerseContext from "../components/VerseContext";
 import { classOf, useKulliyat } from "../kulliyat";
+import { loadSiyaq, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -293,6 +294,9 @@ export default function Reader() {
   const [wordsByAyah, setWordsByAyah] = useState<Map<number, WordDoc[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WordDoc | null>(null);
+  // فواصلُ وحدات السياق المحسوبة (نمط الآيات فقط — صفحات المصحف تبقى بلا إقحام)
+  const [siyaqReady, setSiyaqReady] = useState(false);
+  useEffect(() => { loadSiyaq().then(() => setSiyaqReady(true)); }, []);
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
   // ONE study panel open at a time (إعراب · تفصيل · مثلها · تدبّر) — no wall of
@@ -718,6 +722,8 @@ export default function Reader() {
         ) : (
           ayahs.map((ayah: AyahDoc) => {
             const isTarget = displayTargetAyahNo === ayah.ayahNo;
+            const su = siyaqReady ? unitOf(ayah.location) : null;
+            const unitStart = su && su.a1 === ayah.ayahNo && su.a1 !== 1 ? su : null;
             return (
               <article
                 key={ayah.location}
@@ -729,6 +735,11 @@ export default function Reader() {
                   background: isTarget ? "var(--accent-soft)" : undefined,
                 }}
               >
+                {unitStart && (
+                  <div className="sq-sep" title={`وحدة سياق محسوبة: ${surahNameAr(unitStart.s)} ${num(unitStart.a1)}–${num(unitStart.a2)}`}>
+                    <span className="sq-sep-name">{unitStart.name}</span>
+                  </div>
+                )}
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
                   ayahNo={ayah.ayahNo}
