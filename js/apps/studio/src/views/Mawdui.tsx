@@ -35,12 +35,12 @@ function Themes() {
         <h1 className="mw-title">{ar ? "محاور القرآن" : "Axes of the Qur'an"}</h1>
         <p className="mw-lead">
           {ar
-            ? "موضوعاتُ القرآن كما تنشأُ حسابيًّا: تسعونَ محورًا يُجمَعُ إليها كلُّ آيةٍ بتقاربِ المعنى، فتُغطّي المصحفَ كلَّه — كلُّ آيةٍ في محورٍ واحد، لا انتقاءَ بالرأي. اختَرْ محورًا لترى آياتِه (الأعمقُ أوّلًا)."
-            : "The Qur'an's topics as they emerge by computation: ninety محاور that gather every āya by meaning-proximity, covering the whole muṣḥaf — each verse in exactly one, no editorial hand. Pick a محور to see its verses (the deepest first)."}
+            ? "موضوعاتُ القرآن كما انبثقت من صلاته المفحوصة: مئتا محورٍ وستّةٌ انعقدت فيها قواعدُ المصحف بصلاتها الموحّدة (كلُّ صلةٍ فُحصت بمقطعَي سياقِها) — لا انتقاءَ بالرأي ولا قائمةَ موضوعاتٍ جاهزة. اخترْ محورًا لترى قواعدَه وآياتِها. نسخةٌ أولى قبل موجاتِ التعميق، تُحدَّثُ بعدها."
+            : "The Qur'an's topics as they emerged from its examined links: 206 axes in which the muṣḥaf's rules cluster through the unified network — no editorial pick, no preset topic list. First edition before the deepening waves; it updates after."}
         </p>
-        <div className="muted" style={{ fontSize: 13 }}>{num(themes.length)} {ar ? "محورًا" : "محاور"} · {num(6236)} {ar ? "آية" : "verses"}</div>
-        <div className="mw-onenote" title={ar ? "التجميع قِسمةٌ صارمة: مجموعُ أحجام المحاور = عددُ الآيات تمامًا" : "the clustering is a strict partition: theme sizes sum to exactly the verse count"}>
-          ◆ {ar ? "كلُّ آيةٍ في محورٍ واحدٍ فقط — قِسمةٌ محسوبة، لا تكرار." : "Each verse lies in exactly one محور — a computed partition, no duplication."}
+        <div className="muted" style={{ fontSize: 13 }}>{num(themes.length)} {ar ? "محورًا منبثقًا" : "emergent axes"}</div>
+        <div className="mw-onenote" title={ar ? "المحاور عناقيدُ شبكةِ القواعد الموحّدة — خوارزميةٌ معلنةٌ بثبات ٩٩٫٦٪؛ وتغطيةُ المصحف كلِّه بوحدات السياق المسمّاة في التبويب الموضوعي" : "axes are communities of the unified rule network — published algorithm, 99.6% stability; full-muṣḥaf coverage lives in the topical tabwīb over the named context units"}>
+          ◆ {ar ? "منبثقةٌ من صلاتِ الكتابِ نفسِه — حسبنا وعرضنا، والقارئُ يتدبّر." : "Emergent from the Book's own links — computed and shown; the reader reflects."}
         </div>
       </header>
       <TopicLayerToggle />
