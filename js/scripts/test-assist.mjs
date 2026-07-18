@@ -177,11 +177,14 @@ function layerOfMock(layer, anchor) {
       ...manifest.layers.filter((l) => l.count).map((l) => [`مدخلات طبقة ${l.label}`, l.count]),
       ...manifest.books.filter((b) => b.entries).map((b) => [`مدخلات ${b.label}`, b.entries]),
     ].filter(([, v]) => v != null);
-    const q = bare(anchor);
-    const generic = !q || ["عام", "الكل", "كل", "إحصاء", "احصاء"].includes(q);
-    const hits = generic ? facts.slice(0, 28) : facts.filter(([k]) => k.includes(q));
-    if (!hits.length) return { layer: id, found: false, note: `لا إحصاءَ محسوبًا يطابق «${anchor}»` };
-    return { layer: id, entries: [{ source: "إحصاءات مشكاة المحسوبة", text: hits.map(([k, v]) => `${k}: ${v}`).join(" · ") }], note: "أرقام محسوبة سلفًا تُنقل كما هي وتُنسب لطبقات مشكاة" };
+    const STAT_STOP = new Set(["عدد", "اعداد", "أعداد", "احصاء", "إحصاء", "احصاءات", "إحصاءات", "كم", "مجموع", "اجمالي", "إجمالي", "كل", "في", "من"]);
+    const toks = bare(anchor).split(/\s+/).filter((w) => w.length >= 3 && !STAT_STOP.has(w));
+    const scored = facts
+      .map((f) => ({ f, s: toks.filter((t) => f[0].includes(t) || f[0].includes(t.replace(/^ال/, ""))).length }))
+      .filter((x) => x.s > 0).sort((a, b) => b.s - a.s).map((x) => x.f);
+    const hits = scored.length ? scored : facts;
+    const note = scored.length ? "أرقام محسوبة سلفًا تُنقل كما هي وتُنسب لطبقات مشكاة" : "لم يطابق المصطلح مفتاحًا بعينه — هذه كل الإحصاءات المتاحة، خذ منها ما يجيب ولا تعُدَّ بنفسك";
+    return { layer: id, entries: [{ source: "إحصاءات مشكاة المحسوبة", text: hits.slice(0, 28).map(([k, v]) => `${k}: ${v}`).join(" · ") }], note };
   }
   if (id === "qiraat" || id === "i3rab") {
     if (!AYA_RE.test(anchor)) return { error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
@@ -406,7 +409,7 @@ if (want(8)) {
 
 // ت٩ — الإحصاءات: الأرقام تُنقل من الطبقة لا تُعدّ ولا تُستذكر
 if (want(9)) {
-  const t = await chatTurn([{ role: "user", text: "كم عدد أزواج فروق التنزيل عندكم؟ وكم عدد كلمات المصحف ومقاطعه الصرفية؟" }], "ت٩: إحصاء مباشر — لا عدَّ ذاتيًّا");
+  const t = await chatTurn([{ role: "user", text: "كم عدد الأزواج في طبقة فروق التنزيل عندكم؟ وكم عدد كلمات المصحف ومقاطعه الصرفية؟" }], "ت٩: إحصاء مباشر — لا عدَّ ذاتيًّا");
   console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "stats"))} استدعى layer_of(stats) بنفسه`);
   const flat = t.text.replace(/[,،٬]/g, "");
   const nums = [/2019|٢٠١٩/, /77429|٧٧٤٢٩/, /130030|١٣٠٠٣٠/];

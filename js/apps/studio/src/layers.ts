@@ -200,18 +200,28 @@ function statFacts(m: Manifest): StatFact[] {
   for (const b of m.books) if (b.entries) add(`مدخلات ${b.label}`, b.entries);
   return facts;
 }
+// كلماتُ حشوٍ لا تميّز مفتاحًا («عدد أزواج…» تطابق «أزواج…»)
+const STAT_STOP = new Set(["عدد", "اعداد", "أعداد", "احصاء", "إحصاء", "احصاءات", "إحصاءات", "كم", "مجموع", "اجمالي", "إجمالي", "كل", "في", "من"]);
 async function statsLookup(anchor: string): Promise<LayerResult> {
   await ensureLayers();
   if (!manifest) return { layer: "stats", entries: [], error: "تعذر تحميل المانيفست" };
   const facts = statFacts(manifest);
-  const q = bare(anchor);
-  const generic = !q || ["عام", "الكل", "كل", "إحصاء", "احصاء"].includes(q);
-  const hits = generic ? facts.slice(0, 28) : facts.filter((f) => f.k.includes(q));
-  if (!hits.length) return { layer: "stats", entries: [], note: `لا إحصاءَ محسوبًا عندنا يطابق «${anchor}» — والقاعدة: ما لا إحصاء له لا يُعَدّ ولا يُقدَّر` };
+  const toks = bare(anchor).split(/\s+/).filter((w) => w.length >= 3 && !STAT_STOP.has(w));
+  // مطابقة بالكلمات (مع تجريد «ال») — وعند اللاتطابق تُعاد القائمة كلها ليختار
+  // النموذجُ منها، فلا يقال «لا إحصاء» لرقمٍ موجودٍ بصياغةٍ أخرى
+  const scored = facts
+    .map((f) => ({ f, s: toks.filter((t) => f.k.includes(t) || f.k.includes(t.replace(/^ال/, ""))).length }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .map((x) => x.f);
+  const hits = scored.length ? scored : facts;
+  const note = scored.length
+    ? "هذه أرقام محسوبة سلفًا في طبقات مشكاة — تُنقل كما هي وتُنسب إليها"
+    : "لم يطابق المصطلحُ مفتاحًا بعينه — هذه كلُّ الإحصاءات المحسوبة المتاحة، خذ منها ما يجيب السؤال ولا تعُدَّ شيئًا بنفسك";
   return {
     layer: "stats",
-    entries: [{ label: "إحصاءات مشكاة المحسوبة", text: hits.map((f) => `${f.k}: ${f.v}`).join(" · ").slice(0, 1200) }],
-    note: "هذه أرقام محسوبة سلفًا في طبقات مشكاة — تُنقل كما هي وتُنسب إليها",
+    entries: [{ label: "إحصاءات مشكاة المحسوبة", text: hits.slice(0, 28).map((f) => `${f.k}: ${f.v}`).join(" · ").slice(0, 1200) }],
+    note,
   };
 }
 
