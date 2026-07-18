@@ -18,7 +18,9 @@ function dataVersion(): string {
       break;
     }
   }
-  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json", "./public/lexnet.json", "./public/morph-stats.json", "./public/network-3.json"]) {
+  // rag-manifest.json أولًا: يتغير مع كل إضافة كتاب/طبقة أو تحديث أعداد
+  // (يولّده build-manifest.mjs) فتنكسر ذاكرة التخزين لكل تحديث قسمٍ تلقائيًّا
+  for (const p of ["./public/rag-manifest.json", "./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json", "./public/lexnet.json", "./public/morph-stats.json", "./public/network-3.json"]) {
     const abs = resolve(__dirname, p);
     if (fs.existsSync(abs)) {
       h.update(fs.readFileSync(abs));
