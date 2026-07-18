@@ -39,7 +39,7 @@ function Sections() {
         </div>
       </header>
       <TopicLayerToggle />
-      <div className="mw-topics">
+      <div className="mw-topics mw-topics-lg">
         {sections.map((s) => (
           <Link key={s.idx} to={`/mawadi/${s.idx}`} className="mw-topic-card">
             <span className="mw-topic-name">{s.title}</span>
