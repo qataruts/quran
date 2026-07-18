@@ -1827,6 +1827,8 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-books-h { font-size: 12px; }
 .mu-book { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: 8px; padding: 8px 11px; background: var(--panel); }
 .mu-book-src { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+.mu-book-ln { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.mu-book-ln:hover { border-bottom-style: solid; }
 .mu-book-t { font-size: 13.5px; line-height: 1.8; color: var(--ink-2, var(--ink)); }
 
 /* «تفسير» — the verse's tafsir(s) in the reader, each attributed */

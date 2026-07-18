@@ -1,0 +1,241 @@
+{
+ "version": 1,
+ "generated": "2026-07-18",
+ "books": [
+  {
+   "id": "muyassar",
+   "label": "التفسير الميسّر",
+   "genre": "tafsir",
+   "embedded": true,
+   "entries": 6236
+  },
+  {
+   "id": "jalalayn",
+   "label": "تفسير الجلالين",
+   "genre": "tafsir",
+   "embedded": true,
+   "entries": 6236
+  },
+  {
+   "id": "mukhtasar",
+   "label": "المختصر في التفسير",
+   "genre": "tafsir",
+   "author": "مركز تفسير",
+   "embedded": true,
+   "entries": 6211
+  },
+  {
+   "id": "saadi",
+   "label": "تيسير الكريم الرحمن",
+   "genre": "tafsir",
+   "author": "السعدي",
+   "embedded": true,
+   "entries": 1739
+  },
+  {
+   "id": "aysar",
+   "label": "أيسر التفاسير",
+   "genre": "tafsir",
+   "author": "أبو بكر الجزائري",
+   "embedded": false,
+   "entries": 1290
+  },
+  {
+   "id": "gharibmuyassar",
+   "label": "الميسّر في غريب القرآن",
+   "genre": "gharib",
+   "embedded": true,
+   "entries": 5067
+  },
+  {
+   "id": "seraj",
+   "label": "السراج في غريب القرآن",
+   "genre": "gharib",
+   "author": "الخضيري",
+   "embedded": true,
+   "entries": 1739
+  },
+  {
+   "id": "i3rabmuyassar",
+   "label": "الإعراب الميسّر",
+   "genre": "i3rab",
+   "embedded": false,
+   "entries": 6236
+  },
+  {
+   "id": "nashr",
+   "label": "النشر في القراءات العشر",
+   "genre": "qiraat",
+   "author": "ابن الجزري",
+   "embedded": false,
+   "entries": 1404
+  },
+  {
+   "id": "qiraat",
+   "label": "الموسوعة القرآنية للقراءات",
+   "genre": "qiraat",
+   "embedded": false,
+   "entries": 2329
+  },
+  {
+   "id": "wahidi",
+   "label": "أسباب نزول القرآن",
+   "genre": "asbab",
+   "author": "الواحدي",
+   "embedded": true,
+   "entries": 564
+  },
+  {
+   "id": "muharrar",
+   "label": "المحرَّر في أسباب النزول",
+   "genre": "asbab",
+   "author": "المزيني",
+   "embedded": true,
+   "entries": 198
+  },
+  {
+   "id": "mufradat",
+   "label": "المفردات في غريب القرآن",
+   "genre": "lexicon",
+   "author": "الراغب الأصفهاني",
+   "embedded": true,
+   "entries": 1619
+  },
+  {
+   "id": "maqayis",
+   "label": "مقاييس اللغة",
+   "genre": "lexicon",
+   "author": "ابن فارس",
+   "embedded": true,
+   "entries": 5270
+  }
+ ],
+ "layers": [
+  {
+   "id": "furuq",
+   "label": "فروق التنزيل",
+   "file": "furuq.json",
+   "grade": "mahsub",
+   "anchors": [
+    "aya"
+   ],
+   "route": "/furuq",
+   "desc": "أزواج المتشابهات محاذاةً حرفية: موضعا الزوج وفئة الفرق ودرجة التطابق والكلمات المُبدلة/المزيدة",
+   "count": 2019
+  },
+  {
+   "id": "lisan",
+   "label": "شبكة الجذور الدلالية (الفروق اللغوية)",
+   "file": "lexnet.json",
+   "grade": "mahsub",
+   "anchors": [
+    "root"
+   ],
+   "route": "/lisan",
+   "desc": "لكل جذرٍ: مواضعُه وأقربُ الجذور إليه دلالةً وحقولُه المعنوية — لأسئلة الفروق بين الألفاظ المتقاربة",
+   "count": 1603
+  },
+  {
+   "id": "wujuh",
+   "label": "الوجوه والنظائر",
+   "file": "wujuh.json",
+   "grade": "manqul",
+   "anchors": [
+    "lemma"
+   ],
+   "route": "/wujuh",
+   "desc": "ألفاظٌ تعددت وجوهُ معانيها في المصحف: لكل وجهٍ آياتُه وشاهدُه المنقول من المعاجم",
+   "count": 14
+  },
+  {
+   "id": "amthal",
+   "label": "الأمثال والتشبيهات",
+   "file": "amthal.json",
+   "grade": "mahsub",
+   "anchors": [
+    "aya"
+   ],
+   "route": "/amthal",
+   "desc": "مواضع الأمثال المصرّحة والتشبيهات في المصحف",
+   "count": 157
+  },
+  {
+   "id": "stats",
+   "label": "إحصاءات مشكاة المحسوبة",
+   "file": "layer-stats.json",
+   "grade": "mahsub",
+   "anchors": [
+    "term"
+   ],
+   "route": "/about",
+   "desc": "كل معدودٍ سلفًا: أعداد الطبقات والصرف والجذور والحروف — الأرقام تُنقل من هنا ولا تُعَدّ أبدًا"
+  }
+ ],
+ "stats": {
+  "layerStats": {
+   "jawami": {
+    "principles": 1032,
+    "hubs": 983,
+    "links": 11139,
+    "rels": {
+     "بيان": 3354,
+     "توكيد": 5551,
+     "مثال": 1067,
+     "جزاء": 1167
+    }
+   },
+   "evidence": {
+    "verses": 2537,
+    "units": 3542,
+    "links": 11772
+   },
+   "muhkamat": {
+    "count": 129,
+    "kubra": 40,
+    "network": {
+     "nodes": 2901,
+     "components": 12,
+     "giant": 2871,
+     "giantPct": 98.97,
+     "avgHops": 5.25,
+     "maxHops": 13
+    }
+   },
+   "mawdui": {
+    "sections": 12,
+    "topics": 262,
+    "verses": 6236
+   },
+   "furuq": {
+    "pairs": 2019,
+    "categories": {
+     "زيادة/نقص": 337,
+     "فروق مركّبة": 1122,
+     "تطابق": 348,
+     "إبدال": 126,
+     "اشتمال": 28,
+     "اختلاف صيغة": 56,
+     "تقديم وتأخير": 2
+    }
+   },
+   "network": {
+    "inNetwork": 2901,
+    "mathani": 1683
+   },
+   "totals": {
+    "verses": 6236
+   }
+  },
+  "morph": {
+   "meta": {
+    "segments": 130030,
+    "words": 77429,
+    "verbs": 19353,
+    "roots": 1651,
+    "lemmas": 4776,
+    "letters": 312182,
+    "source": "الوسم الصرفي — Quranic Arabic Corpus (v0.4)"
+   }
+  }
+ }
+}

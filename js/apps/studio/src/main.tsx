@@ -2,7 +2,12 @@ import React, { lazy, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
+import { ensureLayers } from "./layers";
 import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
+
+// سجل الطبقات (rag-manifest) يُحمَّل مع الإقلاع كي ترى كلُّ الشاشات — لا نبراس
+// وحده — الكتبَ والطبقاتِ المضافة قيودَ مانيفست («العائلات المفتوحة»)
+void ensureLayers();
 import "./theme.css";
 import Reader from "./views/Reader";
 import Roots from "./views/Roots";

@@ -37,6 +37,13 @@ export const BOOK_SOURCES: BookSource[] = [
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
+/** بعد استبدال السجل من rag-manifest.json (layers.ts) تُحدَّث المشتقات مكانيًّا
+ *  كي يرى كلُّ مستهلكيها الكتبَ الجديدة — «العائلات المفتوحة» بلا تعديل كود. */
+export function refreshDerivedSources(): void {
+  EMBEDDED_SOURCES.splice(0, EMBEDDED_SOURCES.length, ...BOOK_SOURCES.filter((s) => s.embedded));
+  TAFSIR_SOURCES.splice(0, TAFSIR_SOURCES.length, ...BOOK_SOURCES.filter((s) => s.genre === "tafsir"));
+  ASBAB_SOURCES.splice(0, ASBAB_SOURCES.length, ...BOOK_SOURCES.filter((s) => s.genre === "asbab"));
+}
 export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.find((s) => s.id === id);
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 

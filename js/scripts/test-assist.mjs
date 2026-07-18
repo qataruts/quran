@@ -87,7 +87,136 @@ function runTool(name, args) {
     return { passages: picks.filter(Boolean).map(pack) };
   }
   if (name === "compose_draft") return { ok: true, shown: true, opening: "الحمد لله رب العالمين..." };
+  if (name === "layer_of") return layerOfMock(String(args.layer ?? ""), String(args.anchor ?? ""));
+  if (name === "search_layer") return searchLayerMock(String(args.layer ?? ""), String(args.query ?? ""));
   return { error: "أداة غير معروفة" };
+}
+
+// ——— سجل الطبقات (مرآة src/layers.ts على الملفات الحقيقية) ———
+const PUB = `${ROOT}/js/apps/studio/public`;
+const pubJson = (f) => JSON.parse(fs.readFileSync(`${PUB}/${f}`, "utf-8"));
+const manifest = pubJson("rag-manifest.json");
+const bare = (s) => String(s).replace(TASHKEEL, "").trim();
+const AYA_RE = /^\d{1,3}:\d{1,3}$/;
+
+/** موجز الطبقات المرسل للخادم — كما يبنيه layersDigest في المتصفح */
+function layersDigest(m = manifest) {
+  const anchorEx = (a) => (a === "aya" ? "آية مثل 30:37" : a === "root" ? "جذر مثل سمو" : a === "lemma" ? "كلمة مثل استوى" : "مصطلح أو «عام»");
+  const out = m.layers.map((l) => ({
+    id: l.id, label: l.label, grade: l.grade,
+    desc: `${l.desc}${l.count ? ` (${l.count} مدخلة)` : ""} — تُستدعى بـlayer_of(${l.id}, ${anchorEx(l.anchors[0])})`,
+  }));
+  for (const g of ["qiraat", "i3rab"]) {
+    const books = m.books.filter((b) => b.genre === g);
+    if (books.length) out.push({ id: g, label: books.map((b) => b.label).join("، "), grade: "manqul", desc: `تُستدعى بـlayer_of(${g}, آية مثل 18:97)` });
+  }
+  const embedded = m.books.filter((b) => b.embedded);
+  out.push({ id: "search", label: "بحث دلالي داخل كتاب أو عائلة بعينها", grade: "manqul", desc: `search_layer(المعرف, وصف غني) — الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة tafsir/asbab/gharib/lexicon` });
+  // كتب محقونة للاختبار (خارج المانيفست المكتوب على القرص)
+  for (const b of injectedBooks) out.push({ id: b.id, label: b.label, grade: "manqul", desc: `تُستدعى بـlayer_of(${b.id}, آية)` });
+  return out;
+}
+const injectedBooks = []; // تجربة «الكتاب المحقون»: قيود تُضاف وقت التشغيل
+
+function bookAt(id, ref) {
+  try {
+    const entries = pubJson(`rag-${id}.json`);
+    const [s, a] = ref.split(":").map(Number);
+    const n = s * 1000 + a;
+    const e = entries.find((x) => {
+      const [s1, a1] = x.ref.split(":").map(Number);
+      const start = s1 * 1000 + a1;
+      const end = x.refEnd ? (([s2, a2]) => s2 * 1000 + a2)(x.refEnd.split(":").map(Number)) : start;
+      return n >= start && n <= end;
+    });
+    return e ? e.text : null;
+  } catch { return null; }
+}
+
+function layerOfMock(layer, anchor) {
+  const id = layer.trim();
+  if (id === "furuq") {
+    if (!AYA_RE.test(anchor)) return { error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
+    const hits = pubJson("furuq.json").furuq.filter((p) => p.a === anchor || p.b === anchor).slice(0, 3);
+    if (!hits.length) return { layer: id, found: false, note: `لا زوجَ متشابهٍ عند ${anchor}` };
+    const vAt = (r) => { const [s, a] = r.split(":").map(Number); return verseU(s, a) || verse(s, a) || ""; };
+    return {
+      layer: id,
+      entries: hits.map((p) => ({
+        source: "فروق التنزيل", ref: `${p.a} ↔ ${p.b}`,
+        text: `الزوج ${p.a} ↔ ${p.b} — الفئة: ${p.cat}، التطابق ${Math.round(p.eq * 100)}٪: ${p.ops.map((o) => (Array.isArray(o) ? (o[0] === "~" ? `[${o[1]}↔${o[2]}]` : o[0] === "-" ? `[−${o[1]}]` : `[+${o[1]}]`) : o)).join(" ")}\nنص ${p.a}: ${vAt(p.a)}\nنص ${p.b}: ${vAt(p.b)}`.slice(0, 1100),
+      })),
+    };
+  }
+  if (id === "lisan") {
+    const data = pubJson("lexnet.json");
+    const rec = data.roots[bare(anchor)];
+    if (!rec) return { layer: id, found: false, note: `الجذر «${anchor}» ليس في الشبكة` };
+    return { layer: id, entries: [{ source: "شبكة الجذور الدلالية", ref: bare(anchor), text: `الجذر ${bare(anchor)}: ${rec.occ} موضعًا؛ أقرب الجذور: ${rec.near.slice(0, 8).map((n) => `${n.r} (${n.s.toFixed(2)})`).join("، ")}` }] };
+  }
+  if (id === "wujuh") {
+    const data = pubJson("wujuh.json");
+    const q = bare(anchor);
+    const w = data.words.find((x) => bare(x.lemma) === q || x.root === q || bare(x.lemma).includes(q));
+    if (!w) return { layer: id, found: false, note: `لا وجوهَ مؤسَّسةً للفظ «${anchor}» — المؤسَّس: ${data.words.map((x) => x.lemma).join("، ")}` };
+    return { layer: id, entries: [{ source: "الوجوه والنظائر", ref: w.lemma, text: `${w.lemma} (${w.n} موضعًا): ${w.faces.map((f, i) => `الوجه ${i + 1} (${f.verses.length} آية): ${f.sense}`).join("؛ ")}`.slice(0, 900) }] };
+  }
+  if (id === "amthal") {
+    const d = pubJson("amthal.json");
+    if (AYA_RE.test(anchor)) {
+      const t = d.parables.includes(anchor) ? `الموضع ${anchor} من الأمثال المصرّحة` : d.similes.includes(anchor) ? `الموضع ${anchor} من مواضع التشبيه` : `الموضع ${anchor} ليس في الأمثال (${d.parables.length}) ولا التشبيهات (${d.similes.length})`;
+      return { layer: id, entries: [{ source: "الأمثال والتشبيهات", ref: anchor, text: t }] };
+    }
+    return { layer: id, entries: [{ source: "الأمثال والتشبيهات", text: `الأمثال المصرّحة ${d.parables.length}: ${d.parables.slice(0, 12).join("، ")}… والتشبيهات ${d.similes.length}` }] };
+  }
+  if (id === "stats") {
+    const L = manifest.stats.layerStats; const mm = manifest.stats.morph.meta;
+    const facts = [
+      ["أزواج فروق التنزيل", L.furuq?.pairs], ["أبواب المصحف الموضوعي", L.mawdui?.sections], ["موضوعات المصحف الموضوعي", L.mawdui?.topics], ["آيات المصحف", L.mawdui?.verses],
+      ["المقاطع الصرفية (QAC)", mm.segments], ["كلمات المصحف (QAC)", mm.words], ["الأفعال (QAC)", mm.verbs], ["الجذور (QAC)", mm.roots], ["اللمّات (QAC)", mm.lemmas], ["حروف المصحف (QAC)", mm.letters],
+      ...manifest.layers.filter((l) => l.count).map((l) => [`مدخلات طبقة ${l.label}`, l.count]),
+      ...manifest.books.filter((b) => b.entries).map((b) => [`مدخلات ${b.label}`, b.entries]),
+    ].filter(([, v]) => v != null);
+    const q = bare(anchor);
+    const generic = !q || ["عام", "الكل", "كل", "إحصاء", "احصاء"].includes(q);
+    const hits = generic ? facts.slice(0, 28) : facts.filter(([k]) => k.includes(q));
+    if (!hits.length) return { layer: id, found: false, note: `لا إحصاءَ محسوبًا يطابق «${anchor}»` };
+    return { layer: id, entries: [{ source: "إحصاءات مشكاة المحسوبة", text: hits.map(([k, v]) => `${k}: ${v}`).join(" · ") }], note: "أرقام محسوبة سلفًا تُنقل كما هي وتُنسب لطبقات مشكاة" };
+  }
+  if (id === "qiraat" || id === "i3rab") {
+    if (!AYA_RE.test(anchor)) return { error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
+    const sources = manifest.books.filter((b) => b.genre === id);
+    const [ss, aa] = anchor.split(":").map(Number);
+    const ayaLine = `نص الآية ${anchor}: ${verseU(ss, aa) || verse(ss, aa) || ""}\n`;
+    const entries = [];
+    for (const s of sources) {
+      const t = bookAt(s.id, anchor);
+      if (t) entries.push({ source: s.label, ref: anchor, text: `${entries.length === 0 ? ayaLine : ""}${t}`.slice(0, 900) });
+    }
+    return entries.length ? { layer: id, entries } : { layer: id, found: false, note: `لا نصَّ عند ${anchor}` };
+  }
+  const injected = injectedBooks.find((b) => b.id === id);
+  const known = manifest.books.find((b) => b.id === id);
+  if (injected || known) {
+    const label = (injected ?? known).label;
+    const text = bookAt(id, anchor.trim());
+    return text ? { layer: id, entries: [{ source: label, ref: anchor.trim(), text: text.slice(0, 700) }] } : { layer: id, found: false, note: `لا نصَّ عند ${anchor} في ${label}` };
+  }
+  return { error: `طبقة غير معروفة «${id}»` };
+}
+
+function searchLayerMock(layer, query) {
+  // مرآة مبسطة: يعيد أوائل مدخلات الكتاب المطابقة كلمةً — يكفي لاختبار اختيار الأداة
+  const fam = ["tafsir", "asbab", "gharib", "lexicon"].includes(layer) ? manifest.books.filter((b) => b.genre === layer && b.embedded) : manifest.books.filter((b) => b.id === layer && b.embedded);
+  if (!fam.length) return { error: `لا كتبَ بمتجهات بالمعرف «${layer}»` };
+  const kw = bare(query).split(/\s+/).filter((w) => w.length > 3).slice(0, 3);
+  const out = [];
+  for (const b of fam.slice(0, 3)) {
+    const entries = pubJson(`rag-${b.id}.json`);
+    const hits = entries.filter((e) => kw.some((w) => e.text.includes(w))).slice(0, 2);
+    for (const h of hits) out.push({ source: b.label, ref: h.ref, text: h.text.slice(0, 400) });
+  }
+  return { entries: out.slice(0, 6) };
 }
 
 // ——— الفحوص الآلية ———
@@ -154,7 +283,7 @@ async function chatTurn(messages, label) {
     const req = new Request("http://localhost/api/assist", {
       method: "POST",
       headers: { "content-type": "application/json", origin: "http://localhost" },
-      body: JSON.stringify({ messages, steps }),
+      body: JSON.stringify({ messages, steps, layers: layersDigest() }),
     });
     const res = await handler(req);
     const j = await res.json();
@@ -165,7 +294,7 @@ async function chatTurn(messages, label) {
       const req2 = new Request("http://localhost/api/assist", {
         method: "POST",
         headers: { "content-type": "application/json", origin: "http://localhost" },
-        body: JSON.stringify({ messages, steps, finalize: true }),
+        body: JSON.stringify({ messages, steps, layers: layersDigest(), finalize: true }),
       });
       const res2 = await handler(req2);
       const j2 = await res2.json();
@@ -263,6 +392,63 @@ if (want(7)) {
   console.log(`  ${mark(searched)} نفّذ البحث بنفسه قبل الكتابة`);
   console.log(`  ${mark(!stalled2)} لم يقف يستأذن بدل التنفيذ`);
   report(t2, { weave: true, minVerses: 2, attribution: true });
+}
+
+// ——— مسابر «نبراس الشامل» م١ (الطبقات عبر الأداتين العامتين) ———
+
+// ت٨ — فروق التنزيل: يستدعي الطبقة بنفسه ويعرض الزوج بأرقامه من النتيجة
+if (want(8)) {
+  const t = await chatTurn([{ role: "user", text: "هل لآية الروم ٣٧ نظيرٌ متشابهٌ في المصحف؟ وما الفرق بينهما بالضبط؟" }], "ت٨: فروق التنزيل — استدعاء ذاتي بآية");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "furuq"))} استدعى layer_of(furuq) بنفسه`);
+  console.log(`  ${mark(/39:52|٣٩:٥٢|الزمر\s*[5٥][2٢]/.test(t.text))} ذكر موضع النظير (الزمر ٥٢) من النتيجة`);
+  report(t);
+}
+
+// ت٩ — الإحصاءات: الأرقام تُنقل من الطبقة لا تُعدّ ولا تُستذكر
+if (want(9)) {
+  const t = await chatTurn([{ role: "user", text: "كم عدد أزواج فروق التنزيل عندكم؟ وكم عدد كلمات المصحف ومقاطعه الصرفية؟" }], "ت٩: إحصاء مباشر — لا عدَّ ذاتيًّا");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "stats"))} استدعى layer_of(stats) بنفسه`);
+  const flat = t.text.replace(/[,،٬]/g, "");
+  const nums = [/2019|٢٠١٩/, /77429|٧٧٤٢٩/, /130030|١٣٠٠٣٠/];
+  console.log(`  ${mark(nums.every((r) => r.test(flat)))} الأرقام الثلاثة كلها من النتيجة (٢٠١٩ · ٧٧٤٢٩ · ١٣٠٠٣٠)`);
+  console.log(`  ${mark(/مشكاة|طبقات|المحسوبة|إحصاء/.test(t.text))} نسبها لطبقات مشكاة`);
+  report(t);
+}
+
+// ت١٠ — القراءات (عائلة كتب مرجعية): استدعاء بآية
+if (want(10)) {
+  const t = await chatTurn([{ role: "user", text: "ما القراءات الواردة في قوله تعالى عند الكهف ٩٧؟" }], "ت١٠: القراءات — عائلة كتب بمرسى آية");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "qiraat"))} استدعى layer_of(qiraat) بنفسه`);
+  console.log(`  ${mark(/النشر|الموسوعة/.test(t.text))} نسب النقل لكتابه`);
+  report(t);
+}
+
+// ت١١ — فخّ حدّي: لفظ ليس في طبقة الوجوه — يُقرّ الغياب ولا يخترع وجوهًا
+if (want(11)) {
+  const t = await chatTurn([{ role: "user", text: "ما وجوه لفظ «الرحمة» في طبقة الوجوه والنظائر عندكم؟ اذكرها من الطبقة نفسها" }], "ت١١: فخ حدّي — لفظ خارج الوجوه المؤسَّسة");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "wujuh"))} استدعى layer_of(wujuh) بنفسه`);
+  const admitted = /ليس|لا وجوه|لم أجد|غير مؤسَّس|غير موجود/.test(t.text);
+  const invented = /الوجه الأول.*الوجه الثاني/s.test(t.text) && !admitted;
+  console.log(`  ${mark(admitted && !invented)} أقرّ الغياب ولم يخترع وجوهًا`);
+  report(t);
+}
+
+// ت١٢ — «الكتاب المحقون»: كتاب يُضاف بيانات فقط (ملف + قيد) فيظهر لنبراس فورًا
+if (want(12)) {
+  const mahqunPath = `${PUB}/rag-mahqun.json`;
+  fs.writeFileSync(mahqunPath, JSON.stringify([
+    { ref: "1:1", text: "هذا نصٌّ تجريبيٌّ من الكتاب المحقون: مدخلُ البسملة في كتاب الاختبار — دليلُ أن إضافة كتابٍ عملُ بياناتٍ محض." },
+  ]), "utf-8");
+  injectedBooks.push({ id: "mahqun", label: "كتاب الاختبار المحقون" });
+  try {
+    const t = await chatTurn([{ role: "user", text: "ماذا ورد في «كتاب الاختبار المحقون» عند الفاتحة ١؟ انقل نصه بإسناده" }], "ت١٢: الكتاب المحقون — إضافة كتاب بلا تعديل كود");
+    console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "mahqun"))} استدعى layer_of(mahqun) — الكتاب ظهر له من الموجز وحده`);
+    console.log(`  ${mark(/الكتاب المحقون|كتاب الاختبار/.test(t.text) && /تجريبي/.test(t.text))} نقل نصه ونسبه للكتاب`);
+    report(t);
+  } finally {
+    fs.unlinkSync(mahqunPath);
+    injectedBooks.length = 0;
+  }
 }
 
 db.close();

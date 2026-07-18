@@ -19,6 +19,8 @@ import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
 import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
+import { ensureLayers, layersDigest, layerLookup, layerSearch } from "../layers";
+import { resolveRootReady } from "../searchForms";
 import { ayahByLocationMap, surahNameAr } from "../db";
 
 async function postJson(url: string, body: unknown): Promise<any> {
@@ -43,6 +45,8 @@ const TOOL_STATUS: Record<string, (a: Record<string, unknown>) => string> = {
   search_books: (a) => `يبحث في الكتب: ${String(a.query ?? "").slice(0, 60)}…`,
   context_of: (a) => `يقرأ سياق ${String(a.ref ?? "")}`,
   search_passages: (a) => `يبحث في المقاطع: ${String(a.query ?? "").slice(0, 60)}…`,
+  layer_of: (a) => `يستدعي طبقة ${String(a.layer ?? "")}: ${String(a.anchor ?? "").slice(0, 40)}`,
+  search_layer: (a) => `يبحث في ${String(a.layer ?? "")}: ${String(a.query ?? "").slice(0, 50)}…`,
   compose_draft: (a) => `يؤلّف مسودة: ${String(a.subject ?? "")}`,
 };
 
@@ -187,7 +191,10 @@ function Bubble({ m }: { m: ChatMsg }) {
                         <div className="mu-books-h muted">{ar ? "من المصادر (مذكورةً):" : "from the sources (cited):"}</div>
                         {m.books!.map((b, i) => (
                           <div key={i} className="mu-book">
-                            <div className="mu-book-src">◆ {bookLabel(b.source)}{b.ref ? ` · ${b.ref}` : ""}</div>
+                            <div className="mu-book-src">
+                              ◆ {b.href ? <Link to={b.href} className="mu-book-ln">{bookLabel(b.source)}</Link> : bookLabel(b.source)}
+                              {b.ref ? ` · ${b.ref}` : ""}
+                            </div>
                             <div className="mu-book-t">{b.text}</div>
                           </div>
                         ))}
@@ -268,12 +275,33 @@ export default function Assistant() {
           return { ayahs: ayahs.map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })) };
         }
         if (name === "search_root") {
-          const r = await toolRootInfo(String(args.word ?? ""));
+          const word = String(args.word ?? "");
+          let r = await toolRootInfo(word);
+          if (!r.roots.length) {
+            // مطبِّع الصيغ: كلمة مكتوبة (السماء) → جذرها (سمو) ثم إعادة الاستقصاء
+            const alt = await resolveRootReady(word);
+            if (alt) r = await toolRootInfo(alt);
+          }
           for (const rt of r.roots) if (!acc.roots.some((x) => x.root === rt.root)) acc.roots.push(rt);
           addAyahs(r.ayahs.slice(0, 6));
           return {
             roots: r.roots.map((rt) => ({ root: rt.root, occurrences: rt.occ, sense: (rt.gloss || "").slice(0, 400) })),
             ayahs: r.ayahs.slice(0, 6).map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
+          };
+        }
+        if (name === "layer_of" || name === "search_layer") {
+          const res = name === "layer_of"
+            ? await layerLookup(String(args.layer ?? ""), String(args.anchor ?? ""))
+            : await layerSearch(String(args.layer ?? ""), String(args.query ?? ""), Math.min(Number(args.k) || 6, 8));
+          if (res.error) return { error: res.error };
+          // القصُّ هنا يساوي أقصى ما تنتجه الطبقات (١١٠٠) — فبطاقة المرجع تحمل
+          // كلَّ ما رآه النموذج، ولا يُعرض اقتباسٌ بلا سنده الكامل في المراجع
+          for (const e of res.entries.slice(0, 6)) acc.books.push({ source: e.label, ref: e.ref ?? "", text: e.text.slice(0, 1200), href: e.href });
+          if (!res.entries.length) return { layer: res.layer, found: false, note: res.note ?? "لا نتائج في هذه الطبقة" };
+          return {
+            layer: res.layer,
+            entries: res.entries.map((e) => ({ source: e.label, ref: e.ref, text: e.text })),
+            ...(res.note ? { note: res.note } : {}),
           };
         }
         if (name === "tafsir_of" || name === "asbab_of") {
@@ -345,17 +373,20 @@ export default function Assistant() {
       };
 
       // حلقة الوكيل: النموذج يطلب أدواتٍ فنُنفّذها ونعيد النداء، حتى نصٍّ نهائي
+      // موجزُ طبقات مشكاة (من المانيفست) يُرسل مع كل نداء ليعرف النموذجُ عُدّته
+      await ensureLayers();
+      const layers = layersDigest();
       const steps: { name: string; args: Record<string, unknown>; result: unknown }[] = [];
       const toolTexts: string[] = []; // نصوص الأدوات الحرفية — للتنقية القرآنية
       let finalText = "";
       for (let round = 0; round < 5; round++) {
-        const res = await postJson("/api/assist", { messages: history, steps });
+        const res = await postJson("/api/assist", { messages: history, steps, layers });
         if (res.finalize) {
           // المادة اكتملت — نداءٌ مستقل للتأليف النهائي بالنموذج الأقوى،
           // ونصُّ المرحلة الأولى احتياطٌ إن أخفق
           patchMessage(cid, aid, { pending: true, text: ar ? "ينسج الجوابَ من المادة…" : "weaving the answer…" });
           try {
-            const fin = await postJson("/api/assist", { messages: history, steps, finalize: true });
+            const fin = await postJson("/api/assist", { messages: history, steps, layers, finalize: true });
             finalText = fin.text || res.text || "";
           } catch {
             finalText = res.text || "";

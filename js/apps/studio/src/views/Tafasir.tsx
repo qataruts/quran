@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { booksByGenre, bookById, loadBookEntries, GENRE_LABELS, type BookEntry } from "../books";
+import { ensureLayers } from "../layers";
 import { surahNameAr } from "../db";
 import { readPathOf } from "../types";
 import PageSearch from "../components/PageSearch";
@@ -22,7 +23,9 @@ const refLabel = (e: BookEntry) =>
 /* ---------- level 0: the books ---------- */
 function BookList() {
   const ar = getUILang() === "ar";
-  const groups = useMemo(() => booksByGenre(), []);
+  // القائمة تُعاد بعد اكتمال المانيفست كي تظهر الكتب المضافة قيودَ بيانات
+  const [groups, setGroups] = useState(() => booksByGenre());
+  useEffect(() => { void ensureLayers().then(() => setGroups(booksByGenre())); }, []);
   return (
     <>
       <header className="mw-head">

@@ -10,7 +10,7 @@ import { useSyncExternalStore } from "react";
 
 export type ChatAyah = { ref: string; text: string; score?: number };
 export type ChatRoot = { root: string; occ: number; gloss?: string };
-export type ChatBook = { ref: string; text: string; source: string }; // a cited book/tafsir passage
+export type ChatBook = { ref: string; text: string; source: string; href?: string }; // a cited book/tafsir/layer passage (+ its screen route)
 export type ChatMsg = {
   id: string;
   role: "user" | "assistant";
