@@ -16,9 +16,9 @@ export default function TopicLayerToggle() {
         <span className="ai-spark" aria-hidden /> {ar ? "المحاور" : "Axes"}
         <span className="lt-sub">{ar ? "محسوبة" : "computed"}</span>
       </Link>
-      <Link to="/mawadi" className={`lt-opt${!onMahawir ? " on" : ""}`} role="tab" aria-selected={!onMahawir}>
-        {ar ? "المواضيع" : "Topics"}
-        <span className="lt-sub">{ar ? "متوارثة" : "traditional"}</span>
+      <Link to="/mawadi" className={`lt-opt${!onMahawir ? " on" : ""}`} role="tab" aria-selected={!onMahawir} title={ar ? "التبويب التقليدي المنقول — يُعرض للمقارنة بجوار المحسوب" : "the traditional curated index — kept for comparison beside the computed"}>
+        {ar ? "التبويب التقليدي" : "Traditional index"}
+        <span className="lt-sub">{ar ? "منقول · للمقارنة" : "curated · for comparison"}</span>
       </Link>
     </div>
   );

@@ -147,8 +147,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "الموضوعات", en: "Themes",
     items: [
-      ["/mawdui", "المحاور", "Axes"],
-      ["/mawadi", "المواضيع", "Topics"],
+      ["/mawdui", "المحاور والتبويب", "Axes & topics"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
       ["/amthal", "الأمثال", "Parables"],
     ],
