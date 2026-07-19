@@ -141,8 +141,27 @@ function bookAt(id, ref) {
   } catch { return null; }
 }
 
+/** مرآة resolveAyaAnchor: «الإخلاص 1» → «112:1» */
+const AR_D = { "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9" };
+const latinDigits = (x) => String(x).replace(/[٠-٩]/g, (d) => AR_D[d]);
+let surahNos = null;
+function resolveAyaMock(anchor) {
+  const a = latinDigits(String(anchor).trim());
+  if (AYA_RE.test(a)) return a;
+  const m = /^(.+?)\s+(\d{1,3})$/.exec(bare(a).replace(/^سورة\s+/, ""));
+  if (!m) return null;
+  if (!surahNos) {
+    surahNos = new Map();
+    for (const [no, nm] of SURAHS) { const b = bare(nm); surahNos.set(b, no); surahNos.set(b.replace(/^ال/, ""), no); }
+  }
+  const name = m[1].trim();
+  const s = surahNos.get(name) ?? surahNos.get(name.replace(/^ال/, ""));
+  return s ? `${s}:${Number(m[2])}` : null;
+}
+
 function layerOfMock(layer, anchor) {
   const id = layer.trim();
+  anchor = resolveAyaMock(anchor) ?? String(anchor).trim();
   if (id === "furuq") {
     if (!AYA_RE.test(anchor)) return { error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
     const hits = pubJson("furuq.json").furuq.filter((p) => p.a === anchor || p.b === anchor).slice(0, 3);
@@ -206,7 +225,11 @@ function layerOfMock(layer, anchor) {
     }
     return entries.length ? { layer: id, entries } : { layer: id, found: false, note: `لا نصَّ عند ${anchor}` };
   }
-  if (id === "bayan") return termBookMock(manifest.books.filter((b) => b.genre === "bayan" && !b.remote), anchor, "bayan");
+  if (id === "bayan") return bayanMock(anchor);
+  if (id === "tabwib" || id === "mawadi" || id === "mawdui") return tabwibMock(anchor);
+  if (id === "simat") return simatMock(anchor);
+  if (id === "mithl") return mithlMock(anchor);
+  if (id === "fawasil") return fawasilMock(anchor);
   const injected = injectedBooks.find((b) => b.id === id);
   const known = manifest.books.find((b) => b.id === id);
   if (injected || known) {
@@ -219,6 +242,119 @@ function layerOfMock(layer, anchor) {
   return { error: `طبقة غير معروفة «${id}»` };
 }
 
+/** مطابقة المصطلحات بالكلمات (مرآة layers.ts) */
+const TERM_STOP = new Set(["الفرق", "فرق", "بين", "في", "من", "عن", "ما", "او", "أو", "معنى", "كلمة", "لفظ"]);
+const termTokens = (s) => bare(s).split(/\s+/).filter((w) => w.length >= 2 && !TERM_STOP.has(w));
+const termScore = (title, toks) => { const t = bare(title); return toks.filter((k) => t.includes(k) || (k.startsWith("و") && t.includes(k.slice(1)))).length; };
+function bestByTitle(items, titleOf, anchor) {
+  const q = bare(anchor);
+  const direct = items.find((x) => bare(titleOf(x)).includes(q));
+  if (direct) return direct;
+  const toks = termTokens(anchor);
+  if (!toks.length) return null;
+  const need = Math.min(2, toks.length);
+  let best = null, bestScore = 0;
+  for (const x of items) { const sc = termScore(titleOf(x), toks); if (sc >= need && sc > bestScore) { best = x; bestScore = sc; } }
+  return best;
+}
+
+/** مرآة bayanLookup: بطاقة محررة ← آلية ← مداخل الكتب */
+function bayanMock(anchor) {
+  const q = bare(anchor);
+  if (q.length < 3) return { error: "المرسى مصطلح" };
+  const entries = [];
+  const edited = pubJson("bayan.json");
+  const card = bestByTitle(edited.cards, (c) => `${c.title} ${c.kashf}`, anchor);
+  if (card) {
+    const readings = (card.readings ?? []).slice(0, 2).map((r) => `${r.src}: «${r.quote.slice(0, 220)}»`).join("\n");
+    entries.push({ source: "بطاقة بيان محررة", ref: card.title, text: `${card.title}\nالكشف (محسوب): ${card.kashf}${readings ? `\nقراءات الأعلام:\n${readings}` : ""}`.slice(0, 1100) });
+  }
+  if (entries.length < 2) {
+    const auto = pubJson("bayan-auto.json");
+    const ac = bestByTitle(auto.cards, (c) => `${c.head} ${c.roots.join(" ")}`, anchor);
+    if (ac) {
+      const sides = ac.sides.map((s) => `${s.root}: ${s.total} موضعًا (مكي ${s.makki}/مدني ${s.madani})`).join(" · ");
+      entries.push({ source: "بطاقة بيان آلية التوليد (بلا تحرير)", ref: ac.head, text: `${ac.head}\nخريطتا الجذرين: ${sides}${ac.reading ? `\nالنقل — ${ac.reading.src}: «${ac.reading.quote.slice(0, 200)}»` : ""}`.slice(0, 1100) });
+    }
+  }
+  const books = termBookMock(manifest.books.filter((b) => b.genre === "bayan" && !b.remote), anchor, "bayan");
+  for (const e of books.entries ?? []) { if (entries.length >= 4) break; entries.push(e); }
+  if (!entries.length) return { layer: "bayan", found: false, note: `لا بطاقةَ ولا مدخلَ يطابق «${anchor}»` };
+  return { layer: "bayan", entries: entries.slice(0, 4) };
+}
+
+/** مرآة tabwibLookup: بآية → موضعها من التبويب؛ باسم → وحدات الموضوع/الباب */
+function tabwibMock(anchor) {
+  const topics = pubJson("topics-v1.json");
+  const a = anchor.trim();
+  if (AYA_RE.test(a)) {
+    const u = unitFor(a);
+    if (!u) return { layer: "tabwib", found: false, note: "لا وحدة لهذا الموضع" };
+    const homes = [];
+    for (const bab of topics.babs) for (const t of bab.topics) if (t.units.includes(u.i)) homes.push(`${bab.name} ← ${t.name}`);
+    return { layer: "tabwib", entries: [{ source: "التبويب الموضوعي المحسوب", ref: `${SURAHS.get(u.s)} ${u.a1}–${u.a2}`, text: `الآية ${a} في وحدة «${u.name}»${homes.length ? `؛ موضعها من التبويب: ${homes.slice(0, 3).join(" · ")}` : ""}` }] };
+  }
+  const q = bare(a);
+  for (const bab of topics.babs) {
+    const topic = bab.topics.find((t) => bare(t.name).includes(q));
+    if (topic) {
+      const names = topic.units.slice(0, 8).map((i) => units[i]).filter(Boolean).map((u) => `«${u.name}» (${SURAHS.get(u.s)} ${u.a1}–${u.a2})`);
+      return { layer: "tabwib", entries: [{ source: "التبويب الموضوعي المحسوب", ref: `${bab.name} ← ${topic.name}`, text: `موضوع «${topic.name}» في باب «${bab.name}»: ${topic.units.length} وحدةً، منها: ${names.join("، ")}`.slice(0, 1100) }] };
+    }
+    if (bare(bab.name).includes(q)) return { layer: "tabwib", entries: [{ source: "التبويب الموضوعي المحسوب", ref: bab.name, text: `باب «${bab.name}»: ${bab.unitsCount} وحدة في ${bab.topics.length} موضوعًا: ${bab.topics.map((t) => t.name).slice(0, 10).join("، ")}`.slice(0, 1100) }] };
+  }
+  return { layer: "tabwib", found: false, note: `لا باب ولا موضوع يطابق «${anchor}» — الأبواب: ${topics.babs.map((b) => b.name).join("، ")}`.slice(0, 500) };
+}
+
+/** مرآة simatLookup: شارتا الآية وصلاتها من v3-evidence */
+function simatMock(anchor) {
+  const a = anchor.trim();
+  if (!AYA_RE.test(a)) return { error: "المرسى آية" };
+  const ev = pubJson("v3-evidence.json");
+  const list = ev.verses[a] ?? [];
+  if (!list.length) return { layer: "simat", found: false, note: `لا شارات عند ${a}` };
+  const REL = ["بيان", "مثال", "جزاء", "توكيد"];
+  const parts = list.slice(0, 3).map((u) => {
+    const gates = (u.g ?? []).map((g) => g.replace(/^G\d[a-z]?:/, "")).slice(0, 4).join("، ");
+    const rels = REL.filter((r) => u.links?.[r]?.length).map((r) => `${r}: ${u.links[r].slice(0, 4).join("، ")}`);
+    return `${u.u === "aya" ? "الآية كاملة" : "وحدة منها"}${gates ? ` — صيغة قاعدة (${gates})` : ""}${rels.length ? `؛ ثبت تفرعه — ${rels.join(" · ")}` : ""}${u.tw ? `؛ مثان: ${u.tw}` : ""}`;
+  });
+  return { layer: "simat", entries: [{ source: "سمات الآية وصلاتها", ref: a, text: parts.join("\n").slice(0, 1100) }] };
+}
+
+/** مرآة mithlLookup: أقرب الآيات معنًى من quran-neighbors.bin */
+function mithlMock(anchor) {
+  const a = anchor.trim();
+  if (!AYA_RE.test(a)) return { error: "المرسى آية" };
+  const [s, ay] = a.split(":").map(Number);
+  const gid = db.prepare("SELECT ayah_id g FROM ayah WHERE surah_no=? AND ayah_no=?").get(s, ay)?.g;
+  if (!gid) return { layer: "mithl", found: false, note: "لا آية بهذا الموضع" };
+  const buf = fs.readFileSync(`${PUB}/quran-neighbors.bin`);
+  const headerLen = buf.readUInt32LE(0);
+  const header = JSON.parse(buf.subarray(4, 4 + headerLen).toString("utf-8"));
+  const base = 4 + headerLen + (gid - 1) * header.k * 3;
+  const lines = [];
+  for (let i = 0; i < header.k && lines.length < 6; i++) {
+    const off = base + i * 3;
+    const id = buf[off] | (buf[off + 1] << 8);
+    if (!id) break;
+    const r = db.prepare("SELECT surah_no s, ayah_no a, text_uthmani tu, text_clean tc FROM ayah WHERE ayah_id=?").get(id);
+    if (r) lines.push(`${r.s}:${r.a} (${SURAHS.get(r.s)} ${r.a}): ${(r.tu || r.tc).slice(0, 120)}`);
+  }
+  if (!lines.length) return { layer: "mithl", found: false, note: "لا جارات مسجلة" };
+  return { layer: "mithl", entries: [{ source: "مثلها — أقرب الآيات معنًى", ref: a, text: `أقرب الآيات معنًى إلى ${a}:\n${lines.join("\n")}`.slice(0, 1100) }] };
+}
+
+/** مرآة fawasilLookup */
+function fawasilMock(anchor) {
+  const d = pubJson("fawasil.json");
+  const q = bare(anchor);
+  const byNo = /^\d{1,3}$/.test(q) ? d.surahs.find((x) => x.no === Number(q)) : null;
+  const hit = byNo ?? d.surahs.find((x) => bare(x.name) === q || bare(x.name).includes(q));
+  if (hit) return { layer: "fawasil", entries: [{ source: "أطلس الفواصل", ref: hit.name, text: `سورة ${hit.name} (${hit.ayahs} آية): حرف الفاصلة الغالب «${hit.dom}» بنسبة ${hit.domPct}٪` }] };
+  return { layer: "fawasil", entries: [{ source: "أطلس الفواصل", text: `أغلب حروف الفواصل: ${d.letters.slice(0, 6).map((l) => `${l.letter} (${l.pct}٪)`).join("، ")}` }] };
+}
+
 /** مرآة termBookLookup: الاستدعاء بعنوان المدخل (البيان والمعاجم) */
 function termBookMock(sources, anchor, layerId) {
   const q = bare(anchor);
@@ -228,8 +364,11 @@ function termBookMock(sources, anchor, layerId) {
     if (entries.length >= 4) break;
     let list;
     try { list = pubJson(`rag-${s.id}.json`); } catch { continue; }
-    const hits = list.filter((e) => bare(e.ref).includes(q)).slice(0, 2);
-    for (const h of hits) entries.push({ source: s.label, ref: h.ref, text: h.text.slice(0, 900) });
+    const toks = termTokens(anchor);
+    const need = Math.min(2, Math.max(1, toks.length));
+    const direct = list.filter((e) => bare(e.ref).includes(q));
+    const scored = direct.length ? direct : list.map((e) => ({ e, sc: termScore(e.ref, toks) })).filter((x) => x.sc >= need).sort((a, b) => b.sc - a.sc).map((x) => x.e);
+    for (const h of scored.slice(0, 2)) entries.push({ source: s.label, ref: h.ref, text: h.text.slice(0, 900) });
   }
   if (!entries.length) return { layer: layerId, found: false, note: `لا مدخلَ بعنوانٍ يطابق «${anchor}» — جرّب search_layer للبحث الدلالي أو صياغة أخرى` };
   return { layer: layerId, entries: entries.slice(0, 4) };
@@ -430,7 +569,7 @@ if (want(7)) {
 if (want(8)) {
   const t = await chatTurn([{ role: "user", text: "هل لآية الروم ٣٧ نظيرٌ متشابهٌ في المصحف؟ وما الفرق بينهما بالضبط؟" }], "ت٨: فروق التنزيل — استدعاء ذاتي بآية");
   console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "furuq"))} استدعى layer_of(furuq) بنفسه`);
-  console.log(`  ${mark(/39:52|٣٩:٥٢|الزمر\s*[5٥][2٢]/.test(t.text))} ذكر موضع النظير (الزمر ٥٢) من النتيجة`);
+  console.log(`  ${mark(/39:52|٣٩:٥٢|الزمر[:\s]*[5٥][2٢]/.test(t.text))} ذكر موضع النظير (الزمر ٥٢) من النتيجة`);
   report(t);
 }
 
@@ -496,6 +635,44 @@ if (want(14)) {
   const admitted = /لا مدخل|لم أجد|ليس في|لا يوجد|لا نصَّ/.test(t.text);
   const invented = /قال العسكري|قال الفيروزآبادي/.test(t.text);
   console.log(`  ${mark(admitted && !invented)} أقرّ الغياب ولم يخترع نقلًا`);
+  report(t);
+}
+
+// ت١٥ — بطاقة بيان محررة: كشف محسوب + قراءات منسوبة
+if (want(15)) {
+  const t = await chatTurn([{ role: "user", text: "حدثني عن الفرق بين أتى وجاء في القرآن — بما عندكم في قسم البيان" }], "ت١٥: بطاقة بيان محررة (أتى/جاء)");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "bayan"))} استدعى layer_of(bayan) بنفسه`);
+  const flat = t.text.replace(/[,،٬]/g, "");
+  // المعيار الحق: الكشف منقول بأمانة (العدد ٢٧٨ أو صيغة الاستقراء التام) ولا رقم مخترع
+  const kashfOk = /278|٢٧٨/.test(flat) || /كل مواضعه|جميع مواضعه|لا تنخرم|بلا استثناء|كلها/.test(t.text);
+  const wrongNum = /27[0-79]|28\d/.test(flat) && !/278/.test(flat);
+  console.log(`  ${mark(kashfOk && !wrongNum)} الكشف منقول بأمانة (عددًا أو استقراءً تامًّا) بلا رقم مخترع`);
+  console.log(`  ${mark(/الراغب|السامرائي|المفردات|لمسات/.test(t.text))} قراءات الأعلام منسوبة`);
+  report(t);
+}
+
+// ت١٦ — التبويب الموضوعي: موضع آية من الأبواب والمواضيع
+if (want(16)) {
+  const t = await chatTurn([{ role: "user", text: "ما موضع آية البقرة ١٥٣ من تبويبكم الموضوعي؟ في أي وحدة وموضوع وباب تقع؟" }], "ت١٦: التبويب الموضوعي — آية ← وحدة/موضوع/باب");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && ["tabwib", "mawadi", "mawdui"].includes(String(s.args?.layer))))} استدعى layer_of(tabwib) بنفسه`);
+  console.log(`  ${mark(/الصبر|وحدة/.test(t.text))} سمّى الوحدة من النتيجة`);
+  report(t);
+}
+
+// ت١٧ — سمات الآية وصلاتها بلغة الميثاق
+if (want(17)) {
+  const t = await chatTurn([{ role: "user", text: "ما سمات آية البقرة ١٥٣ وصلاتها في شبكتكم المفحوصة؟" }], "ت١٧: سمات الآية وصلاتها (الشارتان)");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "simat"))} استدعى layer_of(simat) بنفسه`);
+  report(t);
+}
+
+// ت١٨ — مثلها + الفواصل في سؤال واحد (بوابة متعددة الطبقات)
+if (want(18)) {
+  const t = await chatTurn([{ role: "user", text: "ما أقرب الآيات معنًى إلى أول سورة الإخلاص؟ وما حرف الفاصلة الغالب في سورة مريم؟" }], "ت١٨: بوابة — مثلها + الفواصل معًا");
+  const mithlStep = t.steps.find((s) => s.name === "layer_of" && s.args?.layer === "mithl");
+  console.log(`  ${mark(!!mithlStep)} استدعى layer_of(mithl)`);
+  console.log(`  ${mark(mithlStep && resolveAyaMock(String(mithlStep.args?.anchor)) === "112:1")} المرسى انحل إلى ١١٢:١ (سورة الإخلاص لا مفهومها)`);
+  console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "fawasil"))} استدعى layer_of(fawasil)`);
   report(t);
 }
 

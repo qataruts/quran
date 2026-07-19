@@ -126,6 +126,29 @@ const layers = [
     desc: "بطاقات منتقاة: خريطة استعمالٍ محسوبة (المواضع والصرف والمصاحبات وبصمة الافتراق) لكل زوجٍ أو صيغة، ومعها قراءاتُ الأعلام منقولةً منسوبة (grade القراءات: manqul)",
     count: read("bayan.json").cards.length,
   },
+  // — طبقات التغطية الكاملة (نبراس الشامل م٢) —
+  {
+    id: "tabwib", label: "التبويب الموضوعي المحسوب (المواضيع والأبواب)", file: "topics-v1.json", grade: "mahsub",
+    anchors: ["aya", "term"], route: "/tabwib",
+    desc: "المصحف كله مبوَّب بوحدات سياقه: أبوابٌ ← مواضيعُ ← وحدات — بآيةٍ يعيد موضعَها من التبويب، وباسم بابٍ أو موضوعٍ يعيد وحداتِه",
+    count: read("topics-v1.json").babs.reduce((n, b) => n + b.topics.length, 0),
+  },
+  {
+    id: "simat", label: "سمات الآية وصلاتها (الشبكة المفحوصة)", file: "v3-evidence.json", grade: "mahsub",
+    anchors: ["aya"], route: "/shabaka",
+    desc: "شارتا الآية: «صيغة قاعدة» (بوابات صرفية حتمية) و«ثبت تفرّعه» (صلات بيان/مثال/جزاء/توكيد المفحوصة) والمثاني",
+  },
+  {
+    id: "mithl", label: "مثلها — أقرب الآيات معنًى", file: "quran-neighbors.bin", grade: "mahsub",
+    anchors: ["aya"], route: "/read",
+    desc: "لكل آيةٍ جاراتُها الأقرب معنًى (محسوبة سلفًا) — لأسئلة «ما نظائر هذه الآية معنًى؟»",
+  },
+  {
+    id: "fawasil", label: "أطلس الفواصل", file: "fawasil.json", grade: "mahsub",
+    anchors: ["surah", "term"], route: "/fawasil",
+    desc: "حرف الفاصلة الغالب ورويُّها لكل سورة، وحروف الفواصل وخواتمها في المصحف كله",
+    count: 114,
+  },
 ];
 
 const manifest = {
