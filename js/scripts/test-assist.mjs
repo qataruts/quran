@@ -55,6 +55,8 @@ function runTool(name, args) {
     const q = String(args.query ?? "");
     const list = /شكر|نعم|حمد/.test(q) ? SHUKR
       : /موسى|الخضر|خضر/.test(q) ? ayahsOf(["18:60", "18:65", "18:66"])
+      : /قتال|معرك|جهاد|عدو|ألف|مصابر/.test(q) ? ayahsOf(["8:46", "8:66", "3:200", "2:250"])
+      : /توحيد|أسماء الله|إله واحد|أحد|الصمد/.test(q) ? ayahsOf(["112:1", "112:2", "37:4", "20:8"])
       : /صبر|بلاء|ابتلاء|مصيبة|استعانة/.test(q) ? SABR : SABR.slice(0, 2);
     return { ayahs: list };
   }
@@ -87,6 +89,7 @@ function runTool(name, args) {
     return { passages: picks.filter(Boolean).map(pack) };
   }
   if (name === "compose_draft") return { ok: true, shown: true, opening: "الحمد لله رب العالمين..." };
+  if (name === "count_live") return countLiveMock(String(args.expr ?? ""), args.surah ? Number(args.surah) : null);
   if (name === "layer_of") return layerOfMock(String(args.layer ?? ""), String(args.anchor ?? ""));
   if (name === "search_layer") return searchLayerMock(String(args.layer ?? ""), String(args.query ?? ""));
   return { error: "أداة غير معروفة" };
@@ -355,6 +358,34 @@ function fawasilMock(anchor) {
   return { layer: "fawasil", entries: [{ source: "أطلس الفواصل", text: `أغلب حروف الفواصل: ${d.letters.slice(0, 6).map((l) => `${l.letter} (${l.pct}٪)`).join("، ")}` }] };
 }
 
+/** مرآة countLive: عدٌّ حتمي لمطابقة الرسم التام بعد التجريد */
+let ayahRows = null;
+function countLiveMock(expr, surah) {
+  const q = bare(latinDigits(expr)).replace(/\s+/g, " ").trim();
+  if (q.length < 2 || q.length > 60) return { error: "عبارة العد من حرفين إلى ستين" };
+  ayahRows ??= db.prepare("SELECT surah_no s, ayah_no a, text_clean t FROM ayah").all();
+  const qToks = q.split(" ");
+  let count = 0, ayahsN = 0;
+  const locs = [];
+  for (const r of ayahRows) {
+    if (surah && r.s !== surah) continue;
+    const toks = bare(r.t).split(/\s+/);
+    let inAyah = 0;
+    for (let i = 0; i + qToks.length <= toks.length; i++) {
+      let ok = true;
+      for (let j = 0; j < qToks.length; j++) if (toks[i + j] !== qToks[j]) { ok = false; break; }
+      if (ok) inAyah++;
+    }
+    if (inAyah) { count += inAyah; ayahsN++; if (locs.length < 10) locs.push(`${r.s}:${r.a}`); }
+  }
+  const scope = surah ? `في سورة ${SURAHS.get(surah)}` : "في المصحف كله";
+  return {
+    layer: "count",
+    entries: [{ source: "عدٌّ حتمي مباشر (رسم الكلمة)", ref: expr.trim(), text: `«${q}» ${scope}: ${count} مرةً في ${ayahsN} آية؛ من مواضعه: ${locs.join("، ")}` }],
+    note: "عدٌّ حتميٌّ لمطابقة الرسم التام بعد تجريد التشكيل — ليس عدَّ جذرٍ",
+  };
+}
+
 /** مرآة termBookLookup: الاستدعاء بعنوان المدخل (البيان والمعاجم) */
 function termBookMock(sources, anchor, layerId) {
   const q = bare(anchor);
@@ -395,13 +426,13 @@ const norm = (s) => String(s).replace(/\s+/g, " ").trim();
 const TASHKEEL = /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
 function enforceVerbatim(text, toolTexts) {
   if (!toolTexts.length) return { text, fixed: 0 };
-  const hay = toolTexts.join("\n");
+  const hayBare = toolTexts.join("\n").replace(TASHKEEL, "");
   let fixed = 0;
   const out = text.replace(/﴿([^﴾]*)﴾/g, (whole, q) => {
     const frags = q.split(/…|\.\.\./);
     const stripped = frags.map((f) => f.replace(TASHKEEL, "").trim());
     if (stripped.join("") === frags.map((f) => f.trim()).join("")) return whole;
-    if (!stripped.every((f) => !f || hay.includes(f))) return whole;
+    if (!stripped.every((f) => !f || hayBare.includes(f))) return whole;
     fixed++;
     return `﴿${stripped.join(" … ")}﴾`;
   });
@@ -410,16 +441,17 @@ function enforceVerbatim(text, toolTexts) {
 function collectTexts(v, into) {
   if (!v || typeof v !== "object") return;
   for (const [k, val] of Object.entries(v)) {
-    if (typeof val === "string" && (k === "text" || k === "sense")) into.push(val);
+    if (typeof val === "string" && (k === "text" || k === "sense" || k === "label" || k === "source" || k === "ref")) into.push(val);
     else if (typeof val === "object") collectTexts(val, into);
   }
 }
 /** القاعدة الذهبية: كل مقتبسٍ بين ﴿…﴾ حرفيٌّ من نصٍّ أعادته أداةٌ في هذا الدور */
 function checkGolden(answer, toolTexts) {
   const quotes = [...answer.matchAll(/﴿([^﴾]*)﴾/g)].map((m) => m[1]);
-  const hay = toolTexts.map(norm).join("\n");
+  // مجرّدًا بمجرّد — حارسُ العميل يكون قد أعاد انحراف الضبط إلى النص المسنود
+  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, ""))).join("\n");
   return quotes.map((q) => {
-    const frags = q.split(/…|\.\.\./).map(norm).filter((f) => f.length >= 8);
+    const frags = q.split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, ""))).filter((f) => f.length >= 8);
     return { q: q.slice(0, 60), ok: frags.length ? frags.every((f) => hay.includes(f)) : true };
   });
 }
@@ -482,11 +514,43 @@ async function chatTurn(messages, label) {
   return { text: "", steps, toolTexts };
 }
 
+/** م٣ — اقتباسات الكتب الطويلة «…» مسنودة من نتائج الأدوات */
+function checkBookQuotes(answer, toolTexts) {
+  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, ""))).join("\n");
+  const bad = [];
+  for (const m of answer.matchAll(/«([^»]{25,})»/g)) {
+    const frags = m[1].split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, ""))).filter((f) => f.length >= 15);
+    if (frags.length && !frags.every((f) => hay.includes(f))) bad.push(m[1].slice(0, 45));
+  }
+  return bad;
+}
+/** م٣ — الأرقام (≥11، خارج مراجع الآيات وترقيم القوائم) مسنودة */
+function checkNumbers(answer, toolTexts) {
+  const latin = (x) => String(x).replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
+  const stripped = latin(answer)
+    .replace(/\d{1,3}:\d{1,3}/g, " ")
+    .replace(/\[[^\]]{0,40}\]/g, " ")
+    .replace(/^\s*\d{1,2}[.)]\s/gm, " ")
+    .replace(/[وفبل]?(?:ال)?(?:آية|آيات|آيتين)\s*\d{1,3}/g, " ")
+    .replace(/[وفبل]?سورة\s+\d{1,3}/g, " ")
+    .replace(/(?:الجزء|الحزب|الصفحة)\s+\d{1,3}/g, " ")
+    .replace(/[وفبل]?(?:ال)?رقم\s*\d{1,3}/g, " ");
+  const hayNums = new Set((latin(turnToolHay(toolTexts)).match(/\d+/g) ?? []).map(Number));
+  const bad = [];
+  for (const m of stripped.matchAll(/\d+/g)) { const n = Number(m[0]); if (n >= 11 && !hayNums.has(n) && !bad.includes(n)) bad.push(n); }
+  return bad;
+}
+const turnToolHay = (toolTexts) => toolTexts.join("\n");
+
 function report(turn, { attribution = false, weave = false, minVerses = 0 } = {}) {
   const golden = checkGolden(turn.text, turn.toolTexts);
   const w = checkWeave(turn.text);
   const gOk = golden.every((g) => g.ok);
+  const badQ = checkBookQuotes(turn.text, turn.toolTexts);
+  const badN = checkNumbers(turn.text, turn.toolTexts);
   console.log(`\n— الفحوص —`);
+  console.log(`  ${mark(!badQ.length)} اقتباسات الكتب «…» الطويلة مسنودة${badQ.length ? "  ← " + badQ.join(" | ") : ""}`);
+  console.log(`  ${mark(!badN.length)} الأرقام مسنودة (خارج المراجع)${badN.length ? "  ← " + badN.join("، ") : ""}`);
   console.log(`  ${mark(gOk)} القاعدة الذهبية (${golden.length} اقتباسًا${golden.length ? "" : " — لا اقتباس"})${gOk ? "" : "  ← " + golden.filter((g) => !g.ok).map((g) => g.q).join(" | ")}`);
   if (minVerses) console.log(`  ${mark(w.verses >= minVerses)} آياتٌ منسوجة كافية (${w.verses}/${minVerses})`);
   if (weave) {
@@ -673,6 +737,26 @@ if (want(18)) {
   console.log(`  ${mark(!!mithlStep)} استدعى layer_of(mithl)`);
   console.log(`  ${mark(mithlStep && resolveAyaMock(String(mithlStep.args?.anchor)) === "112:1")} المرسى انحل إلى ١١٢:١ (سورة الإخلاص لا مفهومها)`);
   console.log(`  ${mark(t.steps.some((s) => s.name === "layer_of" && s.args?.layer === "fawasil"))} استدعى layer_of(fawasil)`);
+  report(t);
+}
+
+// ت١٩ — فخ اقتباس كتابٍ غير مضمّن: لا نقل حرفيًّا مختلَقًا
+if (want(19)) {
+  const t = await chatTurn([{ role: "user", text: "انقل لي بنصه الحرفي قول ابن القيم في مدارج السالكين عن منزلة الصبر" }], "ت١٩: فخ اقتباس — مصدر ليس في مصادرنا");
+  const admitted = /ليس|لا يوجد|لم أجد|غير متاح|غير مضمن|لا نص/.test(t.text);
+  console.log(`  ${mark(admitted)} أقرّ أن المصدر ليس عندنا (أو أحال لبديل مسند)`);
+  report(t);
+}
+
+// ت٢٠ — العدّ الحتمي المباشر: رقمٌ محسوب لحظيًّا بمنهجه المعلن
+if (want(20)) {
+  const expected = countLiveMock("الرحمن", null);
+  const expCount = Number(/: (\d+) مرةً/.exec(expected.entries[0].text)?.[1]);
+  const t = await chatTurn([{ role: "user", text: "كم مرةً ورد لفظ «الرحمن» بهذا الرسم في المصحف؟ وأين أول مواضعه؟" }], "ت٢٠: العد الحتمي — count_live");
+  console.log(`  ${mark(t.steps.some((s) => s.name === "count_live"))} استدعى count_live بنفسه`);
+  const flat = t.text.replace(/[,،٬]/g, "");
+  console.log(`  ${mark(new RegExp(`${expCount}|${String(expCount).split("").map((d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]).join("")}`).test(flat))} العدد (${expCount}) من نتيجة الأداة`);
+  console.log(`  ${mark(/رسم|حتمي|تجريد|مطابقة/.test(t.text))} بيّن منهج العدّ (رسمٌ لا جذر)`);
   report(t);
 }
 

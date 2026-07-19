@@ -19,7 +19,7 @@ import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
 import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
-import { ensureLayers, layersDigest, layerLookup, layerSearch } from "../layers";
+import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive } from "../layers";
 import { resolveRootReady } from "../searchForms";
 import { ayahByLocationMap, surahNameAr } from "../db";
 
@@ -47,6 +47,7 @@ const TOOL_STATUS: Record<string, (a: Record<string, unknown>) => string> = {
   search_passages: (a) => `يبحث في المقاطع: ${String(a.query ?? "").slice(0, 60)}…`,
   layer_of: (a) => `يستدعي طبقة ${String(a.layer ?? "")}: ${String(a.anchor ?? "").slice(0, 40)}`,
   search_layer: (a) => `يبحث في ${String(a.layer ?? "")}: ${String(a.query ?? "").slice(0, 50)}…`,
+  count_live: (a) => `يعدّ رسم «${String(a.expr ?? "").slice(0, 30)}» عدًّا حتميًّا…`,
   compose_draft: (a) => `يؤلّف مسودة: ${String(a.subject ?? "")}`,
 };
 
@@ -71,12 +72,14 @@ function collectToolTexts(v: unknown, into: string[]): void {
  *  فوق كتاب الله. ما لم تطابق حروفُه يُترك كما هو (يكشفه الفحص لا نُجمّله). */
 function enforceVerbatim(text: string, toolTexts: string[]): string {
   if (!toolTexts.length) return text;
-  const hay = toolTexts.join("\n");
+  // المطابقة مجرّدًا بمجرّد: نصوص الأدوات قد تكون عثمانيةً مشكولة، واقتباس
+  // الذاكرة قد يخالف ضبطها — فإن اتفقت الحروف أعدناه إلى الرسم النظيف المسنود
+  const hayBare = toolTexts.join("\n").replace(TASHKEEL, "");
   return text.replace(/﴿([^﴾]*)﴾/g, (whole, q: string) => {
     const frags = q.split(/…|\.\.\./);
     const stripped = frags.map((f) => f.replace(TASHKEEL, "").trim());
     if (stripped.join("") === frags.map((f) => f.trim()).join("")) return whole; // نظيفٌ أصلًا
-    if (!stripped.every((f) => !f || hay.includes(f))) return whole;
+    if (!stripped.every((f) => !f || hayBare.includes(f))) return whole;
     return `﴿${stripped.join(" … ")}﴾`;
   });
 }
@@ -288,6 +291,12 @@ export default function Assistant() {
             roots: r.roots.map((rt) => ({ root: rt.root, occurrences: rt.occ, sense: (rt.gloss || "").slice(0, 400) })),
             ayahs: r.ayahs.slice(0, 6).map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
           };
+        }
+        if (name === "count_live") {
+          const res = await countLive(String(args.expr ?? ""), args.surah ? Number(args.surah) : undefined);
+          if (res.error) return { error: res.error };
+          for (const e of res.entries) acc.books.push({ source: e.label, ref: e.ref ?? "", text: e.text.slice(0, 1200) });
+          return { entries: res.entries.map((e) => ({ source: e.label, text: e.text })), note: res.note };
         }
         if (name === "layer_of" || name === "search_layer") {
           const res = name === "layer_of"

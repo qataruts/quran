@@ -11,7 +11,7 @@
  * الأرقام كلها معدودة سلفًا (طبقة stats) — نبراس لا يَعُدّ أبدًا.
  */
 import { searchBooks, bookTextAt, loadBookEntries, BOOK_SOURCES, GENRE_LABELS, refreshDerivedSources, type BookSource, type Genre } from "./books";
-import { getAyahByLocation, getAyahByGlobalNo, surahNameAr, listSurahs } from "./db";
+import { getAyahByLocation, getAyahByGlobalNo, surahNameAr, listSurahs, ayahByLocationMap } from "./db";
 import { loadSiyaq, unitOf } from "./siyaq";
 import { loadTabwib, loadTopics, topicBabsList } from "./tabwib";
 import { loadEvidence, evidenceOf, gateLabel, REL_ORDER } from "./v2evidence";
@@ -594,3 +594,42 @@ export async function layerSearch(layer: string, query: string, k = 6): Promise<
 
 // مطبِّع الصيغ (كلمة مكتوبة → جذرها) موجودٌ أصلًا في searchForms.ts
 // (resolveRootReady) بتطبيعه الصحيح المطابق لمولّد الملف — لا نكرره هنا.
+
+// ——— العدّ الحتمي المباشر (م٣): كم ورد رسمُ كلمةٍ/عبارةٍ بعينه ———
+// مطابقةُ كلمةٍ تامة بعد تجريد التشكيل — ليس عدَّ جذرٍ (للجذور search_root).
+// نبراس لا يَعُدّ أبدًا: هذه أداةُ عدٍّ حتمية نتيجتُها مسنودة تحرسها قاعدة الأرقام.
+export async function countLive(expr: string, surah?: number): Promise<LayerResult> {
+  const q = bare(latinDigits(expr)).replace(/\s+/g, " ").trim();
+  if (q.length < 2 || q.length > 60) return { layer: "count", entries: [], error: "عبارة العدّ من حرفين إلى ستين حرفًا" };
+  const map = await ayahByLocationMap();
+  const qToks = q.split(" ");
+  let count = 0;
+  let ayahsN = 0;
+  const locs: string[] = [];
+  for (const [loc, doc] of map) {
+    if (surah && Number(loc.split(":")[0]) !== surah) continue;
+    const toks = bare(doc.textClean).split(/\s+/);
+    let inAyah = 0;
+    for (let i = 0; i + qToks.length <= toks.length; i++) {
+      let ok = true;
+      for (let j = 0; j < qToks.length; j++) if (toks[i + j] !== qToks[j]) { ok = false; break; }
+      if (ok) inAyah++;
+    }
+    if (inAyah) {
+      count += inAyah;
+      ayahsN++;
+      if (locs.length < 10) locs.push(loc);
+    }
+  }
+  const scope = surah ? `في سورة ${surahNameAr(surah)}` : "في المصحف كله";
+  const sample = locs.map((l) => `${l} (${surahNameAr(Number(l.split(":")[0]))} ${l.split(":")[1]})`).join("، ");
+  return {
+    layer: "count",
+    entries: [{
+      label: "عدٌّ حتمي مباشر (رسم الكلمة)",
+      ref: expr.trim(),
+      text: `«${q}» ${scope}: ${count} مرةً في ${ayahsN} آية${locs.length ? `؛ من مواضعه: ${sample}${ayahsN > 10 ? "…" : ""}` : ""}`,
+    }],
+    note: "عدٌّ حتميٌّ لمطابقة الرسم التام بعد تجريد التشكيل (حُسب الآن من قاعدة مشكاة) — ليس عدَّ جذرٍ ولا يشمل الصيغ الملحقة (كالمسبوقة بحرف جر ملتصق)",
+  };
+}
