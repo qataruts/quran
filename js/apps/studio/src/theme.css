@@ -1982,3 +1982,7 @@ table.data tr:hover td { background: var(--panel-2); }
 .by-seg { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
 .by-seg .chip, .by-letters .chip { cursor: pointer; border: 1px solid var(--line); background: transparent; }
 .by-letters { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 14px; }
+.by-tabs { display: flex; gap: 10px; margin: 6px 0 16px; border-bottom: 1px solid var(--line); }
+.by-tab { background: none; border: none; border-bottom: 2.5px solid transparent; padding: 8px 14px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
+.by-tab.on { color: inherit; border-bottom-color: var(--gold, #b8891f); }
+.by-book { text-align: start; cursor: pointer; font-family: inherit; font-size: inherit; }
