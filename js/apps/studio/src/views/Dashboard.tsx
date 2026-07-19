@@ -402,15 +402,15 @@ export default function Dashboard() {
                   {ar ? "ما حسبناه فوق النصّ — كلٌّ قابل للتصفّح" : "what we computed over the text — each browsable"}
                 </div>
                 <div className="lyr-grid">
-                  <Link to="/muhkamat" className="lyr">
-                    <div className="lyr-n">{num(layers.jawami.principles)}</div>
-                    <div className="lyr-t">{ar ? "آية في شبكة المحكمات" : "verses in the network"}</div>
-                    <div className="lyr-s">{num(layers.jawami.hubs)} {ar ? "لها تفصيل" : "with tafsil"}</div>
+                  <Link to="/kulliyat" className="lyr">
+                    <div className="lyr-n">{num(layers.evidence?.links ?? 0)}</div>
+                    <div className="lyr-t">{ar ? "صلةً موجّهةً مفحوصةً بالسياق" : "context-examined directed links"}</div>
+                    <div className="lyr-s">{ar ? "الشبكة الموحّدة · ٤ علاقات" : "unified network · 4 relations"}</div>
                   </Link>
-                  <Link to="/muhkamat" className="lyr">
-                    <div className="lyr-n">{num(layers.jawami.links)}</div>
-                    <div className="lyr-t">{ar ? "رابط تفصيل" : "tafsil links"}</div>
-                    <div className="lyr-s">{ar ? "الجيل الأوّل · ٤ علاقات" : "gen 1 · 4 relations"}</div>
+                  <Link to="/tabwib" className="lyr">
+                    <div className="lyr-n">{num((layers as unknown as { topicsComputed?: { topics: number } }).topicsComputed?.topics ?? 120)}</div>
+                    <div className="lyr-t">{ar ? "موضوعًا محسوبًا" : "computed topics"}</div>
+                    <div className="lyr-s">{ar ? "١٤ بابًا · المصحف كلُّه وحدةً وحدة" : "14 chapters · whole muṣḥaf"}</div>
                   </Link>
                   {layers.evidence && (
                     <Link to="/about" className="lyr">
