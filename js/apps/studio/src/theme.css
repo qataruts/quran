@@ -1909,7 +1909,8 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-input textarea:focus { border: none !important; outline: none !important; box-shadow: none !important; }
 .mu-send { flex: none; width: 38px; height: 38px; border-radius: 999px; border: none; background: var(--accent); color: #fff; font-size: 19px; line-height: 1; cursor: pointer; display: grid; place-items: center; transition: opacity .12s ease, transform .12s ease; padding: 0; }
 .mu-send svg { display: block; margin: 0 auto; }
-.mu-send:disabled { opacity: 0.38; cursor: default; }
+/* الزر بلونه الكامل دائمًا (الحارس سلوكي: لا إرسال دون ٣ أحرف) — الانشغال وحده يُخفت */
+.mu-send:disabled { opacity: 0.65; cursor: default; }
 .mu-send:not(:disabled):hover { transform: translateY(-1px); }
 
 /* the bottom input bar (while chatting) */
@@ -1917,14 +1918,13 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-inputbar .mu-foot { text-align: center; font-size: 12.5px; margin-top: 6px; color: var(--ink-2); }
 
 /* landing suggestions — soft pills */
-.mu-ex { font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); background: var(--panel); color: var(--ink); cursor: pointer; transition: border-color .12s, color .12s; }
-.mu-ex:hover { border-color: var(--accent); color: var(--accent); }
-.mu-ex-hint { color: var(--accent); font-weight: 700; }
-/* منسدلة عُدّة نبراس — تُبنى من المانيفست فلا تتقادم */
-.mu-hero .mu-srcs { max-width: 640px; width: 100%; text-align: start; font-size: 13px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; background: var(--panel); }
-.mu-hero .mu-srcs summary { cursor: pointer; font-weight: 700; color: var(--ink); }
+/* منسدلة عُدّة نبراس — باهتةٌ عمدًا: الحقلُ هو الواجهة، وهذه حاشيةُ اطلاع
+ *  تُبنى من المانيفست فلا تتقادم */
+.mu-hero .mu-srcs { max-width: 640px; width: 100%; text-align: start; font-size: 12px; color: var(--muted); border: 1px dashed var(--line); border-radius: 12px; padding: 8px 12px; background: transparent; }
+.mu-hero .mu-srcs summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+.mu-hero .mu-srcs[open] summary { color: var(--ink-2); }
 .mu-hero .mu-srcs-body { margin-top: 8px; display: flex; flex-direction: column; gap: 7px; line-height: 1.85; }
-.mu-hero .mu-srcs b { color: var(--ink); }
+.mu-hero .mu-srcs b { color: var(--ink-2); }
 /* مراجع الآيات داخل نثر الجواب — روابطُ قراءةٍ لا نص جامد */
 .mu-ref-lnk { color: var(--accent); text-decoration: none; font-weight: 650; white-space: nowrap; }
 .mu-ref-lnk:hover { text-decoration: underline; }

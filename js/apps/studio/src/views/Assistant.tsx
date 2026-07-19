@@ -29,8 +29,19 @@ async function postJson(url: string, body: unknown): Promise<any> {
   return res.json();
 }
 
-/** مثالٌ واحدٌ يوضّح الفكرة — لا قائمة تشتّت (قرار مالك 2026-07-19) */
-const EXAMPLE_AR = "ما الفرق بين الخوف والخشية في القرآن؟";
+/** وظيفةُ كل كتابٍ مضمَّن — «كتابٌ واحدٌ لكل علم» (قرار مالك 2026-07-19):
+ *  التبرير معروضٌ للمستخدم في منسدلة المصادر؛ كتابٌ مضمَّن بلا وظيفةٍ هنا
+ *  يظهر باسمه فقط (فيلفت النظرَ إلى أنه يحتاج قيدَه). */
+const EMBED_ROLE: Record<string, string> = {
+  saadi: "التفسير المحرَّر",
+  muharrar: "أسباب النزول",
+  furuqaskari: "الفروق اللغوية",
+  nuzha: "الوجوه والنظائر",
+  durra: "المتشابه اللفظي وتوجيهه",
+  burhan: "علوم القرآن",
+  mufradat: "معاني مفردات القرآن",
+  maqayis: "الاشتقاق وأصول الجذور",
+};
 
 /** ما تعرضه فقاعة الحالة أثناء نداء أداة */
 const TOOL_STATUS: Record<string, (a: Record<string, unknown>) => string> = {
@@ -329,9 +340,14 @@ export default function Assistant() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chat?.messages.length, busy]);
 
+  // المؤشر في حقل الكتابة فورَ فتح نبراس أو تبديل المحادثة — الحقل هو المدخل الرئيس
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { taRef.current?.focus(); }, [id]);
+
   const send = async (raw?: string) => {
     const text = (raw ?? input).trim();
-    if (!text || busy) return;
+    // لا إرسالَ لأقل من ٣ أحرف — الزر بلونه دائمًا والحارسُ سلوكي لا شكلي
+    if (text.length < 3 || busy) return;
     let cid = chat?.id;
     if (!cid) { cid = createChat(); navigate(`/assistant/${cid}`); }
     const existing = getChat(cid);
@@ -542,7 +558,7 @@ export default function Assistant() {
   const empty = !chat || chat.messages.length === 0;
   const composer = (
     <div className="mu-input">
-      <button className="mu-send" onClick={() => void send()} disabled={busy || !input.trim()} aria-label={ar ? "إرسال" : "send"}>
+      <button className="mu-send" onClick={() => void send()} disabled={busy} aria-label={ar ? "إرسال" : "send"}>
         {busy ? (
           <span aria-hidden>…</span>
         ) : (
@@ -550,6 +566,7 @@ export default function Assistant() {
         )}
       </button>
       <textarea
+        ref={taRef}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={onKey}
@@ -607,28 +624,25 @@ export default function Assistant() {
               <span className="mu-empty-tag">{ar ? "مساعدُ مشكاة الذكيّ — يبحث في بياناتها ويجيب بإسناد" : "مشكاة's AI assistant — searches its data, answers with citations"}</span>
               <p className="mu-hero-sub">
                 {ar
-                  ? "يحاورك ويبحث بنفسه أثناء الحديث في القرآن ولغته وكتب المكتبة المسندة: اسألْ عن آيةٍ أو معنًى أو فرقٍ لغوي، وناقشْ ورتّبْ أفكارك، واطلبْ بحثًا أو خطبةً أو مقالة — كلُّ واقعةٍ عنده بمصدرها، والآياتُ من نصّ المصحف لا من ذاكرته."
-                  : "It converses and searches on its own as you talk — the Qur'an, its language, and the cited library: ask about a verse, a meaning, a linguistic distinction; discuss and organize ideas; request a paper or khutba — every fact carries its source, and verses come from the muṣḥaf's text, never from memory."}
+                  ? "يحاورك ويبحث بنفسه أثناء الحديث في القرآن ولغته وكتب المكتبة المسندة: اسألْ عن آيةٍ أو معنًى أو فرقٍ لغوي، وناقشْ ورتّبْ أفكارك، واطلبْ بحثًا أو خطبةً أو مقالة — كلُّ واقعةٍ عنده بمصدرها، والآياتُ من نصّ المصحف."
+                  : "It converses and searches on its own as you talk — the Qur'an, its language, and the cited library: ask about a verse, a meaning, a linguistic distinction; discuss and organize ideas; request a paper or khutba — every fact carries its source, and verses come from the muṣḥaf's text."}
               </p>
               {composer}
-              <button className="mu-ex" onClick={() => void send(EXAMPLE_AR)}>
-                <span className="mu-ex-hint">{ar ? "جرّبْ مثلًا: " : "try: "}</span>{EXAMPLE_AR}
-              </button>
               {srcsReady && (
                 <details className="mu-srcs">
                   <summary>{ar ? "ما مصادرُ نبراس وأدواتُه؟" : "What does Nibras search?"}</summary>
                   <div className="mu-srcs-body">
-                    <div><b>{ar ? "المصحفُ أولًا: " : "The muṣḥaf first: "}</b>{ar ? "بحثٌ بالمعنى في الآيات، واستقصاءُ الجذور وصيغِها، ووحداتُ السياق، وعدٌّ حتميٌّ للرسم — والآياتُ تُنقل من نصّ المصحف لا من ذاكرة النموذج." : "meaning-search over the verses, root inquiry, context units, deterministic counting — verses come from the muṣḥaf's text."}</div>
+                    <div><b>{ar ? "المصحفُ أولًا: " : "The muṣḥaf first: "}</b>{ar ? "بحثٌ بالمعنى في الآيات، واستقصاءُ الجذور وصيغِها، ووحداتُ السياق، وعدٌّ حتميٌّ للرسم — والآياتُ تُنقل من نصّ المصحف." : "meaning-search over the verses, root inquiry, context units, deterministic counting — verses come from the muṣḥaf's text."}</div>
                     <div><b>{ar ? `طبقاتُ مشكاة (${num(layersDigest().filter((l) => l.id !== "search").length)}): ` : "Layers: "}</b>{layersDigest().filter((l) => l.id !== "search").map((l) => l.label.split(" (")[0]).join("، ")} — {ar ? "بدرجتي سندٍ معلنتين: محسوبٌ من حساباتنا، ومنقولٌ يُقتبس منسوبًا لمصدره." : "each labeled محسوب (computed) or منقول (quoted)."}</div>
                     <div>
-                      <b>{ar ? `المضمّنُ لبحثه الدلالي (${num(BOOK_SOURCES.filter((b) => b.embedded).length)}): ` : "Embedded for semantic search: "}</b>
-                      {BOOK_SOURCES.filter((b) => b.embedded).map((b) => b.label).join("، ")}.
+                      <b>{ar ? `مكتبتُه المضمّنة (${num(BOOK_SOURCES.filter((b) => b.embedded).length)} كتب — كتابٌ واحدٌ لكل علم): ` : "Embedded library (one book per discipline): "}</b>
+                      {BOOK_SOURCES.filter((b) => b.embedded).map((b) => (EMBED_ROLE[b.id] ? `${EMBED_ROLE[b.id]}: ${b.label}` : b.label)).join(" · ")}.
                     </div>
                     <div>
-                      <b>{ar ? "ويقرأ نصًّا عند الآية (دون تضمين): " : "Read verbatim at a verse: "}</b>
+                      <b>{ar ? "ويقتبس عند آيةٍ بعينها: " : "Quotes at a specific verse: "}</b>
                       {ar
-                        ? "التفاسيرُ الميسّرةُ الخمسة، وأسبابُ النزول، والقراءاتُ، والإعرابُ — تُقتبس عند الموضع المطلوب؛ ومداخلُ كتبِ البيان تُستدعى بعناوينها عبر طبقة البيان."
-                        : "the five concise tafsirs, asbāb, qirāʾāt and iʿrāb at the requested verse; bayān book entries by their headings via the bayān layer."}
+                        ? "إذا سألتَ عن موضعٍ محدّد («ما تفسير آية الكرسي؟») جلب نصَّ التفاسير الميسّرة وأسبابِ النزول والقراءات والإعراب عند ذلك الموضع حرفيًّا — جلبٌ مباشرٌ بالموضع لا يحتاج تضمينًا. ومداخلُ كتب البيان يستدعيها بعنوان المدخل («الفرق بين الخوف والخشية»)."
+                        : "for a specific verse it fetches the concise tafsirs, asbāb, qirāʾāt and iʿrāb verbatim at that verse — direct lookup, no embedding needed; bayān book entries are called by their headings."}
                     </div>
                     <div className="muted">
                       {ar ? "أما التفاسيرُ العريقةُ العشرون فللاستعراض في " : "The twenty classical tafsirs are browsable in "}

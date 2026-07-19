@@ -228,7 +228,7 @@
    "id": "gharibmuyassar",
    "label": "الميسّر في غريب القرآن",
    "genre": "gharib",
-   "embedded": true,
+   "embedded": false,
    "entries": 5067
   },
   {
@@ -236,7 +236,7 @@
    "label": "السراج في غريب القرآن",
    "genre": "gharib",
    "author": "الخضيري",
-   "embedded": true,
+   "embedded": false,
    "entries": 1739
   },
   {
@@ -266,7 +266,7 @@
    "label": "أسباب نزول القرآن",
    "genre": "asbab",
    "author": "الواحدي",
-   "embedded": true,
+   "embedded": false,
    "entries": 564
   },
   {
