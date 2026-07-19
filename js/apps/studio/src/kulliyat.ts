@@ -225,11 +225,18 @@ export function subtreeCounts(loc: string): { jamia: number; tafsil: number } {
   return { jamia, tafsil };
 }
 
+/** الكلّيّة التي تنتسب إليها الآية عبر سلسلة النسب المفحوص وحدها —
+ *  لا ادعاء برأس المحور (جرد 2026-07-19). */
 export function kulliyaOf(loc: string): string | null {
-  const v = data?.verses[loc];
-  if (!v) return null;
-  if (v.tier === "كلّية") return loc;
-  return v.theme >= 0 ? kulliyaOfTheme(v.theme) : null;
+  let cur = loc;
+  for (let guard = 0; guard < 12; guard++) {
+    const v = data?.verses[cur];
+    if (!v) return null;
+    if (v.tier === "كلّية") return cur;
+    if (!v.parent) return null;
+    cur = v.parent;
+  }
+  return null;
 }
 
 export function kulliyatList(): { loc: string; theme: number; jamiya: number; size: number }[] {

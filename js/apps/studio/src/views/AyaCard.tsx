@@ -181,13 +181,13 @@ export default function AyaCard() {
 
         {(themeHead || themeSibs.length > 0) && (
           <details className="card aya-more">
-            <summary>◈ {ar ? "المحور: الأصل والأخوات" : "The محور: root verse & siblings"} <span className="muted">{themeName(cls.theme)}</span></summary>
+            <summary>◇ {ar ? "محورُها (تجميعٌ حسابي):" : "its axis (computed grouping):"} <span className="muted">{themeName(cls.theme)}</span></summary>
             <div className="aya-more-body">
               {themeHead && themeHead !== loc && (
-                <div className="aya-more-lbl">{ar ? "رأسُ المحور:" : "root verse:"}</div>
+                <div className="aya-more-lbl">{ar ? "أوسعُ قواعدِ المحورِ أدلةً:" : "the axis\u2019s most-evidenced rule:"}</div>
               )}
               {themeHead && themeHead !== loc && <VerseRow loc={themeHead} texts={texts} />}
-              {themeSibs.length > 0 && <div className="aya-more-lbl">{ar ? "من أخواتها في المحور:" : "siblings:"}</div>}
+              {themeSibs.length > 0 && <div className="aya-more-lbl">{ar ? "من جاراتها في المحور:" : "axis neighbours:"}</div>}
               {themeSibs.map((l) => <VerseRow key={l} loc={l} texts={texts} />)}
               <Link to={`/mawdui/${cls.theme}`} className="chip link" style={{ marginTop: 6 }}>{ar ? "كلُّ آيات المحور ←" : "all محور verses ←"}</Link>
             </div>

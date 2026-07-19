@@ -23,7 +23,7 @@ export default function MuhkamaLine({ location }: { location: string }) {
 
   if (cls.tier === "كلّية") {
     return (
-      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — من أعلى الآيات جامعيّةً" : "this verse's card in the balance"}>
+      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — كلّيّةٌ بأدلتها المفحوصة" : "this verse's card — a kulliyya with its examined evidence"}>
         ◆ {ar ? "كلّيّة" : "kulliyya"}
       </Link>
     );
