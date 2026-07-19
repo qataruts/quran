@@ -36,6 +36,25 @@ function heading(first) {
   return h;
 }
 
+/** ضابط سياق نبراس (BOOKS-PIPELINE): لا مقطع يتجاوز ~٤٠٠ كلمة — الطويل يُقسَّم
+ *  على حدود الجمل إلى قطعٍ ~٣٣٠ كلمة، ويحمل مرجعُ كلٍّ رقمَ قطعته */
+const MAX_WORDS = 400, TARGET = 330;
+function chunk(ref, text) {
+  const words = text.split(/\s+/);
+  if (words.length <= MAX_WORDS) return [{ ref, text }];
+  const sentences = text.split(/(?<=[.؟!:])\s+/);
+  const parts = [];
+  let cur = [];
+  let n = 0;
+  for (const s of sentences) {
+    const w = s.split(/\s+/).length;
+    if (n + w > TARGET && cur.length) { parts.push(cur.join(" ")); cur = []; n = 0; }
+    cur.push(s); n += w;
+  }
+  if (cur.length) parts.push(cur.join(" "));
+  return parts.map((t, i) => ({ ref: `${ref} — ${i + 1}/${parts.length}`, text: t }));
+}
+
 for (const { id, file } of BOOKS) {
   const lines = fs.readFileSync(path.join(SRC, `${file}.jsonl`), "utf-8").split("\n").filter(Boolean);
   const out = [];
@@ -43,15 +62,16 @@ for (const { id, file } of BOOKS) {
   for (const line of lines) {
     let e;
     try { e = JSON.parse(line); } catch { continue; }
-    if (e.kind === "front-matter") { skipped++; continue; }
+    if (e.kind === "front-matter" || e.kind === "defective") { skipped++; continue; }
     const text = (e.text ?? "").trim();
     if (!text) continue;
     const nl = text.indexOf("\n");
     const first = nl > 0 ? text.slice(0, nl) : text;
     const rest = nl > 0 ? text.slice(nl + 1).replace(/\s+/g, " ").trim() : "";
     const ref = heading(first);
-    // إن كان العنوان فارغًا بعد التنظيف أو لا بقية بعده نُبقي النص كاملًا
-    out.push(ref && rest ? { ref, text: rest } : { ref: ref || "—", text: text.replace(/\s+/g, " ").trim() });
+    // إن كان العنوان فارغًا بعد التنظيف أو لا بقية بعده نُبقي النص كاملًا — ثم يقسَّم الطويل
+    const rec = ref && rest ? { ref, text: rest } : { ref: ref || "—", text: text.replace(/\s+/g, " ").trim() };
+    out.push(...chunk(rec.ref, rec.text));
   }
   const dest = path.join(PUB, `rag-${id}.json`);
   fs.writeFileSync(dest, JSON.stringify(out), "utf-8");

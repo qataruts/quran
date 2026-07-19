@@ -34,7 +34,7 @@ def main():
             touched += 1
             row["kind_b1"] = a["kind"]
             if a["kind"] in ("grammatical", "structural", "defective"):
-                row["kind"] = {"grammatical": "adawat", "structural": "front-matter",
+                row["kind"] = {"grammatical": "adawat", "structural": "structural",
                                "defective": "defective"}[a["kind"]]
             if a.get("roots_quranic"):
                 row["anchor"]["root"] = a["roots_quranic"]

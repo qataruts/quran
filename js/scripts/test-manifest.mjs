@@ -18,8 +18,17 @@ const ok = (cond, label) => { console.log(`  ${cond ? "✓" : "✗"} ${label}`);
 const m = read("rag-manifest.json");
 console.log(`■ rag-manifest.json v${m.version} (${m.generated}) — ${m.books.length} كتابًا، ${m.layers.length} طبقات`);
 
+// الكتب البعيدة (نمط الصوت) لا ملف محليًّا لها — تُفحص على مانيفست الاستضافة
+const hostedPath = "/Volumes/data/new-projects/quran/hosted-data/manifest.json";
+const hosted = fs.existsSync(hostedPath) ? JSON.parse(fs.readFileSync(hostedPath, "utf-8")) : null;
+const hostedIds = new Set(Object.keys((hosted && hosted.books) || {}));
+
 // ——— الكتب ———
 for (const b of m.books) {
+  if (b.remote) {
+    ok(hostedIds.has(b.id), `كتاب ${b.id} (بعيد): مقيد في hosted-data/manifest.json`);
+    continue;
+  }
   const json = path.join(PUB, `rag-${b.id}.json`);
   const bin = path.join(PUB, `rag-${b.id}.bin`);
   const hasJson = fs.existsSync(json);

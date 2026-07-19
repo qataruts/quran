@@ -282,7 +282,7 @@
    "label": "الفروق اللغوية",
    "genre": "bayan",
    "author": "أبو هلال العسكري",
-   "embedded": false,
+   "embedded": true,
    "entries": 912
   },
   {
@@ -291,7 +291,7 @@
    "genre": "bayan",
    "author": "الفيروزآبادي",
    "embedded": false,
-   "entries": 1041
+   "entries": 1478
   },
   {
    "id": "wujuhaskari",
@@ -299,7 +299,7 @@
    "genre": "bayan",
    "author": "أبو هلال العسكري",
    "embedded": false,
-   "entries": 251
+   "entries": 303
   },
   {
    "id": "damghani",
@@ -307,23 +307,23 @@
    "genre": "bayan",
    "author": "الدامغاني",
    "embedded": false,
-   "entries": 174
+   "entries": 272
   },
   {
    "id": "nuzha",
    "label": "نزهة الأعين النواظر",
    "genre": "bayan",
    "author": "ابن الجوزي",
-   "embedded": false,
-   "entries": 314
+   "embedded": true,
+   "entries": 371
   },
   {
    "id": "durra",
    "label": "درة التنزيل وغرة التأويل",
    "genre": "bayan",
    "author": "الخطيب الإسكافي",
-   "embedded": false,
-   "entries": 99
+   "embedded": true,
+   "entries": 354
   },
   {
    "id": "malak",
@@ -331,15 +331,15 @@
    "genre": "bayan",
    "author": "ابن الزبير الغرناطي",
    "embedded": false,
-   "entries": 312
+   "entries": 704
   },
   {
    "id": "burhan",
    "label": "البرهان في علوم القرآن",
    "genre": "bayan",
    "author": "الزركشي",
-   "embedded": false,
-   "entries": 59
+   "embedded": true,
+   "entries": 1071
   },
   {
    "id": "itqan",
@@ -347,7 +347,7 @@
    "genre": "bayan",
    "author": "السيوطي",
    "embedded": false,
-   "entries": 75
+   "entries": 782
   },
   {
    "id": "mufradat",
