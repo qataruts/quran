@@ -10,7 +10,7 @@
 import { embedQuery } from "./semantic";
 
 export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "lexicon";
-export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean }
+export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean; remote?: boolean; note?: string }
 
 /**
  * Registered browser books. Each ships as public/rag-<id>.json ([{ref,text[,refEnd]}])
@@ -31,6 +31,26 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
   { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي", embedded: true },
   { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني", embedded: true },
+  // — التفاسير العريقة: تُجلب سورةً سورةً عند الطلب من الاستضافة الثابتة («نمط الصوت») —
+  { id: "tabari", label: "جامع البيان", genre: "tafsir", author: "الطبري", remote: true },
+  { id: "ibnkathir", label: "تفسير القرآن العظيم", genre: "tafsir", author: "ابن كثير", remote: true },
+  { id: "qurtubi", label: "الجامع لأحكام القرآن", genre: "tafsir", author: "القرطبي", remote: true },
+  { id: "razi", label: "مفاتيح الغيب", genre: "tafsir", author: "الرازي", remote: true },
+  { id: "kashshaf", label: "الكشّاف", genre: "tafsir", author: "الزمخشري", remote: true },
+  { id: "ibnatiyyah", label: "المحرَّر الوجيز", genre: "tafsir", author: "ابن عطية", remote: true },
+  { id: "baghawi", label: "معالم التنزيل", genre: "tafsir", author: "البغوي", remote: true },
+  { id: "ibnashur", label: "التحرير والتنوير", genre: "tafsir", author: "ابن عاشور", remote: true },
+  { id: "shawkani", label: "فتح القدير", genre: "tafsir", author: "الشوكاني", remote: true },
+  { id: "alusi", label: "روح المعاني", genre: "tafsir", author: "الألوسي", remote: true },
+  { id: "abusuud", label: "إرشاد العقل السليم", genre: "tafsir", author: "أبو السعود", remote: true },
+  { id: "durrmanthur", label: "الدر المنثور", genre: "tafsir", author: "السيوطي", remote: true },
+  { id: "adwaalbayan", label: "أضواء البيان", genre: "tafsir", author: "الشنقيطي", remote: true },
+  { id: "bahrmuhit", label: "البحر المحيط", genre: "tafsir", author: "أبو حيان", remote: true },
+  { id: "nasafi", label: "مدارك التنزيل", genre: "tafsir", author: "النسفي", remote: true },
+  { id: "qasimi", label: "محاسن التأويل", genre: "tafsir", author: "القاسمي", remote: true },
+  { id: "baydawi", label: "أنوار التنزيل", genre: "tafsir", author: "البيضاوي", remote: true, note: "نسخة جزئية" },
+  { id: "ibnabihatim", label: "التفسير بالمأثور", genre: "tafsir", author: "ابن أبي حاتم", remote: true, note: "نسخة جزئية" },
+  { id: "uthaymeen", label: "تفسير العثيمين", genre: "tafsir", author: "ابن عثيمين", remote: true, note: "نسخة جزئية" },
   // root-keyed معاجم — نِبراس-only (shown in the word card, not the verse-anchored تفاسير section)
   { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني", embedded: true },
   { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس", embedded: true },
@@ -105,6 +125,27 @@ function loadBook(source: string): Promise<Book | null> {
   })();
   loading.set(source, p);
   return p;
+}
+
+/** التفاسير البعيدة: ملف السورة يُجلب عند الطلب (نمط الصوت) ويُخزَّن. */
+const REMOTE_DATA_BASE = "https://raw.githubusercontent.com/qataruts/mishkat-data/main";
+const suraCache = new Map<string, BookEntry[] | null>();
+export async function loadBookSura(source: string, sura: number): Promise<BookEntry[] | null> {
+  const key = `${source}/${sura}`;
+  const done = suraCache.get(key);
+  if (done !== undefined) return done;
+  try {
+    const res = await fetch(`${REMOTE_DATA_BASE}/tafsir/${source}/${String(sura).padStart(3, "0")}.json`);
+    if (!res.ok) { suraCache.set(key, null); return null; }
+    const arr = (await res.json()) as { ref: string; refEnd?: string; text: string }[];
+    const list: BookEntry[] = arr.map((x) => ({ ref: x.ref, refEnd: x.refEnd, text: x.text, s: refNum(x.ref), e: refNum(x.refEnd ?? x.ref) }));
+    list.sort((a, b) => a.s - b.s);
+    suraCache.set(key, list);
+    return list;
+  } catch {
+    suraCache.set(key, null);
+    return null;
+  }
 }
 
 export interface BookHit { ref: string; text: string; source: string; score: number }

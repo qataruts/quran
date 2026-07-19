@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { booksByGenre, bookById, loadBookEntries, GENRE_LABELS, type BookEntry } from "../books";
+import { booksByGenre, bookById, loadBookEntries, loadBookSura, GENRE_LABELS, type BookEntry } from "../books";
 import { ensureLayers } from "../layers";
 import { surahNameAr } from "../db";
 import { readPathOf } from "../types";
@@ -63,9 +63,10 @@ function BookView({ id }: { id: string }) {
   useEffect(() => {
     let live = true;
     setEntries(null);
-    loadBookEntries(id).then((e) => live && setEntries(e));
+    const src = bookById(id);
+    (src?.remote ? loadBookSura(id, surah) : loadBookEntries(id)).then((e) => live && setEntries(e));
     return () => { live = false; };
-  }, [id]);
+  }, [id, surah]);
 
   const shown = useMemo(() => {
     if (!entries) return [];
