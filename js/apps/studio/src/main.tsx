@@ -22,6 +22,7 @@ const Kulliyat = lazy(() => import("./views/Kulliyat"));
 const AyaCard = lazy(() => import("./views/AyaCard"));
 const Wujuh = lazy(() => import("./views/Wujuh"));
 const Furuq = lazy(() => import("./views/Furuq"));
+const Bayan = lazy(() => import("./views/Bayan"));
 const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
@@ -168,6 +169,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/roots", "الجذور", "Roots"],
       ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
+      ["/bayan", "البيان", "Bayān"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
       ["/sarf", "الصرف بالأرقام", "Morphology"],
     ],
@@ -439,6 +441,8 @@ function App() {
           <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
+          <Route path="/bayan" element={<Bayan />} />
+          <Route path="/bayan/:id" element={<Bayan />} />
           <Route path="/amthal" element={<Amthal />} />
           <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />

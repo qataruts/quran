@@ -1956,3 +1956,29 @@ table.data tr:hover td { background: var(--panel-2); }
 .sq-sep { display: flex; align-items: center; gap: 10px; margin: 4px 0 14px; }
 .sq-sep::before, .sq-sep::after { content: ""; flex: 1; border-top: 1px dashed var(--line); }
 .sq-sep-name { font-size: 11.5px; color: var(--muted); white-space: nowrap; letter-spacing: 0.2px; }
+
+/* ——— البيان: بطاقات تدبر لغة القرآن — شبكة الأنواع ولوحات الخريطة والقراءات ——— */
+.bayan-page { max-width: 900px; margin: 0 auto; width: 100%; }
+.by-intro { color: var(--muted); max-width: 70ch; }
+.by-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin: 10px 0 22px; }
+.by-tile { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit; }
+.by-tile-kashf { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+.by-kashf { background: var(--panel); border-inline-start: 3px solid var(--gold, #b8891f); padding: 10px 14px; border-radius: 8px; line-height: 1.9; }
+.by-side { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 10px 0; }
+.by-side > summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.by-colloc { color: var(--muted); font-size: 13px; line-height: 1.9; }
+.by-occ { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.by-occ li { border-top: 1px dashed var(--line); padding-top: 8px; }
+.by-ref { font-weight: 600; text-decoration: none; }
+.by-unit { color: var(--muted); font-size: 12px; }
+.by-aya { color: var(--muted); font-size: 13.5px; line-height: 1.9; margin-top: 2px; }
+.by-reading { border-inline-start: 3px solid var(--line); margin: 10px 0; padding: 4px 14px; }
+.by-reading p { line-height: 2; margin: 4px 0; }
+.by-reading footer { color: var(--muted); font-size: 12.5px; }
+.by-method { color: var(--muted); font-size: 13px; line-height: 1.9; }
+.by-lib-item { border-top: 1px dashed var(--line); padding: 8px 0; }
+.by-lib-item summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.by-lib-text { color: var(--muted); line-height: 2; margin-top: 6px; max-width: 90ch; }
+.by-seg { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.by-seg .chip, .by-letters .chip { cursor: pointer; border: 1px solid var(--line); background: transparent; }
+.by-letters { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 14px; }
