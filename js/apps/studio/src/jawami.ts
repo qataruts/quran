@@ -42,22 +42,56 @@ let reverse: Map<string, Link[]> | null = null;
 
 export function loadJawami(): Promise<Payload> {
   if (data) return Promise.resolve(data);
-  loading ??= fetch(`${import.meta.env.BASE_URL}jawami.json?v=${__DATA_VERSION__}`)
-    .then((r) => {
-      if (!r.ok) throw new Error(`jawami.json: HTTP ${r.status}`);
-      return r.json();
-    })
-    .then((p: Payload) => {
-      data = p;
-      reverse = new Map();
-      for (const [hub, links] of Object.entries(p.tafsil)) {
-        for (const [loc, rel] of links) {
-          const list = reverse.get(loc) ?? [];
-          list.push({ loc: hub, rel });
-          reverse.set(loc, list);
+  // v3 (2026-07-19): الطبقة تُركّب من الشبكة الموحدة المفحوصة بالسياق —
+  // ملف الجيل الأول jawami.json لم يعد يُقرأ (أرشيف).
+  const v = `?v=${__DATA_VERSION__}`;
+  loading ??= Promise.all([
+    fetch(`${import.meta.env.BASE_URL}v3-evidence.json${v}`).then((r) => r.json()),
+    fetch(`${import.meta.env.BASE_URL}ranks-v1.json${v}`).then((r) => r.json()),
+  ])
+    .then(([ev, ranks]: [{ verses: Record<string, { u: string; g?: string[]; links?: Record<string, string[]> }[]> }, { ranks: Record<string, { r: string }> }]) => {
+      const principles: Record<string, Principle> = {};
+      const tafsil: Record<string, [string, Rel][]> = {};
+      let links = 0;
+      for (const [loc, units] of Object.entries(ev.verses)) {
+        const out: [string, Rel][] = [];
+        const seen = new Set<string>();
+        for (const u of units) {
+          for (const [rel, locs] of Object.entries(u.links ?? {})) {
+            for (const c of locs) {
+              if (seen.has(c)) continue;
+              seen.add(c);
+              out.push([c, rel as Rel]);
+            }
+          }
+        }
+        if (out.length) {
+          tafsil[loc] = out;
+          links += out.length;
+        }
+        const rk = ranks.ranks[loc]?.r;
+        if (out.length || rk === "كلية" || rk === "جامعة") {
+          principles[loc] = {
+            kind: rk === "كلية" ? "كلّية" : rk === "جامعة" ? "جامعة" : "قاعدة مؤهّلة",
+            grade: rk === "كلية" ? "أصل جامع" : rk === "جامعة" ? "متفرّع" : null,
+          };
         }
       }
-      return p;
+      data = {
+        meta: { principles: Object.keys(principles).length, hubs: Object.keys(tafsil).length, links, rels: ["بيان", "مثال", "جزاء", "توكيد"], grades: ["أصل جامع", "متفرّع", "موجز", "مجرّد"] },
+        principles,
+        tafsil,
+        gaps: {},
+      };
+      reverse = new Map();
+      for (const [hub, list] of Object.entries(data.tafsil)) {
+        for (const [loc, rel] of list) {
+          const arr = reverse.get(loc) ?? [];
+          arr.push({ loc: hub, rel });
+          reverse.set(loc, arr);
+        }
+      }
+      return data;
     })
     .catch((e) => {
       loading = null;
@@ -66,7 +100,6 @@ export function loadJawami(): Promise<Payload> {
   return loading;
 }
 
-/** React hook: null until the network is loaded, then the full payload. */
 export function useJawami(): Payload | null {
   const [p, setP] = useState<Payload | null>(data);
   useEffect(() => {

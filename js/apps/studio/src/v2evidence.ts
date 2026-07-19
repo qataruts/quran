@@ -2,7 +2,7 @@
  * v2evidence — نموذج الشارتين (قرار ب): دليلُ كل آية كما هو، بلا رتبةٍ تدّعي فوقه.
  *   «صيغة قاعدة»  = بوابات صرفية حتمية اجتازتها وحدةٌ من الآية (استعادة ٩٦٪/رفض ١٠٠٪).
  *   «ثبت تفرّعه» = صِلاتُ شبكة v2 المفحوصةُ فحصًا مستقلًّا (11,773 رابطًا، κ=0.585) + المثاني.
- * البيانات: public/v2-evidence.json (كسولة، ~0.4MB).
+ * البيانات: public/v3-evidence.json — الشبكة الموحدة المفحوصة بالسياق (v3).
  */
 export interface EvUnit {
   u: string; // "aya" | "cN"
@@ -20,7 +20,7 @@ let data: EvData | null = null;
 let loading: Promise<EvData | null> | null = null;
 export function loadEvidence(): Promise<EvData | null> {
   if (data) return Promise.resolve(data);
-  loading ??= fetch(`${import.meta.env.BASE_URL}v2-evidence.json?v=${__DATA_VERSION__}`)
+  loading ??= fetch(`${import.meta.env.BASE_URL}v3-evidence.json?v=${__DATA_VERSION__}`)
     .then((r) => (r.ok ? r.json() : null))
     .then((d: EvData | null) => (data = d))
     .catch(() => null);
