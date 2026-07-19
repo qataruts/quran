@@ -16,7 +16,7 @@ import {
   type ChatAyah, type ChatBook, type ChatMsg, type ChatRoot,
 } from "../chat";
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
-import { retrieveBooks, hasBooks, bookLabel } from "../rag";
+import { retrieveBooks, hasBooks, bookLabel, BOOK_SOURCES } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
 import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
 import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive } from "../layers";
@@ -29,12 +29,8 @@ async function postJson(url: string, body: unknown): Promise<any> {
   return res.json();
 }
 
-const EXAMPLES_AR = [
-  "حدّثني عن الصبر في القرآن: آياتُه ومعناه في المعاجم",
-  "رتّبْ لي محاورَ خطبةٍ عن شكر النعمة ثم اكتبها",
-  "ما الفرق بين الخوف والخشية في القرآن؟",
-  "أُعِدُّ بحثًا عن العدل — ساعدني في مادته ومخططه",
-];
+/** مثالٌ واحدٌ يوضّح الفكرة — لا قائمة تشتّت (قرار مالك 2026-07-19) */
+const EXAMPLE_AR = "ما الفرق بين الخوف والخشية في القرآن؟";
 
 /** ما تعرضه فقاعة الحالة أثناء نداء أداة */
 const TOOL_STATUS: Record<string, (a: Record<string, unknown>) => string> = {
@@ -91,23 +87,76 @@ function enforceVerbatim(text: string, toolTexts: string[]): string {
   });
 }
 
+// ——— مراجع الآيات داخل النثر روابطُ قراءة (السورة الآية) ———
+let surahNums: Map<string, number> | null = null;
+function surahNumOf(name: string): number | null {
+  if (!surahNums) {
+    surahNums = new Map();
+    for (let i = 1; i <= 114; i++) surahNums.set(surahNameAr(i).replace(/\s+/g, " ").trim(), i);
+  }
+  const k = name.replace(/\s+/g, " ").replace(/^سورة\s+/, "").trim();
+  return surahNums.get(k) ?? null;
+}
+const AR2EN: Record<string, string> = { "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9" };
+const arInt = (s: string): number => Number(s.replace(/[٠-٩]/g, (d) => AR2EN[d]));
+/** «البقرة ١٥٣» → {s,a} — أو null إن لم يكن مرجعَ آية */
+function parseRefLabel(label: string): { s: number; a: number } | null {
+  const m = /^(.+?)\s+([0-9٠-٩]{1,3})(?:\s*[-–—]\s*[0-9٠-٩]{1,3})?$/.exec(label.trim());
+  if (!m) return null;
+  const s = surahNumOf(m[1]);
+  const a = arInt(m[2]);
+  return s && a >= 1 && a <= 286 ? { s, a } : null;
+}
+const QSTRIP = /[ً-ٰٟۖ-ۭـ]/g;
+/** موضعُ الاقتباس ﴿…﴾ من مراجع آيات الرسالة — مطابقةُ حروفٍ مجردة لا تخمين */
+function refOfQuote(q: string, ayahs?: ChatAyah[]): string | null {
+  if (!ayahs?.length) return null;
+  const frag = q.replace(/[﴿﴾]/g, "").split(/…|\.\.\./)[0].replace(QSTRIP, "").replace(/ٱ/g, "ا").replace(/\s+/g, " ").trim();
+  if (frag.length < 8) return null;
+  for (const a of ayahs) {
+    const t = a.text.replace(QSTRIP, "").replace(/ٱ/g, "ا").replace(/\s+/g, " ");
+    if (t.includes(frag)) return a.ref;
+  }
+  return null;
+}
+
 /** عرضٌ آمنٌ لنص المساعد: يحوّل عادات Markdown الخفيفة (**غامق**، `*` نقاط،
  *  ## عناوين) إلى عناصرَ حقيقية بدل ظهور الوسوم حرفيًّا — بلا HTML خام.
- *  والآياتُ المنسوجة بين ﴿…﴾ تُعرض بخط المصحف داخل الجملة. */
-function renderReply(text: string): ReactNode {
+ *  والآياتُ المنسوجة بين ﴿…﴾ بخط المصحف، ومراجعُها [السورة الآية] روابطُ
+ *  تفتح الموضع في القارئ — والاقتباسُ المطابقُ لمرجعٍ يُذيَّل بمرجعه إن غاب. */
+function renderReply(text: string, ayahs?: ChatAyah[]): ReactNode {
   const bold = (line: string, key: number): ReactNode => {
     const parts = line.split(/\*\*([^*]+)\*\*/g);
     if (parts.length === 1) return <span key={key}>{line}</span>;
     return <span key={key}>{parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p))}</span>;
   };
   const rich = (line: string, key: number): ReactNode => {
-    const segs = line.split(/(﴿[^﴾]*﴾)/g);
+    const segs = line.split(/(﴿[^﴾]*﴾|\[[^\]\n]{2,40}\])/g);
     if (segs.length === 1) return bold(line, key);
-    return (
-      <span key={key}>
-        {segs.map((s, i) => (s.startsWith("﴿") ? <span key={i} className="mu-vq">{s}</span> : bold(s, i)))}
-      </span>
-    );
+    const out: ReactNode[] = [];
+    for (let i = 0; i < segs.length; i++) {
+      const s = segs[i];
+      if (s.startsWith("﴿")) {
+        const ref = refOfQuote(s, ayahs);
+        out.push(ref
+          ? <Link key={i} to={`/read/${ref.split(":")[0]}/${ref.split(":")[1]}`} className="mu-vq mu-vq-lnk">{s}</Link>
+          : <span key={i} className="mu-vq">{s}</span>);
+        // إن لم يُتبِع النموذجُ الاقتباسَ بمرجعه [السورة الآية] أُلحق مرجعُه المطابَق رابطًا
+        const next = (segs[i + 1] ?? "").trimStart();
+        if (ref && !(next.startsWith("[") && parseRefLabel(next.slice(1, next.indexOf("]"))))) {
+          out.push(<Link key={`${i}r`} to={`/read/${ref.split(":")[0]}/${ref.split(":")[1]}`} className="mu-ref-lnk"> ({refName(ref)})</Link>);
+        }
+      } else if (s.startsWith("[") && s.endsWith("]")) {
+        const label = s.slice(1, -1);
+        const r = parseRefLabel(label);
+        out.push(r
+          ? <Link key={i} to={`/read/${r.s}/${r.a}`} className="mu-ref-lnk">({label})</Link>
+          : bold(s, i));
+      } else if (s) {
+        out.push(bold(s, i));
+      }
+    }
+    return <span key={key}>{out}</span>;
   };
   return text.split("\n").map((raw, i) => {
     let line = raw;
@@ -135,6 +184,26 @@ function Bubble({ m }: { m: ChatMsg }) {
   const ar = getUILang() === "ar";
   const copy = () => navigator.clipboard?.writeText(m.draft || m.text || "");
   const copyReply = () => navigator.clipboard?.writeText(m.text || "");
+  // كشفٌ تدريجيٌّ سطرًا سطرًا لحظةَ وصول الجواب — إحساسُ البث دون المساس
+  // بحارس السند (النص فُحص كاملًا في الخادم قبل أن يصل)
+  const [revealed, setRevealed] = useState<number | null>(null);
+  const wasPending = useRef(m.pending);
+  useEffect(() => {
+    const was = wasPending.current;
+    wasPending.current = m.pending;
+    if (!(was && !m.pending && m.text && !m.error)) return;
+    const total = m.text.split("\n").length;
+    if (total < 3) return;
+    setRevealed(1);
+    let n = 1;
+    const iv = setInterval(() => {
+      n += 1;
+      if (n >= total) { clearInterval(iv); setRevealed(null); } else setRevealed(n);
+    }, 110);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [m.pending]);
+  const shownText = m.text && revealed !== null ? m.text.split("\n").slice(0, revealed).join("\n") : m.text;
   // وسمٌ بصري إذا تضمن الجواب استنباطًا مولَّدًا — درجة السند الثالثة ظاهرة للعين
   const hasIstinbat = !!m.text && /استنباط\s*مولّ?د/.test(m.text);
   const nAyahs = m.ayahs?.length ?? 0;
@@ -158,8 +227,8 @@ function Bubble({ m }: { m: ChatMsg }) {
             </>
           ) : (
             <>
-              {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(m.text)}</div>}
-              {m.text && !m.error && (
+              {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(shownText || "", m.ayahs)}</div>}
+              {m.text && !m.error && revealed === null && (
                 <div className="mu-reply-bar">
                   {hasIstinbat && <span className="mu-ist-tag">{ar ? "يتضمن استنباطًا مولَّدًا بمقدماته — ليس نقلًا" : "includes a generated inference"}</span>}
                   <button className="mu-copy-sm" onClick={copyReply} title={ar ? "نسخ الجواب بمقدماته" : "copy answer"}>⧉</button>
@@ -173,7 +242,7 @@ function Bubble({ m }: { m: ChatMsg }) {
                 </div>
               )}
               {/* المراجعُ الداعمة — مطويةٌ تحت الجواب؛ المتنُ هو النثر المنسوج أعلاه */}
-              {refCounts && (
+              {refCounts && revealed === null && (
                 <details className="mu-refs">
                   <summary>
                     <svg className="mu-refs-chev" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
@@ -240,6 +309,9 @@ export default function Assistant() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [listOpen, setListOpen] = useState(false);
+  // عُدّة نبراس تُعرض من المانيفست نفسه (لا قائمة مكتوبة تَقدُم) — تُحمَّل للعرض
+  const [srcsReady, setSrcsReady] = useState(false);
+  useEffect(() => { void ensureLayers().then(() => setSrcsReady(true)).catch(() => {}); }, []);
   const endRef = useRef<HTMLDivElement>(null);
   // resizable chat-list column (drag the divider) — persisted, RTL-aware
   const [listW, setListW] = useState<number>(() => { const v = Number(localStorage.getItem("nibras-listw")); return v >= 180 && v <= 460 ? v : 250; });
@@ -482,8 +554,13 @@ export default function Assistant() {
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={onKey}
         rows={1}
-        placeholder={ar ? "اكتبْ ما تريد…" : "write anything…"}
+        placeholder={ar ? "اكتبْ سؤالك هنا…" : "write your question here…"}
         aria-label={ar ? "رسالة" : "message"}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        enterKeyHint="enter"
       />
     </div>
   );
@@ -526,18 +603,41 @@ export default function Assistant() {
           {empty ? (
             <div className="mu-hero">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
-              <h1 className="mu-empty-h">{ar ? "بمَ نبدأ؟" : "Where shall we begin?"}</h1>
+              <h1 className="mu-empty-h">{ar ? "تحدَّثْ مع نِبراس" : "Talk to Nibras"}</h1>
+              <span className="mu-empty-tag">{ar ? "مساعدُ مشكاة الذكيّ — يبحث في بياناتها ويجيب بإسناد" : "مشكاة's AI assistant — searches its data, answers with citations"}</span>
               <p className="mu-hero-sub">
                 {ar
-                  ? "نِبراس — مساعدُ بحثٍ يحاورك ويبحث بنفسه في القرآن ولغته والتفاسير المسندة أثناء الحديث: اسأل، وناقش، ورتّب أفكارك، واطلب بحثًا أو خطبةً أو مقالة — وكلُّ واقعةٍ عنده بمصدرها."
-                  : "Nibras — a research assistant that converses and searches the Qur'an, its language and cited tafsīr on its own as you talk: ask, discuss, organize ideas, request a paper or khutba — every fact carries its source."}
+                  ? "يحاورك ويبحث بنفسه أثناء الحديث في القرآن ولغته وكتب المكتبة المسندة: اسألْ عن آيةٍ أو معنًى أو فرقٍ لغوي، وناقشْ ورتّبْ أفكارك، واطلبْ بحثًا أو خطبةً أو مقالة — كلُّ واقعةٍ عنده بمصدرها، والآياتُ من نصّ المصحف لا من ذاكرته."
+                  : "It converses and searches on its own as you talk — the Qur'an, its language, and the cited library: ask about a verse, a meaning, a linguistic distinction; discuss and organize ideas; request a paper or khutba — every fact carries its source, and verses come from the muṣḥaf's text, never from memory."}
               </p>
               {composer}
-              <div className="mu-examples">
-                {EXAMPLES_AR.slice(0, 4).map((ex) => (
-                  <button key={ex} className="mu-ex" onClick={() => void send(ex)}>{ex}</button>
-                ))}
-              </div>
+              <button className="mu-ex" onClick={() => void send(EXAMPLE_AR)}>
+                <span className="mu-ex-hint">{ar ? "جرّبْ مثلًا: " : "try: "}</span>{EXAMPLE_AR}
+              </button>
+              {srcsReady && (
+                <details className="mu-srcs">
+                  <summary>{ar ? "ما مصادرُ نبراس وأدواتُه؟" : "What does Nibras search?"}</summary>
+                  <div className="mu-srcs-body">
+                    <div><b>{ar ? "المصحفُ أولًا: " : "The muṣḥaf first: "}</b>{ar ? "بحثٌ بالمعنى في الآيات، واستقصاءُ الجذور وصيغِها، ووحداتُ السياق، وعدٌّ حتميٌّ للرسم — والآياتُ تُنقل من نصّ المصحف لا من ذاكرة النموذج." : "meaning-search over the verses, root inquiry, context units, deterministic counting — verses come from the muṣḥaf's text."}</div>
+                    <div><b>{ar ? `طبقاتُ مشكاة (${num(layersDigest().filter((l) => l.id !== "search").length)}): ` : "Layers: "}</b>{layersDigest().filter((l) => l.id !== "search").map((l) => l.label.split(" (")[0]).join("، ")} — {ar ? "بدرجتي سندٍ معلنتين: محسوبٌ من حساباتنا، ومنقولٌ يُقتبس منسوبًا لمصدره." : "each labeled محسوب (computed) or منقول (quoted)."}</div>
+                    <div>
+                      <b>{ar ? `المضمّنُ لبحثه الدلالي (${num(BOOK_SOURCES.filter((b) => b.embedded).length)}): ` : "Embedded for semantic search: "}</b>
+                      {BOOK_SOURCES.filter((b) => b.embedded).map((b) => b.label).join("، ")}.
+                    </div>
+                    <div>
+                      <b>{ar ? "ويقرأ نصًّا عند الآية (دون تضمين): " : "Read verbatim at a verse: "}</b>
+                      {ar
+                        ? "التفاسيرُ الميسّرةُ الخمسة، وأسبابُ النزول، والقراءاتُ، والإعرابُ — تُقتبس عند الموضع المطلوب؛ ومداخلُ كتبِ البيان تُستدعى بعناوينها عبر طبقة البيان."
+                        : "the five concise tafsirs, asbāb, qirāʾāt and iʿrāb at the requested verse; bayān book entries by their headings via the bayān layer."}
+                    </div>
+                    <div className="muted">
+                      {ar ? "أما التفاسيرُ العريقةُ العشرون فللاستعراض في " : "The twenty classical tafsirs are browsable in "}
+                      <Link to="/tafasir">{ar ? "قسم التفاسير والمصادر" : "the sources section"}</Link>
+                      {ar ? " — خارجَ أدوات نبراس عمدًا (حتى لا يمتلئ سياقُه من كتابٍ واحد)." : " — deliberately outside Nibras's tools."}
+                    </div>
+                  </div>
+                </details>
+              )}
             </div>
           ) : (
             <>

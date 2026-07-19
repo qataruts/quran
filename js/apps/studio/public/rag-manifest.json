@@ -6,14 +6,14 @@
    "id": "muyassar",
    "label": "التفسير الميسّر",
    "genre": "tafsir",
-   "embedded": true,
+   "embedded": false,
    "entries": 6236
   },
   {
    "id": "jalalayn",
    "label": "تفسير الجلالين",
    "genre": "tafsir",
-   "embedded": true,
+   "embedded": false,
    "entries": 6236
   },
   {
@@ -21,7 +21,7 @@
    "label": "المختصر في التفسير",
    "genre": "tafsir",
    "author": "مركز تفسير",
-   "embedded": true,
+   "embedded": false,
    "entries": 6211
   },
   {

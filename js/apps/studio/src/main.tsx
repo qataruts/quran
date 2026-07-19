@@ -341,7 +341,7 @@ function NibrasFab() {
         <path d="M12 1.6c.55 5.9 1.9 9.95 9.9 10.4-8 .45-9.35 4.5-9.9 10.4-.55-5.9-1.9-9.95-9.9-10.4 8-.45 9.35-4.5 9.9-10.4z" fill="currentColor" />
         <path d="M19.4 2.2c.2 2.1.7 3.55 3.5 3.7-2.8.15-3.3 1.6-3.5 3.7-.2-2.1-.7-3.55-3.5-3.7 2.8-.15 3.3-1.6 3.5-3.7z" fill="currentColor" opacity=".7" />
       </svg>
-      <span className="nibras-fab-label">{ar ? "نِبراس" : "Nibras"}</span>
+      <span className="nibras-fab-label">{ar ? "اسأل نِبراس" : "Ask Nibras"}</span>
     </NavLink>
   );
 }
