@@ -2,7 +2,7 @@
  * Shared abuse-control for the Gemini-backed edge functions. Files starting
  * with "_" are not routed by Vercel, so this is import-only.
  *
- *  - Origin/Referer allowlist: only the app's own pages (quran.uts.qa, its
+ *  - Origin/Referer allowlist: only the app's own pages (mishkat.qa والقديم quran.uts.qa، its
  *    Vercel aliases, and localhost in dev) may call these. Browsers always send
  *    Origin on cross-origin and on same-origin POST, so this blocks other-site
  *    abuse and no-Origin scripts/curl.
@@ -10,7 +10,7 @@
  *    distributed limit — pair it with a Google Cloud budget alert on the key
  *    for a real ceiling — but it adds meaningful friction with zero infra.
  */
-const ALLOWED_HOSTS = ["quran.uts.qa", "localhost", "127.0.0.1"];
+const ALLOWED_HOSTS = ["mishkat.qa", "www.mishkat.qa", "quran.uts.qa", "localhost", "127.0.0.1"];
 
 function hostAllowed(host) {
   if (!host) return false;
