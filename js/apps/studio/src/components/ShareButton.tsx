@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { getUILang } from "../i18n";
 
 /** النطاقُ المعلن — ما يُشارَك دائمًا مهما كان مضيفُ الجلسة */
-const SITE = "https://www.mishkat.qa/";
+const SITE = "https://quran.mishkat.qa/";
 
 export function shareUrl(): string {
   const hash = window.location.hash && window.location.hash !== "#/" ? window.location.hash : "";
